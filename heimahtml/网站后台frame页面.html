@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>网站后台系统显示页面</title>
+    </head>
+
+    <frameset rows="20%,*">
+        <frame src="top.html" />
+        <frameset cols="20%,*">
+            <frame src="left.html" />
+
+            <!-- <frame src="right.html" /> -->
+            <!-- 因为 left中的target属性是 right 所以 -->
+            <!-- 在 left中点时跳转的链接是 到 right的 target  -->
+            <!-- 而 right 已经在这里 定义了frame  -->
+            <frame name="right" />
+        </frameset>
+    </frameset>
+
+
+</html>
