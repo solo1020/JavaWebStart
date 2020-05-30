@@ -15,3 +15,21 @@ align 居中显示
      </table>       -->
 超链接 <a href="www.html#页面的指定位置的id" ></a> 
 target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
+
+表单：
+<input type="text" name="提交到服务器的参数名" 
+        maxlength="" readonly="" placeholder="提示输入信息">
+密码:
+<input type="password" name="">
+
+单选按钮：
+<input type="radio" name="" value="选项值" 
+        checked="true 表示是否默认选中">
+
+多选按钮：
+<input type="checkbox" name="" value="" checked="">
+
+下拉列表：
+<select name="用来区分多个select" >
+        <option value="选项值" selected="请选择">北京选项显示的名称</option>
+</select>
