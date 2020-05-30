@@ -1,7 +1,7 @@
 # JavaWebStart
 JavaEE helloworld
 
-<html>
+<!-- <--html> -->
 水平线 <hr />
 字体 <font></font> color size(1~7)
 图片 <img src="pic.png"> width height alt="图片无法显示提示"
@@ -17,6 +17,8 @@ align 居中显示
 target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 
 表单：
+<form action="#处理请求的servlet路径" method="get">
+
 <input type="text" name="提交到服务器的参数名" 
         maxlength="" readonly="" placeholder="提示输入信息">
 密码:
@@ -33,3 +35,20 @@ target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 <select name="用来区分多个select" >
         <option value="选项值" selected="请选择">北京选项显示的名称</option>
 </select>
+
+文件上传：
+<input type="file" name="">
+
+文本输入域：
+<textarea name=""></textarea>
+
+提交按钮：
+<input type="submit" value="按钮内容">
+
+普通按钮：
+<input type="button" value="">
+
+重置按钮：
+<input type="reset" value="">
+
+
