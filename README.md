@@ -51,9 +51,10 @@ target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 ---- 
 ```
 <form action="#处理请求的servlet路径" method="get">
-
 <input type="text" name="提交到服务器的参数名" 
-        maxlength="" readonly="" placeholder="提示输入信息">
+        maxlength="" readonly="" placeholder="提示输入信息"
+        readonly="readonly 只读" size="40px" 
+        required="requried 代表必填">
 ```
 
 密码:
@@ -66,7 +67,7 @@ target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 ---- 
 ```
 <input type="radio" name="" value="选项值" 
-        checked="true 表示是否默认选中">
+        checked="checked 表示是否默认选中">
 ```
 
 多选按钮：
