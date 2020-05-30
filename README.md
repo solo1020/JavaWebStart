@@ -132,8 +132,8 @@ css
     属性名:属性值;
 }
 </br>
-元素选择器 div {}
-类选择器  .class {}
-id选择器 #id {}
-层级选择器 div p {} 选择 div 中的段落元素
-属性选择器：input[type='text'] {} 选择input表单中的type为 text的元素
+元素选择器 div {} </br>
+类选择器  .class {}  
+id选择器 #id {}  
+层级选择器 div p {} 选择 div 中的段落元素  
+属性选择器：input[type='text'] {} 选择input表单中的type为 text的元素  
