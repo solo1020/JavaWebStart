@@ -31,6 +31,8 @@ html
 <table>  <th>表头  <tr>行  <td> 单元格 border 
 rowspan 一列跨多行  colspan 一行跨多栏
 cellspacing 单元格之间的间距 cellpadding 单元格内边距
+background=".jpg" 在单元格中设置背景图片,然后再嵌套表格等元素
+效果与 float效果差不多
 align 居中显示
 ```
 
@@ -53,7 +55,7 @@ target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 <form action="#处理请求的servlet路径" method="get">
 <input type="text" name="提交到服务器的参数名" 
         maxlength="" readonly="" placeholder="提示输入信息"
-        readonly="readonly 只读" size="40px" 
+        readonly="readonly 只读" size="40px 输入框长度" 
         required="requried 代表必填">
 ```
 

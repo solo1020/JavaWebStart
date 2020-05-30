@@ -17,7 +17,7 @@
     <body>
         
              <!-- <img src="pics/small01.jpg" alt="logo2.png"> -->
-        <table border="1px" width="1600px" align="center" 
+        <table border="0px" width="1600px" align="center" 
             cellpadding="1px" cellspacing="1px">
             <!-- 页眉 -->
             <tr >
@@ -65,7 +65,8 @@
             <!-- 注册页面 -->
             <tr>
                 <td height="800px" background="pics/regist_bg.jpg">
-                    <table width="750px" height="600px" cellpadding="0px"
+                    <form action="#" method="GET" name="regForm">
+                        <table width="750px" height="600px" cellpadding="0px"
                         cellspacing="0px" bgcolor="white"
                         style="border:1px solid #000000" 
                         align="center">
@@ -82,7 +83,9 @@
                                 <font >用户名:&nbsp;</font>
                             </td>
                             <td width="80%" >
-                                <input type="text" placeholder="用户名" width="100%" height="100px">
+                                <input type="text" placeholder="用户名" 
+                                width="100%" height="100px" 
+                                size="45px" name="username">
                             </td>
                         </tr>
                     
@@ -91,7 +94,9 @@
                                 <font >密码:&nbsp;</font>
                             </td>
                             <td width="80%">
-                                <input type="text" placeholder="密码" width="100%">
+                                <input type="password" placeholder="密码" 
+                                width="100%" size="45px"
+                                name="password">
                             </td>
                         </tr>
                             
@@ -100,7 +105,9 @@
                                 <font >确认密码:&nbsp;</font>
                             </td>
                             <td width="80%">
-                                <input type="text" placeholder="确认密码" width="100%">
+                                <input type="password" size="45px"
+                                placeholder="确认密码" width="100%"
+                                name="confirmPassword">
                             </td>
                         </tr>
                             
@@ -109,7 +116,8 @@
                                 <font >Email:&nbsp;</font>
                             </td>
                             <td width="80%">
-                                <input type="text" placeholder="Emial" width="100%">
+                                <input type="text" placeholder="Emial" 
+                                width="100%" size="45px" name="email">
                             </td>
                         </tr>
                             
@@ -118,7 +126,9 @@
                                 <font >姓名:&nbsp;</font>
                             </td>
                             <td width="80%">
-                                <input type="text" placeholder="姓名" width="100%">
+                                <input type="text" placeholder="姓名" 
+                                width="100%" size="45px"
+                                name="name">
                             </td>
                         </tr>
                     
@@ -137,7 +147,7 @@
                                 <font >出生日期:&nbsp;</font>
                             </td>
                             <td width="80%">
-                                <input type="date" >
+                                <input type="date" name="birthday" size="45px">
                             </td>
                         </tr>
                     
@@ -146,7 +156,7 @@
                                 <font >验证码:&nbsp;</font>
                             </td>
                             <td width="60%">
-                                <input type="text"  >
+                                <input type="text"  name="验证码" size="45px">
                                 <img align="center" src="pics/yanzhengma.png" alt="验证码">
                             </td>
                         </tr>
@@ -154,28 +164,42 @@
                         <tr>
                             <td width="20%"></td>
                             <td align="left" >
-                                <input type="submit">
+                                <input type="submit" value="注册">
                             </td>
                         </tr>
                     
-                    </table>
+                        </table>
+                    </form>
+                    
                 </td>
                 
             </tr>
 
             <!-- 页脚 -->
-            <tr>
+            <!-- <tr>
                 <td></td>
-            </tr>
+            </tr> -->
 
             <!-- 友情链接 -->
             <tr>
-                <td></td>
+                <td align="center">
+                    <a href="#">关于我们</a>
+                    <a href="#">联系我们</a>
+                    <a href="#">招贤纳士</a>
+                    <a href="#">法律声明</a>
+                    <a href="#">友情链接</a>
+                    <a href="#">支付方式</a>
+                    <a href="#">配送方式</a>
+                    <a href="#">服务声明</a>
+                    <a href="#">广告声明</a>
+                </td>
             </tr>
 
             <!-- 版权 -->
             <tr>
-                <td></td>
+                <td align="center">
+                    <p>Copyright &copy; 2020-05-30 cz 版权所有</p>
+                </td>
             </tr>
         </table>
 
