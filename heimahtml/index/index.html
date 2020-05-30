@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>首页</title>
+        <link type="text/css" rel="stylesheet" href="">
+
+        <style>
+            #father {
+                border: 1px solid red;
+                width: 1600px;
+                height: 2000px;
+                margin: auto;
+            }
+            #logo {
+                border: 1px solid black;
+                height: 50px;
+            }
+            .top {
+                border: 1px solid blue;
+                width: 530px;
+                height: 50px;
+                float: left;
+            }
+            #top {
+                text-decoration: none;
+                padding-top: 12px;
+                height: 38px;
+            }
+            a {
+                text-decoration: none;
+            }
+            #menu {
+                border: 1px solid red;
+                width: 1600px;
+                height: 50px;
+                background-color: black;
+            }
+            ul li {
+                /* 列表项显示在同一行 */
+                display: inline; 
+                color: white;
+            }
+            #clear {
+                clear: both;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="father">
+            <!-- logo部分 -->
+            <div id="logo">
+                <div class="top">
+                    <img src="pics/logo2.png" alt="logo" height="46px">
+                </div>
+
+                <div class="top">
+                    <img src="pics/header.png" alt="header" height="46px">
+                </div>
+
+                <div class="top" id="top">
+                    <a href="#">登录</a>
+                    <a href="#">注册</a>
+                    <a href="#">购物车</a>
+                </div>
+            </div>
+            <div id="clear">
+
+            </div>
+
+            <!-- 导航栏部分 -->
+            <div id="menu">
+                <ul>
+                    <!-- // 列表里嵌套链接 css需要设置链接的样式 -->
+                    <li style="font-size: 18px;"><a href="#">首页</a></li>&nbsp;&nbsp;
+
+                    <!-- 链接里嵌套列表 css设置列表的样式 -->
+                    <a href="#"><li>手机数码</li></a>&nbsp;&nbsp;
+                    <a href="#"><li>家用电器</li></a>&nbsp;&nbsp;
+                    <a href="#"><li>鞋靴箱包</li></a>&nbsp;&nbsp;
+                    <a href="#"><li>孕婴保健</li></a>&nbsp;&nbsp;
+                    <a href="#"><li>奢侈品</li></a>
+                </ul>
+            </div>
+
+            <!-- 轮播图部分 -->
+            <div id="logo">
+
+            </div>
+
+            <!-- 最新商品 -->
+            <div id="logo">
+
+            </div>
+
+            <div id="logo">
+
+            </div>
+
+        </div>
+    </body>
+</html>

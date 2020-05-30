@@ -1,7 +1,7 @@
 # JavaWebStart
 JavaEE helloworld
 
-====================
+
 html
 ==================================
 水平线
@@ -137,3 +137,24 @@ css
 id选择器 #id {}  
 层级选择器 div p {} 选择 div 中的段落元素  
 属性选择器：input[type='text'] {} 选择input表单中的type为 text的元素  
+
+css浮动与清除：
+---
+
+```
+#id {
+        float:left // right none inherit
+        clear:both // 左右均不允许浮动
+        border:1px solid red; // solid 实线
+        text-align:center;
+        width:300px;
+        height:150px;
+        padding: 10px 0.25em 2ex 20% // 分别对应 上右下左 边距 顺时针
+}
+```
+
+盒模型：
+---
+margin: 与外部元素的边距
+padding: 内边距
+border: 边框厚度
