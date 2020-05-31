@@ -191,3 +191,40 @@ alert(sNum == iNum );  // true
 alert(sNum === iNum);  // false
 ```
 
+标签语句：
+---
+label:statement 配合break使用  
+start : i = 5;  
+
+获取元素：
+---
+```
+获取元素和元素的值
+document.getElementById("id名称");
+document.getElementById("id名称").value;
+```
+
+表单提交事件:   
+onsubmit = return checkForm()  
+在form 元素标签中设置 onsubmit属性 "return checkForm()"
+
+js输出：
+---
+操作html元素：  
+```
+document.getElementById("demo").innerHTML="My First Javascript";
+```
+写到文档中：  
+```
+document.write("<p>My First Javascript</p>");
+```
+判断邮箱格式：  
+```
+正则：^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/
+.test() 判断 不匹配则提示
+if ( ! ^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(email))
+```
+
+
+
+
