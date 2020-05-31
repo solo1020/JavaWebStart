@@ -155,6 +155,39 @@ css浮动与清除：
 
 盒模型：
 ---
-margin: 与外部元素的边距
-padding: 内边距
-border: 边框厚度
+margin: 与外部元素的边距 </br>
+padding: 内边距  
+border: 边框厚度  
+
+
+Javascript
+==========
+
+组成部分：
+-----
+ECMAScript:核心  
+DOM：文档对象模型  
+BOM：浏览器对象模型  
+
+变量弱类型，可以不声明直接使用变量，默认变成全局变量  
+5种原始类型：Undefined Null Boolean Number String
+typeof 运算符
+```
+var sTemp = "test string";
+alert(typeof sTemp);  // 输出 "string"
+alert(typeof 86);    //输出 "number"
+```
+引用类型或Null类型调用typeof 返回 object  
+null被认为是对象的占位符  
+声明的变量未初始化，默认值为 undefined  
+</br>
+
+全等号和非全等号
+---
+```
+var sNum = "66";
+var iNum = 66;
+alert(sNum == iNum );  // true
+alert(sNum === iNum);  // false
+```
+
