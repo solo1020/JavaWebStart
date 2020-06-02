@@ -3,11 +3,27 @@
     <head>
         <meta charset="UTF-8">
         <title>切换图片</title>
+        <style>
+            div{
+                border:1px solid white;
+                width: 500px;
+                height: 350px;
+                margin: center;
+                text-align: center;
+            }
+        </style>
+        <script>
+            function changeImg(){
+                document.getElementById("img1").src="../index/pics/2.jpg";
+            }
+        </script>
     </head>
     <body>
         <div id="">
             <input type="button" value="下一张"
-                onclick="changeImg">
+                onclick="changeImg()">
+
+            <img src="../index/pics/1.jpg" alt="" id="img1">
         </div>
     </body>
 </html>

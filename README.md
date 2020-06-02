@@ -214,15 +214,48 @@ js输出：
 ```
 document.getElementById("demo").innerHTML="My First Javascript";
 ```
-写到文档中：  
+
+写到文档中： 
+--- 
 ```
 document.write("<p>My First Javascript</p>");
 ```
-判断邮箱格式：  
+
+判断邮箱格式： 
+--- 
 ```
 正则：^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/
 .test() 判断 不匹配则提示
 if ( ! ^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(email))
+```
+
+绑定点击事件：
+---
+```
+onclick="function()"
+```
+
+页面加载事件:
+---
+在body 中定义onload="init()" 函数
+
+定时操作：
+---
+setInternal("changeImg()",3000); // 按照指定周期调用函数
+```
+<script>
+        function init(){
+           window.setInternal("changeImg()",3000);
+        }
+        var i = 0;
+        function changeImg(){
+            i++;
+            document.getElementById("img1").src="../index/pics/"+i+".jpg";
+            if (i == 3){ // 最后一张图片重置索引
+                i = 0;
+            } 
+        }
+</script>
 ```
 
 
