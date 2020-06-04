@@ -13,15 +13,48 @@
             }
         </style>
         <script>
+            function init(){
+                // 轮播图
+                // setInterval("changeImg()",3000);
+
+                time = setInterval("showAd()",3000);
+
+            }
+            
+            function showAd(){
+                var ad = document.getElementById("img2");
+                ad.style.display = "block";
+
+                // 清除定时操作
+                clearInterval(time);
+
+                // 设置隐藏图片操作
+                time = setInterval("hiddenImg()",3000);
+
+            }
+
+            function hiddenImg(){
+                var ad = document.getElementById("img2");
+                ad.style.display = "none";
+
+                clearInterval(time);
+            }
+
             function changeImg(){
                 document.getElementById("img1").src="../index/pics/2.jpg";
             }
         </script>
     </head>
-    <body>
+    
+    <!-- 显示轮播图 -->
+    <body onload="init()">
         <div id="">
             <input type="button" value="下一张"
                 onclick="changeImg()">
+            
+            <!-- 定时弹出广告 -->
+            <img src="../index/pics/f001a62f-a49d-4a4d-b56f-2b6908a0002c_g.jpg" alt=""
+                style="display: none;" id="img2">
 
             <img src="../index/pics/1.jpg" alt="" id="img1">
         </div>

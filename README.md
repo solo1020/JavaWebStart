@@ -257,6 +257,12 @@ setInternal("changeImg()",3000); // 按照指定周期调用函数
         }
 </script>
 ```
+定时弹窗：
+----
+通过css 样式display：none属性实现
+```
+document.getElementById("img2").style.display = "block";
+```
 
 
 
