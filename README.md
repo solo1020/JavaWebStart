@@ -264,6 +264,31 @@ setInternal("changeImg()",3000); // 按照指定周期调用函数
 document.getElementById("img2").style.display = "block";
 ```
 
+BOM对象：
+----
+window对象方法：  
+
+alert() setInternal() clearInternal()  
+setTimeout() 在指定的毫秒数后调用函数或表达式  
+confirm("确定是否清空购物车")显示确认按钮对话框  
+prompt("请输入价格") 弹出输入对话框  
+</br>
+history对象方法：  
+back() forward()  
+
+</br>
+Location对象：包含当前url信息  
+```
+<input type="button" value="跳转到history页面" 
+onclick="javascript:location.href='02history.html'">
+```
+
+navigator 浏览器对象
+---
+screen 显示屏幕分辨率等信息  
+---
+
+
 
 
 
