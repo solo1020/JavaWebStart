@@ -287,6 +287,41 @@ navigator 浏览器对象
 ---
 screen 显示屏幕分辨率等信息  
 ---
+</br>
+
+表单校验
+----
+输入框点击聚焦事件：onfocus 并在输入框后添加span标签  
+鼠标离开输入框 离焦事件：onblur  
+```
+<input type="text" placeholder="用户名" 
+width="100%" height="100px" 
+size="45px" name="username"
+id="user" onfocus="showTips('user','用户名必填')" onblur="checkUser('user', '用户名不能为空')"><span id="userspan"></span>
+
+function showTips(id, info){
+        // alert('click user');
+        // document.getElementById("userspan").innerHTML = "<font color='gray'>用户名必填！格式*****</font>";
+        document.getElementById(id+'span').innerHTML = "<font color='gray'>"+info+"*****</font>";
+}
+
+function checkUser(id, info){
+        var userValue = document.getElementById(id).value;
+        if(userValue == ""){
+                document.getElementById(id+'span').innerHTML = "<font color='red'>"+info+"</font>";
+        }else{
+                document.getElementById(id+'span').innerHTML = "";
+        }
+}
+```
+因为存在多个校验代码重复，考虑用参数：  
+```
+
+
+
+```
+
+
 
 
 

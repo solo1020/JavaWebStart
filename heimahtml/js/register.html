@@ -15,20 +15,36 @@
         </style>
 
         <script>
-            function checkForm(){
-                // alert("aa");
-                var username = document.getElementById("user").value;
-                // alert(username);
-                // 判断为空用"" 不用null
-                if(username == ""){
-                    alert("username empty");
-                    return false;
-                }
+            // function checkForm(){
+            //     // alert("aa");
+            //     var username = document.getElementById("user").value;
+            //     // alert(username);
+            //     // 判断为空用"" 不用null
+            //     if(username == ""){
+            //         alert("username empty");
+            //         return false;
+            //     }
 
-                var email = document.getElementById("email").value;
-                if (! ^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(email)){
-                    alert("邮箱格式有误");
-                    return false;
+            //     var email = document.getElementById("email").value;
+            //     if (! ^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(email)){
+            //         alert("邮箱格式有误");
+            //         return false;
+            //     }
+            // }
+
+            function showTips(id,info){
+                // alert('click user');
+                // document.getElementById("userspan").innerHTML = "<font color='gray'>用户名必填！格式*****</font>";
+                document.getElementById(id+'span').innerHTML = "<font color='gray'>"+info+"*****</font>";
+
+            }
+
+            function checkUser(id,info){
+                var userValue = document.getElementById(id).value;
+                if(userValue == ""){
+                    document.getElementById(id+'span').innerHTML = "<font color='red'>"+info+"</font>";
+                }else{
+                    document.getElementById(id+'span').innerHTML = "";
                 }
             }
         </script>
@@ -108,7 +124,7 @@
                                 <input type="text" placeholder="用户名" 
                                 width="100%" height="100px" 
                                 size="45px" name="username"
-                                id="user">
+                                id="user" onfocus="showTips('user','用户名必填！')" onblur="checkUser('user','用户名不能为空')"><span id="userspan"></span>
                             </td>
                         </tr>
                     
