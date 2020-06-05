@@ -301,7 +301,10 @@ id="user" onfocus="showTips('user','用户名必填')" onblur="checkUser('user',
 
 function showTips(id, info){
         // alert('click user');
+        
         // document.getElementById("userspan").innerHTML = "<font color='gray'>用户名必填！格式*****</font>";
+
+        //因为存在多个校验代码重复，考虑用参数：  
         document.getElementById(id+'span').innerHTML = "<font color='gray'>"+info+"*****</font>";
 }
 
@@ -314,7 +317,7 @@ function checkUser(id, info){
         }
 }
 ```
-因为存在多个校验代码重复，考虑用参数：  
+
 ```
 
 
