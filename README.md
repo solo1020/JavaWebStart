@@ -28,12 +28,14 @@ html
 表格 
 ---- 
 ```
-<table>  <th>表头  <tr>行  <td> 单元格 border 
-rowspan 一列跨多行  colspan 一行跨多栏
-cellspacing 单元格之间的间距 cellpadding 单元格内边距
-background=".jpg" 在单元格中设置背景图片,然后再嵌套表格等元素
-效果与 float效果差不多
-align 居中显示
+<table>  <th>表头  <tr>行  <td> 单元格 border   
+rowspan 一列跨多行  colspan 一行跨多栏  
+cellspacing 单元格之间的间距 cellpadding 单元格内边距  
+background=".jpg" 在单元格中设置背景图片,然后再嵌套表格等元素  
+效果与 float效果差不多  
+align 居中显示  
+新标签：  
+<thead> <tbody> <tfoot>
 ```
 
 ```
@@ -180,6 +182,7 @@ alert(typeof 86);    //输出 "number"
 引用类型或Null类型调用typeof 返回 object  
 null被认为是对象的占位符  
 声明的变量未初始化，默认值为 undefined  
+箭头函数 对指定变量 进行一系列操作 即 没有名字的function  
 </br>
 
 全等号和非全等号
@@ -317,15 +320,60 @@ function checkUser(id, info){
         }
 }
 ```
-
+案例：  
+---
+隔行换色表格：  
+确定点击事件 body 里的 onload  
+获取元素 document.getElementById()  
+最终获取tbody里的行数 rows.length  
+js变例for循环  
+获取奇数行和偶数行  
+设置背景颜色 .style.backgroundColor  
+```
+<script>
+        window.onload = function(){
+            var table = document.getElementById("tbl");
+            // 获取tbody里面行数
+            var len = table.tBodies[0].rows.length;
+            for(var i = 0; i < len; i++){
+                if (i % 2 == 0){
+                    // 对偶数行设置背景色
+                    table.tBodies[0].rows[i].style.backgroundColor="pink";
+                }else{
+                    table.tBodies[0].rows[i].style.backgroundColor="gray";
+                }
+            }
+        }
+    </script>
 ```
 
-
-
+表格高亮显示：
+---
+确定点击事件 onmouseover onmouseout 并绑定函数  
+```
+function changeColor(id,flag){
+            if(flag == "over"){
+                document.getElementById(id).style.backgroundColor = "red";
+            }else if (flag == 'out'){
+                document.getElementById(id).style.backgroundColor = "white";
+            }
+            // document.getElementById(id).style.backgroundColor = "red";
+        }
 ```
 
+事件总结：
+---
+onsubmit onclick onload onfocus onblur onmouseover onmouseout  
+onfocus onblur 聚焦离焦事件 用于输入框  
+onclick ondbclick 鼠标单击双击事件  
+onkeydown onkeypress  某个键盘键被按下 用于搜索引擎回车等  
+onchange 用户改变内容时 一般用于二级联动  
 
-
+全选按钮  
+---
+事件onclik 绑定编号前的复选框里面  
+获取复选框：var checkAll = document.getElementById("id")  
+获取复选框状态：checkAll.checked?  
 
 
 
