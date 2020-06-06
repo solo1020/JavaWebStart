@@ -478,6 +478,76 @@ window.onload = function(){
 </br>
 省市二级联动选择案例
 ---
+事件onchange  
+使用二维数组存储省份和城市  
+获取用户选择的省份  传参 this.value  
+遍历数组 获取省份与用户选择的省份比较，如果相同继续遍历该省份下的所有城市  
+创建文本节点和元素节点进行添加操作  
+每次操作前清空第二个下拉选择  
+</br>
+
+select.options 获取下面的选项  
+
+```
+<script>
+            var cities = new Array(3);
+            cities[0] = new Array("武汉","黄冈","襄阳","荆州");
+            cities[1] = new Array("张家界","长沙","郴州","岳阳");
+            cities[2] = new Array("石家庄","邯郸","廊坊","保定");
+            cities[3] = new Array("郑州","洛阳","开封","安阳");
+            function changeCity(val){
+                // alert(value);
+
+                // 获取第二个下拉列表
+                var cityEle = document.getElementById("city");
+                // var optionElement = [];
+
+                // 清空第二个下拉列表中的option内容
+                
+                // 这里是 cityEle.options 是自带属性，不应该是下面设置的optionElement
+                cityEle.options.length= 0;
+                 
+                           
+
+                // 遍历二维数组中的省份
+                for(var i = 0; i < cities.length; i++){
+                    // 比较下标
+                    if(val == i){
+
+                        //遍历用户选择省份下的城市
+                        for(var j = 0; j <cities[i].length; j++){
+                            // alert(cities[i][j]);
+
+                            // 创建城市文本节点
+                            var city = document.createTextNode(cities[i][j]);
+
+                            // // 创建option元素节点
+                            var optionElement = document.createElement("option");
+
+                            // // 将城市文本节点添加到option元素节点
+                            optionElement.appendChild(city);
+
+                            // // 将option元素节点添加到第二个下拉列表
+                            cityEle.appendChild(optionElement);
+                        }
+                    }
+                }
+            }
+        </script>
+
+        <select name="" id="province" onchange="changeCity(this.value)" >
+                <option >--请选择--</option>
+                <option value="0">湖北</option>
+                <option value="1">湖南</option>
+                <option value="2">河南</option>
+                <option value="3">河北</option>
+                
+            </select>
+
+            <select name="" id="city">
+```
+Js全局函数:
+---
 
 
 
