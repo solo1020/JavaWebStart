@@ -203,6 +203,7 @@ start : i = 5;
 ---
 ```
 获取元素和元素的值
+getElementsByName 返回带有指定名称的对象集合
 document.getElementById("id名称");
 document.getElementById("id名称").value;
 ```
@@ -374,6 +375,109 @@ onchange 用户改变内容时 一般用于二级联动
 事件onclik 绑定编号前的复选框里面  
 获取复选框：var checkAll = document.getElementById("id")  
 获取复选框状态：checkAll.checked?  
+getElementsByName 返回带有指定名称的对象集合  
+```
+<script>
+            function checkAll(id){
+                var selectAll = document.getElementById(id);
+                if(selectAll.checked == true){
+                    var checkItems = document.getElementsByName("checkOne");
+                    for(var i = 0; i < checkItems.length; i++){
+                        checkItems[i].checked = true;
+                    }
+                }else{
+                    var checkItems = document.getElementsByName("checkOne");
+                    for(var i = 0; i < checkItems.length; i++){
+                        checkItems[i].checked = false;
+                    }
+                }
+
+            }
+</script>
+
+<table border="1" width="500" height="50" align="center">
+            <thead>
+                <tr>
+                    <td colspan="4">
+                        <input type="button" value="添加" name="" id="">
+                        <input type="button" value="删除" name="" id="">
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><input type="checkbox" name="" 
+                        id="checkAll" onclick="checkAll('checkAll')"></th>
+                    <th>编号</th>
+                    <th>姓名</th>
+                    <th>年龄</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="checkbox" name="checkOne"></td>
+                    <td>1</td>
+                    <td>张三</td>
+                    <td>22</td>
+                </tr>
+            </tbody>
+        </table>
+```
+DOM:
+---
+包含 document element attribute text 都是一种节点node  
+document对象方法：  
+getElementById()  
+getElementsByName()  返回带有指定名称对象的集合  
+getElementByTagName()   返回带有指定标签名的对象集合  
+document.createTextNode() 创建文本节点  
+document.createElement() 创建元素节点  
+
+</br>
+element对象：
+所有html标签都是element  
+element.appendChild() 向元素添加新的子节点，作为最后一个子节点  
+element.firstChild() 返回元素的首个子节点  
+element.getAttribute() 返回元素节点的指定属性值  
+element.innerHTML 设置或返回元素的内容  
+.insertChild() 在指定位置插入子节点  
+.lastChild() 返回元素最后一个子节点  
+.setAttribute() 设置指定属性值  
+</br>
+
+
+attribute 对象：
+---
+常用方法：attr.value 设置或返回属性的值  
+```
+window.onload = function(){
+                document.getElementById('btn').onclick = function(){
+                    // 获取 ul 元素节点
+                    var list = document.getElementById("list");
+                    // 创建城市文本节点
+                    var textCity = document.createTextNode("深圳");
+                    // 创建li元素节点
+                    var li = document.createElement("li");
+                    // 将城市文本节点添加到li元素节点中去
+                    li.appendChild(textCity);
+                    // 将li 元素添加到ul中去
+                    list.appendChild(li);
+                }
+            }
+</script>
+<input type="button" value="添加城市" id="btn">
+        <ul id="list">
+            <li>北京</li>
+            <li>上海</li>
+            <li>广州</li>
+        </ul>
+
+```
+遇到页面响应不是预期 可以打开浏览器f12控制台
+---
+
+</br>
+省市二级联动选择案例
+---
 
 
 
