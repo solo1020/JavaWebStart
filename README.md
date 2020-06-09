@@ -549,6 +549,37 @@ select.options 获取下面的选项
 Js全局函数:
 ---
 
+jQuery:
+=====
+```
+<script type="text/javascript" src="../js/jquery-1.8.3.js"></script>
+        <script>
+            window.onload = function(){
+                alert("zhangsan");
+            }
+
+            // 传统的js加载页面会存在覆盖问题 加载比jquery慢
+            // 在整个页面加载完毕才会加载
+            window.onload = function(){
+                alert("wangwu");
+            }
+
+            // jquery 加载比js快，当整个dom树结构绘制完毕就会加载
+            jQuery(document).ready(function(){
+                alert("李四");
+            });
+
+            // jquery 加载不存在覆盖问题，且是顺序加载
+            $(document).ready(function(){
+                alert("laowang");
+            });
+
+            // 简写方式
+            $(function(){
+                alert("hello jquery");
+            });
+        </script>
+```
 
 
 
