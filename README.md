@@ -581,5 +581,24 @@ jQuery:
         </script>
 ```
 
+开始jQuery
+---
+```
+$(document).ready(function(){
+ 
+   // 开始写 jQuery 代码...
+ 
+});
+
+简洁写法（与以上写法效果相同）:
+$(function(){
+ 
+   // 开始写 jQuery 代码...
+ 
+});
+
+
+```
+
 
 
