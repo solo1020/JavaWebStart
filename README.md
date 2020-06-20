@@ -664,6 +664,124 @@ jQuery定时广告：
                 setInterval(time2);
             }
 ```
+toggle显示或隐藏：
+---
+```
+<script>
+            $(function(){
+                // alert("hello jquery")
+                $("#btn").click(function(){
+                    $("#img1").toggle();
+                });
+            });
+        </script>
+```
+
+jQuery 选择器：(与 css 中一致)
+---
+id 选择器：$("#id")  
+class 选择器：$(".class")  
+
+层级选择器：
+---
+$("body div").css 选择前一元素的所有 子 孙 元素  
+$("body>div") 选择前一元素的下一级元素即 子 不包含孙 元素  
+$("#two+div").css 选择前一id 元素的下一个元素  
+$("#one~div") 选择前一id 元素的所有 兄弟 div  
 
 
+```
+$(function(){
+				$("#btn1").click(function(){
+					// 选择body 中所有的div
+					$("body div").css("background-color", "gold");
+				});
 
+				$("#btn2").click(function(){
+					// 选择body 中下一级的 div 下下一级的不选择
+					$("body>div").css("background-color", "gold");
+				});
+
+				$("#btn3").click(function(){
+					// 选择id 为two的元素的下一个元素
+					$("#two+div").css("background-color", "gold");
+				});
+
+				$("#btn4").click(function(){
+					// 选择id为one的所有兄弟div元素
+					$("#one~div").css("background-color", "gold");
+				});
+			})
+```
+
+过滤选择器：
+---
+查找表格的偶数行：$("tr:odd") 奇数行$("tr:even")  
+
+$("div:contains('John')") 查找包含John的div元素  
+```
+$("#btn1").click(function(){
+					$("body div:first").css("background-color", "red");
+					// 与直接调用first()方法等价
+					// $("body div").first().css("background-color", "red")
+				});
+
+				$("#btn2").click(function(){
+					// 选择最后一个元素
+					$("body div:last").css("background-color","red");
+				});
+
+				$("#btn3").click(function(){
+					// 选择奇数行
+					$("body div:odd").css("background-color","red");
+				});
+
+				$("#btn3").click(function(){
+					// 选择偶数行
+					$("body div:even").css("background-color","red");
+				});
+```
+属性选择器：
+---
+查找所有包含给定属性的元素：  
+$("div[id]")  
+
+查找所有name属性 不是 newsletter的input元素：  
+$("input[name!='newsletter']").attr("checked",true);  
+
+设置属性：  
+.attr("checked",true)  
+.attr({src:"test.jpg", alt:"Test Image"}); 同时设置多个属性  
+
+匹配第一个子元素：  
+$("ul li:first-child")  
+
+匹配所有input元素  
+:input  
+:text 匹配所有单行文本  
+:radio 匹配所有单选按钮  
+:checked 匹配所有被选择的复选框元素  
+$("input:checked")  
+:selected 匹配所有选择的 选项元素  
+$("select option:selected")  
+<br />
+
+为匹配的元素添加指定类名  
+$("p").addClass("selected")  
+
+css属性：
+---
+```
+// 获取tbody下面的偶数行并设置背景颜色
+                // $("tbody>tr:even").css("background-color","yellow");
+                // 获取tbody下面的奇数行并设置背景颜色
+                // $("tbody>tr:odd").css("background-color","green");
+
+                //因为style.css里添加了奇数行class偶数行class的样式颜色
+                //可以直接给 奇数行添加奇数行的class 即可应用该样式表
+                $("tbody tr:even").addClass("even");
+
+                // $("tbody tr:even").removeClass("even");
+
+                $("tbody tr:odd").addClass("odd");
+```
