@@ -600,5 +600,70 @@ $(function(){
 
 ```
 
+jQuery通过id获取元素:
+---
+$("#id")  
+```
+$(function(){
+    $("#btn2").click(function(){
+        $("#span1").html("呵呵哒")
+    });
+});
+```
+
+jQuery对象和DOM对象转换：
+---
+```
+// jQuery对象和DOM对象转换 方式1
+$("#span1").get(0).innerHTML = "jQuery转成DOM对象";
+//方式2
+$("span1")[0].innerHTML = "jQuery转DOM 使用数组方式";
+```
+get(index) 获取指定类型的元素中第几个  
+
+DOM对象转jQuery对象：
+---
+```
+//将DOM对象转换成jQuery对象
+$(spanEle).html("simiada");
+```
+jQuery定时广告：
+---
+```
+            $(function(){
+                // alert("hello jquery");
+                time = setInterval("showAd()",3000);
+            });
+
+            function showAd(){
+                // 获取广告图片并让其显示
+                // $("#img2").show(1000);  
+                // show() 和show(1000)的区别
+                // show(1000) 为将内容1s内显示出来
+                // show()是瞬间显示
+                // 下滑显示
+                // $("#img2").slideDown(5000);
+
+                $("#img2").fadeIn(1000);
+
+                // 清除显示图片定时操作
+                clearInterval(time);
+                // 设置隐藏图片定时操作
+                time2 = setInterval("hiddenAd()", 3000);
+            }
+
+            function hiddenAd(){
+                // 获取广告图片 并让其隐藏
+                // $("#img2").hide();
+
+                // $("#img2").slideUp(4000);
+                
+                $("#img2").fadeOut(1000);
+
+                // 清除
+                setInterval(time2);
+            }
+```
+
 
 

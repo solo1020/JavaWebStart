@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>jquery定时弹出广告</title>
+        <script type="text/javascript" src="../js/jquery-1.8.3.js"></script>
+        <script>
+            $(function(){
+                // alert("hello jquery");
+                time = setInterval("showAd()",3000);
+            });
+
+            function showAd(){
+                // 获取广告图片并让其显示
+                // $("#img2").show(1000);  // show() 和show(1000)的区别
+                                        // show(1000) 为将内容1s内显示出来
+                                        // show()是瞬间显示
+                // 下滑显示
+                // $("#img2").slideDown(5000);
+
+                $("#img2").fadeIn(1000);
+
+                // 清除显示图片定时操作
+                clearInterval(time);
+                // 设置隐藏图片定时操作
+                time2 = setInterval("hiddenAd()", 3000);
+            }
+
+            function hiddenAd(){
+                // 获取广告图片 并让其隐藏
+                // $("#img2").hide();
+
+                // $("#img2").slideUp(4000);
+                
+                $("#img2").fadeOut(1000);
+
+                // 清除
+                setInterval(time2);
+            }
+        </script>
+    </head>
+    <body>
+        <div>
+            <img src="../index/pics/ad2.jpg" width="100%"
+            style="display:none" id="img2">
+        </div>
+
+    </body>
+</html>
