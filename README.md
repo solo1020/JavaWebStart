@@ -785,3 +785,41 @@ css属性：
 
                 $("tbody tr:odd").addClass("odd");
 ```
+
+jQuery遍历数组：
+---
+$("input[name='hobby']").each(function(){});  
+
+$.each([0,1,2], function(i,n){ alert("Item #" + i + ": " + n)});  
+
+```
+$("#checkallbox").click(function(){
+    var isChecked = this.checked;
+    $("input[name='hobby']").each(function(){
+        this.checked = isChecked;
+    });
+});
+```
+jQuery 向每个匹配的元素里追加内容：  
+$("p").append("<b>Hello</b>");  
+
+jQuery 把所有指定的元素/内容 添加到..  
+$("p").appendTo("div") 将所有段落添加到div中  
+
+jQuery删除：
+---
+$("p").empty();  删除匹配元素集合中所有子节点  
+$("p").remove(); 从DOM中删除所有匹配的元素p  
+
+
+
+
+使用jQuery 为标签添加属性或样式  
+---
+
+为指定标签添加子标签或兄弟标签  
+---
+
+给标签绑定事件  
+---
+
