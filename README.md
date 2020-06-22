@@ -823,3 +823,55 @@ $("p").remove(); 从DOM中删除所有匹配的元素p
 给标签绑定事件  
 ---
 
+jQuery实现省市联动：
+---
+```
+<script>
+            $(function(){
+                // alert("hello jquery")
+                $(function(){
+                    var cities = new Array(3);
+                    cities[0] = new Array("武汉市","黄冈市","襄阳市","荆州市");
+                    cities[1] = new Array("长沙市","郴州市","株洲市","岳阳市");
+                    cities[2] = new Array("石家庄市","邯郸市","廊坊市","保定市");
+                    cities[3] = new Array("郑州市","洛阳市","开封市","安阳市");
+                    $("#province").change(function(){
+
+                        // 每次的点击事件触发时 应当清除第二个下拉列表
+                        $("#city").empty();
+
+                        var val = this.value;
+                        $.each(cities,function(i,n){
+                            // alert(i + ":" + n);
+                            if(i == val){
+                                $.each(cities[i],function(h,m){
+                                    // alert(m);
+                                    // 创建城市节点
+                                    var textNode = document.createTextNode(m);
+                                    //创建option 元素节点
+                                    var opEle = document.createElement("option");
+                                    // 将城市文本系欸DNA添加到option 元素节点中去
+                                    // opEle是DOM 元素 append却是jQuery方法
+                                    // 须使用$(opEle)
+                                    $(opEle).append(textNode);
+                                    // 将option元素节点追加到第二个下拉列表中
+                                    $(opEle).appendTo($("#city"));
+                                })
+                            }
+                        });
+                    });
+                });
+            });
+</script>
+
+<select onchange="changeCity(this.value)" id="province">
+            <option>--请选择--</option>
+            <option value="0">湖北</option>
+            <option value="1">湖南</option>
+            <option value="2">河北</option>
+            <option value="3">河南</option>
+        </select>
+        <select id="city">
+            
+        </select>
+```
