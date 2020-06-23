@@ -14,10 +14,20 @@
                     // attr方法只在 jQuery 1.8.3及以下有效 以上使用prop
                     $("tbody input[checkbox]").attr("checked",this.checked);
                 });
+
+                $("#btn1").click(function(){
+                    $("#p1").appendTo($("div"));
+                });
             });
         </script>
     </head>
     <body>
+
+        <button id="btn1">appendTo</button>
+        <p id="p1">段落</p>
+        <div>1</div>
+        <div>2</div>
+
         <table border="1" width="500" height="50" align="center">
             <thead>
                 <tr>

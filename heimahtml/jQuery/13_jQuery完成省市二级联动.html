@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>jquery入门</title>
+        <title>jquery省市二级联动</title>
         <link rel="stylesheet" href="../css/style.css">
         <script type="text/javascript" src="../js/jquery-1.8.3.js"></script>
         <script>
@@ -19,7 +19,7 @@
                         // 每次的点击事件触发时 应当清除第二个下拉列表
                         $("#city").empty();
 
-                        var val = this.value;
+                        var val = this.value;   // var val = $(this).val()
                         $.each(cities,function(i,n){
                             // alert(i + ":" + n);
                             if(i == val){

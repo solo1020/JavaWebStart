@@ -804,6 +804,9 @@ jQuery 向每个匹配的元素里追加内容：
 $("p").append("<b>Hello</b>");  
 
 jQuery 把所有指定的元素/内容 添加到..  
+appendTo 实际效果是 剪切到...
+---
+<hr>
 $("p").appendTo("div") 将所有段落添加到div中  
 
 jQuery删除：
@@ -875,3 +878,67 @@ jQuery实现省市联动：
             
         </select>
 ```
+jQuery属性操作：
+---
+val() 获取value属性的值  
+val(...) 设置value属性的值  
+html() 获取html代码，如果有标签一并获得  
+html(..) 设置html代码  
+text() 获得文本，如果有标签，忽略  
+text(...) 设置文本，如果含有标签不进行解析，原样输出 
+```
+$("#province").change(function(){
+
+                        // 每次的点击事件触发时 应当清除第二个下拉列表
+                        $("#city").empty();
+
+                        var val = this.value;   
+                        // var val = $(this).val()
+```
+this.value 等价 $(this).val()  
+
+下拉左右箭头选择案例：  
+```
+<script>
+            $(function(){
+                // alert("hello jquery")
+                //确定点击事件onclick
+
+                // 获取左侧下拉列表被选中的option
+
+                //将获取到的option添加到右侧的下拉列表 append
+
+                $("#selectOneToRight").click(function(){
+                    $("#left option:selected").appendTo($("#right"));
+                });
+
+                $("#leftAllToRight").click(function(){
+                    $("#left option").appendTo($("#right"));
+                });
+
+                $("#left option").dblclick(function(){
+                    $("#left option:selected").appendTo($("#right"));
+                });
+                
+            });
+        </script>
+
+        <select multiple="multiple" style="width: 100px;height: 200px;" id="left">
+							<option>IPhone6s</option>
+							<option>小米4</option>
+							<option>锤子T2</option>
+                        </select>
+                        
+						<p><a href="#" style="padding-left: 20px;" id="selectOneToRight">&gt;&gt;</a></p>
+						<p><a href="#" style="padding-left: 20px;" id="selectAllToRight">&gt;&gt;&gt;</a></p>
+
+        <select multiple="multiple" style="width: 100px;height: 200px;" id="right">
+							<option>三星Note3</option>
+							<option>华为6s</option>
+						</select>
+						<p><a href="#" >&lt;&lt;</a></p>
+						<p><a href="#" >&lt;&lt;&lt;</a></p>
+```
+jQuery事件总结：
+---
+
