@@ -941,4 +941,59 @@ this.value 等价 $(this).val()
 ```
 jQuery事件总结：
 ---
+事件操作的元素需要确保在操作前已经完成加载  
+事件绑定：点击显示或隐藏  
+```
+$("#panel h5.head").bind("click", function() {
+					var $content = $(this).next();
+					if($content.is(":visible")) {
+						$content.hide();
+					} else {
+						$content.show();
+					}
+				})
+
+
+<body>
+		<div id="panel">
+			<h5 class="head">什么是jQuery?</h5>
+			<div class="content">
+				jQuery是继Prototype之后又一个优秀的JavaScript库，它是一个由 John Resig 创建于2006年1月的开源项目。jQuery凭借简洁的语法和跨平台的兼容性，极大地简化了JavaScript开发人员遍历HTML文档、操作DOM、处理事件、执行动画和开发Ajax。它独特而又优雅的代码风格改变了JavaScript程序员的设计思路和编写程序的方式。
+			</div>
+		</div>
+	</body>
+```
+#panel 选中id panel  
+h5.head 选中class 为head的 h5标签  
+#panel h5.head 选中 id为panel 的子元素中 class 为head的h5标签
+bind() 绑定到指定的事件  
+$(this).next this是当前的h5标签 next是同级的下一个元素  
+$content.is(":visible") 判断元素是否可见  
+</br>
+鼠标滑过显示或隐藏：  
+```
+                $(".head").mouseover(function() {
+					$(this).next().show();
+				}).mouseout(function() {
+					$(this).next().hide();
+				})
+
+<body>
+		<div id="panel">
+			<h5 class="head">什么是jQuery?</h5>
+			<div class="content">
+				jQuery是继Prototype之后又一个优秀的JavaScript库，它是一个由 John Resig 创建于2006年1月的开源项目。jQuery凭借简洁的语法和跨平台的兼容性，极大地简化了JavaScript开发人员遍历HTML文档、操作DOM、处理事件、执行动画和开发Ajax。它独特而又优雅的代码风格改变了JavaScript程序员的设计思路和编写程序的方式。
+			</div>
+		</div>
+	</body>
+```
+</br>
+toggle事件：  
+```
+                $(".head").toggle(function() {
+					$(this).next().hide();
+				}, function() {
+					$(this).next().show();
+				})
+```
 
