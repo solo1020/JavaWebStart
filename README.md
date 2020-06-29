@@ -997,3 +997,94 @@ toggle事件：
 				})
 ```
 
+表单校验 validate插件
+---
+语法：
+```
+$(#id).validate({
+    rules:{
+        字段名：校验器,
+        字段名：校验器
+    },
+    messages:{}
+});
+```
+实例：
+```
+<style>
+            label.success{
+				background:url(img/checked.gif) no-repeat 10px 3px;
+				padding-left: 30px;
+			}
+
+            label.error{
+				background:url(img/unchecked.gif) no-repeat 10px 3px;
+				padding-left: 30px;
+				font-family:georgia;
+				font-size: 15px;
+				font-style: normal;
+				color: red;
+			}
+        </style>
+        <script type="text/javascript" src="../js/jquery-1.8.3.js"></script>
+        <script src="../js/jquery.validate.min.js"></script>
+        <script src="../js/messages_zh.js"></script>
+        <script>
+            $(function(){
+                // alert("hello jquery")
+                $("#checkForm").validate({
+                    rules:{
+                        username:{
+                            required:true,
+                            minlength:10
+                        },
+                        password:{
+                            required:true,
+                            digits:true,
+                            minlength:6
+                        },
+                        repassword:{
+                            required:true,
+                            equalTo:"[name='password']"
+                        },
+                        email:{
+                            required:true,
+                            email:true
+                        },
+                        sex:{
+                            required:true
+                        }
+                    },
+                    message:{
+                        username:{
+                            required:"用户名不能为空",
+                            minlength:"用户名不得少于10位"
+                        },
+                        password:{
+                            required:"密码不能为空",
+                            digits:"密码必须是整数",
+                            minlength:"密码不得少于6位"
+                        },
+                    },
+                    errorElement: "label", //用来创建错误提示信息标签,validate插件默认的就是label
+					success: function(label) { //验证成功后的执行的回调函数
+						//label指向上面那个错误提示信息标签label
+						label.text(" ") //清空错误提示消息
+							.addClass("success"); //加上自定义的success类
+					}
+                });
+            });
+        </script>
+
+
+        <form action="#" id="checkForm">
+            用户名：<input type="text" name="username"><br/>
+            密码：<input type="password" name="password"><br/>
+            确认密码：<input type="password" name="repassword"><br/>
+            邮箱：<input type="text" name="email" size="35px" id="email"/><br/>
+            性别<input type="radio" name="sex" value="男"/>男
+			<input type="radio" name="sex" value="女"/>女<label for="sex" class="error" style="display: none;"></label><br/>
+            <input type="submit">
+        </form>
+```
+equalTo用法：equalTo:"[name='password']"  
