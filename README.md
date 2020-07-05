@@ -1088,3 +1088,342 @@ $(#id).validate({
         </form>
 ```
 equalTo用法：equalTo:"[name='password']"  
+
+
+MYSQL
+====
+数据库操作： 
+----
+net stop mysql  net start mysql  
+
+开启事务：<br/>
+start transaction;  
+delete from tbl_user;  
+roll back;  
+
+
+创建数据库：create database 库名;  
+create database 库名 character set 编码;  
+show create database 库名;  
+
+show databases;  
+drop database 库名;  
+
+使用库 use 库名;  
+查看正在使用的库 select database();  
+
+表操作：
+---
+show tables; 
+
+创建table:  
+```
+create table 表名(
+    字段名 类型(长度) [可选约束],
+    字段名 类型(长度) [可选约束]
+)
+```
+单表约束：  
+主键约束 primary key 要求被修饰的字段 唯一 且 非空  
+唯一约束 unique 要求被修饰的字段 唯一  
+非空约束  not null 非空  
+auto_increment 自增  
+```
+create table user(
+    uid int(32) primary auto_increment,
+    uname varchar(32),
+    upassword varchar(32)
+);
+```
+查看表结构：desc 表名;  
+```
+mysql> desc VIEWS;
++-----------+-------------+------+-----+---------+----------------+
+| Field     | Type        | Null | Key | Default | Extra          |
++-----------+-------------+------+-----+---------+----------------+
+| uid       | int(32)     | NO   | PRI | NULL    | auto_increment |
+| uname     | varchar(32) | YES  |     | NULL    |                |
+| upassword | varchar(32) | YES  |     | NULL    |                |
++-----------+-------------+------+-----+---------+----------------+
+```
+drop 表名;  
+修改表：  
+添加一列 alter table 表名 字段名 类型(长度) [约束]  
+```
+mysql> alter table user add uinfo varchar(32) not null;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc user;
++-----------+-------------+------+-----+---------+----------------+
+| Field     | Type        | Null | Key | Default | Extra          |
++-----------+-------------+------+-----+---------+----------------+
+| uid       | int(32)     | NO   | PRI | NULL    | auto_increment |
+| uname     | varchar(32) | YES  |     | NULL    |                |
+| upassword | varchar(32) | YES  |     | NULL    |                |
+| uinfo     | varchar(32) | NO   |     | NULL    |                |
++-----------+-------------+------+-----+---------+----------------+
+```
+修改列的属性长度、约束  
+alter table 表名 modify 字段名 类型(长度) [约束]  
+```
+mysql>alter table user modify uinfo varchar(100) null;
+Query OK, 0 rows affected (0.00 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc user;
++-----------+--------------+------+-----+---------+----------------+
+| Field     | Type         | Null | Key | Default | Extra          |
++-----------+--------------+------+-----+---------+----------------+
+| uid       | int(32)      | NO   | PRI | NULL    | auto_increment |
+| uname     | varchar(32)  | YES  |     | NULL    |                |
+| upassword | varchar(32)  | YES  |     | NULL    |                |
+| uinfo     | varchar(100) | YES  |     | NULL    |                |
++-----------+--------------+------+-----+---------+----------------+
+```
+修改列名：  
+alter table 表名 change 旧列名 新列名 类型(长度) [约束]  
+```
+mysql> alter table user change uinfo info varchar(32) not null;
+Query OK, 0 rows affected (0.00 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc user;
++-----------+-------------+------+-----+---------+----------------+
+| Field     | Type        | Null | Key | Default | Extra          |
++-----------+-------------+------+-----+---------+----------------+
+| uid       | int(32)     | NO   | PRI | NULL    | auto_increment |
+| uname     | varchar(32) | YES  |     | NULL    |                |
+| upassword | varchar(32) | YES  |     | NULL    |                |
+| info      | varchar(32) | NO   |     | NULL    |                |
++-----------+-------------+------+-----+---------+----------------+
+```
+删除列:  
+alter 表名 table drop 列名  
+```
+mysql> alter table user drop info;
+Query OK, 0 rows affected (0.00 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc user;
++-----------+-------------+------+-----+---------+----------------+
+| Field     | Type        | Null | Key | Default | Extra          |
++-----------+-------------+------+-----+---------+----------------+
+| uid       | int(32)     | NO   | PRI | NULL    | auto_increment |
+| uname     | varchar(32) | YES  |     | NULL    |                |
+| upassword | varchar(32) | YES  |     | NULL    |                |
++-----------+-------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+```
+修改表名：  
+rename table 表名 to 新表名  
+修改表的字符集：  
+alter table 表名 character set 编码  
+查看表编码 show create table tbl_user;  
+
+DML 数据操作
+---
+insert into 表名 (列名1, 列名2, 列名3...) values (值1, 值2, 值3...);  只插入某些列 即必填字段  
+insert into 表名 values (值1, 值2, 值3...); 插入所有字段  
+值为字符串或日期 需要加 单引号  
+<br/>
+
+```
+insert into tbl_user(uid,uname,upassword) values(null, 'zhangsan', '123');
+```
+插入数据中文乱码问题：  
+直接修改数据库安装目录里的my.ini文件  default-character-set=utf-8  
+方法2： set names gbk;  
+更新 update 表名 set 字段=value where 字段=value2  
+删除 delete from 表名 where 字段=value;  
+面试题
+===
+delete 和 truncat 区别：  
+delete 是一条一条删除 配合事务，可以找回删除的数据  
+truncat 删除 是将整个表删除，再创建一个一模一样的空表 删除后无法找回  且自增主键会重置  
+
+<br/>
+
+
+查询操作：  
+---
+select [distinct] * 列名, 列名 from 表名 [where 条件]  
+使用别名：  
+select pname as p from product  
+去重：  
+select distinct(price) from product  
+将所有商品的价格+10 进行显示：  
+select pname, price+10 from product;  
+select * from tbl where price >= 60;
+select * from tbl where pname like '%新%';  
+select * from tbl where pid in (2,4,6);  
+<br/>
+排序：  order by 字段 desc 反序  
+聚合: 聚合函数不统计null值  
+sum() avg() max() min()  count()计数  
+select sum(price) from tbl;  
+select count(*) from tbl;  
+
+<br/>
+分组：  
+alter table product add cid varchar(32);  
+初始化数据： update product set cid='1';  
+update product set cid='2' where pid in (5,6,7);  
+根据cid 分组：  
+select cid , count(*) from tbl group by cid;  
+select avg(price) from product group by cid having avg(price) > 2000;  
+
+
+
+group by 后不能再用 where 使用 having
+---
+order by 必须放在最后面  
+---
+<br/>
+
+limit关键字查询：  
+limit(1,2)  1 表示从1开始  2表示每页显示条数  
+select * from tbl limit 6,3;  
+
+
+JDBC
+====
+一般不使用硬编码创建驱动  一般使用Class.forName() 加载指定类,在类的静态代码块中 注册驱动  
+
+获取连接：  
+DriverManager.getConnection(url, username, password)  
+Statement st = con.createStatement();  
+
+<br/>
+jdbc:mysql://localhost:3306/mydatabase1  
+jdbc:mysql://localhost:3306/mydatabase1?useUnicode=true&characterEncoding=UTF8  
+mysql中utf-8编码 为 UTF8  
+方法：  
+int executeUpdate(String sql);  //DML  
+ResultSet executeQuery(String sql);  
+关闭资源：  
+resultSet.close();  
+statement.close();  
+connection.close();  
+<br/> 
+```
+public void login(String username, String password) throws ClassNotFoundException, SQLException {
+		// 1.注册驱动
+		Class.forName("com.mysql.jdbc.Driver");
+		// 2.获取连接
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/web08", "root", "root");
+		// 3.创建执行sql语句的对象
+		Statement stmt = conn.createStatement();
+		// 4.书写一个sql语句
+		String sql = "select * from tbl_user where " + "uname='" + username + "' and upassword='" + password + "'";
+		// 5.执行sql语句
+		ResultSet rs = stmt.executeQuery(sql);
+		// 6.对结果集进行处理
+		if (rs.next()) {
+			System.out.println("恭喜您，" + username + ",登录成功!");
+			System.out.println(sql);
+		} else {
+			System.out.println("账号或密码错误!");
+		}
+		if (rs != null)
+			rs.close();
+		if (stmt != null)
+			stmt.close();
+		if (conn != null)
+			conn.close();
+	}
+
+
+    @Test
+	public void testLogin() {
+		try {
+			login1("zs' or 'zs", "zs");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+```
+SQL攻击：  
+---
+过滤用户输入是否包含非法字符  
+分步验证  先使用用户名来查询用户，如果查到，再比较密码  
+使用 PreparedStatement  
+```
+public void login1(String username, String password) throws ClassNotFoundException, SQLException {
+		// 1.注册驱动
+		Class.forName("com.mysql.jdbc.Driver");
+		// 2.获取连接
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/web08", "root", "root");
+		// 3.编写sql语句
+		String sql = "select * from tbl_user where uname=? and upassword=?";
+		// 4.创建预处理对象
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		// 5.设置参数(给占位符)
+		pstmt.setString(1, username);
+		pstmt.setString(2, password);
+		// 6.执行查询操作
+		ResultSet rs = pstmt.executeQuery();
+		// 7.对结果集进行处理
+		if (rs.next()) {
+			System.out.println("恭喜您，" + username + ",登录成功!");
+			System.out.println(sql);
+		} else {
+			System.out.println("账号或密码错误!");
+		}
+		if (rs != null)
+			rs.close();
+		if (pstmt != null)
+			pstmt.close();
+		if (conn != null)
+			conn.close();
+	}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
