@@ -1231,11 +1231,14 @@ insert into 表名 values (值1, 值2, 值3...); 插入所有字段
 ```
 insert into tbl_user(uid,uname,upassword) values(null, 'zhangsan', '123');
 ```
-插入数据中文乱码问题：  
-直接修改数据库安装目录里的my.ini文件  default-character-set=utf-8  
-方法2： set names gbk;  
-更新 update 表名 set 字段=value where 字段=value2  
-删除 delete from 表名 where 字段=value;  
+##### 插入数据中文乱码问题：  
+1. 直接修改数据库安装目录里的my.ini文件  default-character-set=utf-8    
+2. 方法2： set names gbk;    
+更新 update 表名 set 字段=value where 字段=value2     
+删除 delete from 表名 where 字段=value;     
+
+*********
+
 面试题
 ===
 delete 和 truncat 区别：  
@@ -1391,8 +1394,8 @@ public void login1(String username, String password) throws ClassNotFoundExcepti
 主表的主键 被从表 引用，主表和从表是一对多的关系  
 alter table 从表 add [constraint] [外键名称] foreign key 从表外键字段名 references 主表 主表的主键;  
 外键名称用来删除外键约束使用， 一般建议 _fk 结尾  
-删除外键： 
-alter table 从表 drop foreign key 外键名称  
+删除外键：   
+alter table 从表 drop foreign key 外键名称    
 
 *****
 
@@ -1429,21 +1432,21 @@ select * from category left join product on cid=category_id;
 右外连接：右表全部及两个表的交集  
 
 insert into category values('c004',null);  
-insert into product values('p010', '海飞丝', '0.5', null);  
-
-select * from category left join product on cid=category_id; 
-select * from category right join product on cid=category_id; 
+insert into product values('p010', '海飞丝', '0.5', null);    
+   
+select * from category left join product on cid=category_id;   
+select * from category right join product on cid=category_id;   
 
 *****
 
-子查询：将一条select语句的结果作为另一条select 语法(查询条件,查询结果,表等)的一部分  
+子查询：将一条select语句的结果作为另一条select 语法(查询条件,查询结果,表等)的一部分    
 
 选中化妆品产品：  
 
 select * from product where category_id=(select cid from category where cname='化妆品');
 
 JDBC工具类抽取：  
-获取连接和释放资源 代码重复  
+获取连接和释放资源 代码重复    
 ```
 Connection conn = null;
         try {
@@ -1457,7 +1460,10 @@ Connection conn = null;
         return conn;
 ```
 *****
-#####JDBC查询：  
+
+JDBC查询： 
+---- 
+
 *****
 ```
 con = JDBCUtils_V1.getConnection();
@@ -1478,7 +1484,7 @@ url=jdbc:mysql://localhost:3306/web06_1?useUnicode=true&    characterEncoding=ut
 username=root    
 password=******    
   
-使用ResourceBundel对象 加载配置文件：   
+1. 使用ResourceBundel对象 加载配置文件：   
 ```
 private static String driver;
     private static String url;
@@ -1494,7 +1500,7 @@ static {
     }
 ```
 
-类加载器获取配置文件输入流：  
+2. 类加载器获取配置文件输入流：  
 ```
 private static String driver;
     private static String url;
@@ -1521,6 +1527,8 @@ private static String driver;
 ```
 
 JDBC插入数据：  
+----
+
 ```
 public void testAdd(){
         Connection con = null;
@@ -1547,6 +1555,8 @@ public void testAdd(){
 ```
 
 JDBC删除数据：  
+-----
+
 ```
 public void testDeleteById(){
         Connection con = null;
@@ -1572,6 +1582,8 @@ public void testDeleteById(){
 ```
 
 JDBC更新数据：  
+-------
+
 ```
 public void testUpdateById(){
         Connection con = null;
@@ -1598,6 +1610,9 @@ public void testUpdateById(){
 ```
 
 JDBC查询数据：  
+---------
+
+
 ```
 public void testFindUserById() {
         Connection con = null;
@@ -1623,14 +1638,20 @@ public void testFindUserById() {
         }
     }
 ```
+
 数据库连接池：  
-实现接口：javax.sql.DataSource  
-手动创建linkedList容器存储数据库连接对象  
-实现：  
-调用连接对象connection.close()方法也能将其归还到连接池中：  
-方法：  
-继承  
+------
+
+实现接口：javax.sql.DataSource    
+手动创建linkedList容器存储数据库连接对象    
+实现：    
+调用连接对象connection.close()方法也能将其归还到连接池中：    
+方法： 
+      
+继承    
+      
 装饰者设计模式：  
+      
 专门用于增强方法，必须有接口，需要将接口的方法全部实现  
 
 动态代理：在运行时动态创建代理类，前提时有接口，使用反射技术  
@@ -1692,7 +1713,8 @@ public class MyConnection implements Connection {
 }
 
 ```
-此时的连接池类：  
+此时的连接池类：
+----------  
 ```
 package JDBC;
 
@@ -1809,7 +1831,10 @@ public class MyDataSource_1 implements DataSource {
 }
 
 ```
-测试：  
+
+测试类：  
+-----
+
 ```
 /**
  * @ClassName TestMyDataSource
@@ -1876,7 +1901,11 @@ public class TestMyDataSource {
 
 }
 ```
+
 JDBCUtils工具类：
+----------
+
+
 ```
 package JDBC;
 
@@ -1963,7 +1992,10 @@ public class JDBCUtils_V3 {
 ```
 连接池：C3P0 DBCP
 =====
-###注意配置文件要放在src目录下  
+
+注意配置文件要放在src目录下   
+----
+
 ```
 public class DBCPUtils {
     private static DataSource dataSource;
@@ -1997,18 +2029,18 @@ public class DBCPUtils {
 ```
 DBUtils 连接池和 JavaBean
 ====
-JavaBean的类放在 domain下面  
+JavaBean的类放在 domain下面 
+    
 特点：
 ---
 QueryRunner 提供对sql语句操作的API 
 QueryRunner(DataSource ds)  提供数据源连接池，DBUtils底层自动维护连接Connection  
 update(String sql, Object... params) 执行更新数据  
 query(String sql, ResultSetHandle<T> rsh, Object...params) 执行查询  
-
-
-
+      
 ResultSetHandle 接口 用于定义select操作后 怎样封装结果集  
 BeanHandle 将结果集中第一条记录封装到一直指定的javaBean中  
+
 ```
 QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
 
@@ -2035,7 +2067,10 @@ for (User user : users){
 ```
 
 
-MapListHandle 将结果集中每一条揭露封装到Map<String, Object> 集合中，key是字段名称(列名),value是字段值,再将这些map封装到List集合中  
+MapListHandle 
+----------
+            
+将结果集中每一条结果封装到Map<String, Object> 集合中，key是字段名称(列名),value是字段值,再将这些map封装到List集合中    
 ```
 QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
 
@@ -2047,7 +2082,10 @@ for (Map<String, Object> map : list){
 }
 ```
 
-ScalarHandle 用于单数据，如 select count(*) from tbl_user 等操作  
+ScalarHandle
+------
+用于单数据，如 select count(*) from tbl_user 等操作     
+
 ```
 QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
 
@@ -2058,8 +2096,10 @@ Long count = (Long) qr.query(sql, new ScalarHandler());
 System.out.println("There are " + count + " uesrs");
 ```
 
-ColumnListHandle(String columnName) :  将结果集中指定列的字段值封装到一个List集合中  
-按列查询 不指定列的情况默认返回uid  
+ColumnListHandle(String columnName)
+-----------
+将结果集中指定列的字段值封装到一个List集合中    
+按列查询 不指定列的情况默认返回uid    
 ```
 QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
 
@@ -2078,21 +2118,25 @@ lisi
 吕布3
 余淮
 ```
-JavaBean封装到List集合中  
-ScalarHandle 用于单数据，例如 select count(*) from 表操作  
-DbUtils类 定义关闭资源和事务处理的方法  
+* JavaBean封装到List集合中  
+* ScalarHandle 用于单数据，例如 select count(*) from 表操作  
+* DbUtils类 定义关闭资源和事务处理的方法  
 
 XML:
 ======
 区分大小写：  
 xml属性值必须加 引号  
 特殊字符：  
+```
 < 字符放在xml元素中会发生错误 需要进行替换：  
 小于： < ：&lt;  
 大于： > ：&gt;  
 &amp;  :  &  和  
 &apos; :  '  单引号  
 &quot; :  "  双引号  
+```
+
+******
 
 ```
 <note date="08/08/2008">
@@ -2120,23 +2164,25 @@ xml属性值必须加 引号
 
 CDATA转义代码块：
 ----
+```
 <![CDATA[ code here ]]>  
+```
 其中内容不能包含"]]>" 即结束定界符  
 
 DTD文档类型定义：
-===
+---------
 规定xml文档中的元素名称，子元素的名称和顺序，元素的属性  
 元素
 ---
 ```
 <!ELEMENT web-app (servlet*, servlet-mapping*, welcome-file-list?)>
 ```
-servlet 子标签个数任意0~多次  
-servlet-mapping 子标签个数任意0~多次  
-welcome-file-list 子标签最多出现一次 或0 次  
-子标签名+  即该子标签最少出现一次  
-子标签1, 子标签2, 子标签3 即子标签必须按指定 1,2,3的顺序  
-子标签1 | 子标签2 即子标签只能为1 或者 2  
+servlet 子标签个数任意0~多次    
+servlet-mapping 子标签个数任意0~多次    
+welcome-file-list 子标签最多出现一次 或0 次    
+子标签名+  即该子标签最少出现一次    
+子标签1, 子标签2, 子标签3 即子标签必须按指定 1,2,3的顺序    
+子标签1 | 子标签2 即子标签只能为1 或者 2    
 
 属性：
 ---
@@ -2145,7 +2191,6 @@ welcome-file-list 子标签最多出现一次 或0 次
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-	传智播客DTD教学实例文档。
 	模拟servlet2.3规范，如果开发人员需要在xml使用当前DTD约束，必须包括DOCTYPE。
 	格式如下：
 	<!DOCTYPE web-app SYSTEM "web-app_2_3.dtd">
@@ -2164,7 +2209,9 @@ welcome-file-list 子标签最多出现一次 或0 次
 
 <!ATTLIST web-app version CDATA #IMPLIED>
 ```
-文档：  
+
+文档： 
+
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE web-app SYSTEM "web-app_2_3.dtd">
@@ -2261,12 +2308,12 @@ public class TestDom4j {
 可以在运行时对类class 构造方法Constructor 普通方法method 字段Field(域)进行操作  
 获取Class对象的方式：
 ---
-1.通过对象的 getClass()方法  
+1. 通过对象的 getClass()方法  
 Person p = new Person();  
 Class cls = p.getClass();  
-2.通过类的class属性：  
+2. 通过类的class属性：  
 Class cls = Person.class;  
-3.通过Class类的静态方法forName():  
+3. 通过Class类的静态方法forName():  
 Class cls = Class.forName("com.android.bean.Person");  
 
 常用方法：
@@ -2424,7 +2471,10 @@ Tomcat
 端口被占用：  
 目录结构：  
 ---
-项目根目录
+
+项目根目录   
+-----
+```
 |  
 |----html,jsp, css,js文件  
 |  
@@ -2433,6 +2483,8 @@ Tomcat
         |---classes 目录 Java类     
         |---lib目录 Java依赖jar包  
         |---web.xml 文件 web应用配置文件  
+
+```
 注意事项：
 ---
 WEB-INF目录受保护，外界不能直接访问  
@@ -2441,16 +2493,16 @@ WEB-INF目录受保护，外界不能直接访问
 IDEA中Run --> Edit configurations -->选中tomcat --> Deloyment(发布)  -->  
 设置发布配置 --> 下方Application context 即是 默认的浏览器url路径  
 
-####tomcat 生成的url路径末尾带 / 问题没找到解决方法：
+#### tomcat 生成的url路径末尾带 / 问题没找到解决方法：
 
 Servlet
 ====
 servlet filter listener  
 
 servlet 重写方法：  
-init():servlet对象创建的时候执行  
-service(ServletRequest servletRequest, ServletResponse servletResponse)：每次请求都会执行   
-destroy()  servlet对象销毁的时候执行
+* init():servlet对象创建的时候执行  
+* service(ServletRequest servletRequest, ServletResponse servletResponse)：每次请求都会执行   
+* destroy()  servlet对象销毁的时候执行
 
 Tomcat容器会解析请求地址，自动创建servlet对象  
 并创建代表请求的request对象和代表响应的response对象  
@@ -2464,16 +2516,20 @@ url-pattern配置方式：
 不能同时使用： /aaa/bbb/*.abcd  
 
 在服务器启动时创建servlet对象-->  
-<!--        3 代表优先级 数字越小 优先级越高-->  
-<!--        <load-on-startup>3</load-on-startup>-->  
+3 代表优先级 数字越小 优先级越高
+```
+<load-on-startup>3</load-on-startup>-->  
+```
 
 默认servlet:   
+------
+
 在url-pattern中配置 / 代表当前servlet为默认的servlet  
 当浏览器地址栏所有的资源的都无法找到匹配的servlet的时候，默认的负责处理  
 如果不配置自己的 默认servlet， 那么tomcat在项目的web.xml中查找完毕还没找到匹配的资源，则会去 conf中对tomcat的 web.xml进行查找，一般其中有配置一个默认的servlet,该servlet会查找项目目录中的静态资源，如果有则显示，没有则 报404  
 如果配置了自己默认的servlet 但是又没有找到资源，就会报404  
 
-###案例demo 登录：
+### 案例demo 登录：
 页面：
 ---
 ```
@@ -2553,7 +2609,7 @@ url-pattern配置方式：
 </html>
 
 ```
-###注意事项：
+#### 注意事项：
 1. idea 项目默认url路径设置：run-edit-configuration 设置 deployment 里面的Application context 为空或者 /  
 2. 资源文件放在项目的web根目录下面，不能放在WEB-INFO里  
 3. idea自带的tomcat运行机制导致在webapps下找不到发布的工程文件夹，跟eclipse不一样  
@@ -2612,7 +2668,7 @@ ServletContext.getAttribute(name)
 ServletContext.removeAttribute(name)  
 
 
-###案例demo 统计访问次数：
+###  案例demo 统计访问次数：
 使用 ServletContext.setAttribute(name,valueObject)  
 和 setAttribute 方法  
 先在init()方法中 初始化count变量并存储到ServletContext域  
@@ -2735,7 +2791,7 @@ web.xml示例:
 </web-app>
 ```
 
-###HttpServletResponse  
+###  HttpServletResponse  
 
 
 
