@@ -1242,7 +1242,7 @@ delete 和 truncat 区别：
 delete 是一条一条删除 配合事务，可以找回删除的数据  
 truncat 删除 是将整个表删除，再创建一个一模一样的空表 删除后无法找回  且自增主键会重置  
 
-<br/>
+*****
 
 
 查询操作：  
@@ -1257,34 +1257,37 @@ select pname, price+10 from product;
 select * from tbl where price >= 60;
 select * from tbl where pname like '%新%';  
 select * from tbl where pid in (2,4,6);  
-<br/>
+
+
 排序：  order by 字段 desc 反序  
 聚合: 聚合函数不统计null值  
 sum() avg() max() min()  count()计数  
 select sum(price) from tbl;  
 select count(*) from tbl;  
 
-<br/>
-分组：  
-alter table product add cid varchar(32);  
-初始化数据： update product set cid='1';  
-update product set cid='2' where pid in (5,6,7);  
-根据cid 分组：  
-select cid , count(*) from tbl group by cid;  
-select avg(price) from product group by cid having avg(price) > 2000;  
+*****
 
+分组：    
+alter table product add cid varchar(32);    
+初始化数据： update product set cid='1';    
+update product set cid='2' where pid in (5,6,7);    
+根据cid 分组：    
+select cid , count(*) from tbl group by cid;    
+select avg(price) from product group by cid having avg(price) > 2000;     
 
 
 group by 后不能再用 where 使用 having
 ---
 order by 必须放在最后面  
 ---
-<br/>
+
+
 
 limit关键字查询：  
 limit(1,2)  1 表示从1开始  2表示每页显示条数  
 select * from tbl limit 6,3;  
 
+******
 
 JDBC
 ====
@@ -1294,18 +1297,19 @@ JDBC
 DriverManager.getConnection(url, username, password)  
 Statement st = con.createStatement();  
 
-<br/>
-jdbc:mysql://localhost:3306/mydatabase1  
-jdbc:mysql://localhost:3306/mydatabase1?useUnicode=true&characterEncoding=UTF8  
-mysql中utf-8编码 为 UTF8  
+jdbc:mysql://localhost:3306/mydatabase1     
+jdbc:mysql://localhost:3306/mydatabase1?useUnicode=true&characterEncoding=UTF8    
+mysql中utf-8编码 为 UTF8    
 方法：  
-int executeUpdate(String sql);  //DML  
-ResultSet executeQuery(String sql);  
-关闭资源：  
-resultSet.close();  
-statement.close();  
-connection.close();  
-<br/> 
+int executeUpdate(String sql);  //DML    
+ResultSet executeQuery(String sql);    
+关闭资源：    
+resultSet.close();    
+statement.close();    
+connection.close();    
+
+*****
+
 ```
 public void login(String username, String password) throws ClassNotFoundException, SQLException {
 		// 1.注册驱动
@@ -1333,7 +1337,6 @@ public void login(String username, String password) throws ClassNotFoundExceptio
 			conn.close();
 	}
 
-
     @Test
 	public void testLogin() {
 		try {
@@ -1343,11 +1346,16 @@ public void login(String username, String password) throws ClassNotFoundExceptio
 		}
 	}
 ```
+
+
+*****
+
 SQL攻击：  
 ---
 过滤用户输入是否包含非法字符  
 分步验证  先使用用户名来查询用户，如果查到，再比较密码  
 使用 PreparedStatement  
+
 ```
 public void login1(String username, String password) throws ClassNotFoundException, SQLException {
 		// 1.注册驱动
@@ -1385,7 +1393,9 @@ alter table 从表 add [constraint] [外键名称] foreign key 从表外键字�
 外键名称用来删除外键约束使用， 一般建议 _fk 结尾  
 删除外键： 
 alter table 从表 drop foreign key 外键名称  
-<br/>
+
+*****
+
 表与表的关系：  
 一对多  多对多 一对一  
 
@@ -1401,16 +1411,18 @@ select * from category inner join product on cid=category_id;
 把 category 表 添加到 product表,所以 category表在左边  
 
 select * from category c, product p where c.cid=p.category_id;  
-相当于使用表别名  
+相当于使用表别名    
 
 
-<br/>
+*****
+
 外连接：  
 左外连接 left outer join  
     select * from A left outer join B on 条件;  
 select * from category left join product on cid=category_id;  
 
-<br/>
+*****
+
 外连接 内连接区别：  
 内连接 : 查询两个表交集(公共部分)  
 左外连接：左表全部及两个表的交集  
@@ -1421,7 +1433,8 @@ insert into product values('p010', '海飞丝', '0.5', null);
 
 select * from category left join product on cid=category_id; 
 select * from category right join product on cid=category_id; 
-<br/>
+
+*****
 
 子查询：将一条select语句的结果作为另一条select 语法(查询条件,查询结果,表等)的一部分  
 
@@ -1443,7 +1456,9 @@ Connection conn = null;
         }
         return conn;
 ```
-JDBC查询：  
+*****
+#####JDBC查询：  
+*****
 ```
 con = JDBCUtils_V1.getConnection();
             // 2.编写sql
@@ -1458,12 +1473,12 @@ con = JDBCUtils_V1.getConnection();
             }
 ```
 properties配置文件写数据库连接信息：不能有空格  
-driver=com.mysql.jdbc.Driver  
-url=jdbc:mysql://localhost:3306/web06_1?useUnicode=true&  characterEncoding=utf8  
-username=root  
-password=******  
+driver=com.mysql.jdbc.Driver    
+url=jdbc:mysql://localhost:3306/web06_1?useUnicode=true&    characterEncoding=utf8    
+username=root    
+password=******    
   
-使用ResourceBundel对象 加载配置文件：  
+使用ResourceBundel对象 加载配置文件：   
 ```
 private static String driver;
     private static String url;
@@ -2720,7 +2735,9 @@ web.xml示例:
 </web-app>
 ```
 
-###HttpServletResponse
+###HttpServletResponse  
+
+
 
 
 
