@@ -1130,7 +1130,7 @@ create table 表名(
 auto_increment 自增  
 ```
 create table user(
-    uid int(32) primary auto_increment,
+    uid int(32) primary key auto_increment,
     uname varchar(32),
     upassword varchar(32)
 );
@@ -1378,39 +1378,1349 @@ public void login1(String username, String password) throws ClassNotFoundExcepti
 			conn.close();
 	}
 ```
+外键
+----
+主表的主键 被从表 引用，主表和从表是一对多的关系  
+alter table 从表 add [constraint] [外键名称] foreign key 从表外键字段名 references 主表 主表的主键;  
+外键名称用来删除外键约束使用， 一般建议 _fk 结尾  
+删除外键： 
+alter table 从表 drop foreign key 外键名称  
+<br/>
+表与表的关系：  
+一对多  多对多 一对一  
+
+查询：
+---- 
+交叉连接查询：select * from A,B;  
+内连接查询：inner join  
+隐式内连接：select * from A,B where 条件;  
+显式内连接：select * from A inner join B on 条件;  
+
+select * from category inner join product on cid=category_id;  
+反过来  select * ... cid=category_id; 也可以  
+把 category 表 添加到 product表,所以 category表在左边  
+
+select * from category c, product p where c.cid=p.category_id;  
+相当于使用表别名  
+
+
+<br/>
+外连接：  
+左外连接 left outer join  
+    select * from A left outer join B on 条件;  
+select * from category left join product on cid=category_id;  
+
+<br/>
+外连接 内连接区别：  
+内连接 : 查询两个表交集(公共部分)  
+左外连接：左表全部及两个表的交集  
+右外连接：右表全部及两个表的交集  
+
+insert into category values('c004',null);  
+insert into product values('p010', '海飞丝', '0.5', null);  
+
+select * from category left join product on cid=category_id; 
+select * from category right join product on cid=category_id; 
+<br/>
+
+子查询：将一条select语句的结果作为另一条select 语法(查询条件,查询结果,表等)的一部分  
+
+选中化妆品产品：  
+
+select * from product where category_id=(select cid from category where cname='化妆品');
+
+JDBC工具类抽取：  
+获取连接和释放资源 代码重复  
+```
+Connection conn = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/web06_1", "root", "qzqzqz");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return conn;
+```
+JDBC查询：  
+```
+con = JDBCUtils_V1.getConnection();
+            // 2.编写sql
+            String sql = "select * from tbl_user where uid=?";
+            // 3.获取执行sql语句对象
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, 2);
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                System.out.println(rs.getString(2) + "----" + rs.getString("upassword"));
+            }
+```
+properties配置文件写数据库连接信息：不能有空格  
+driver=com.mysql.jdbc.Driver  
+url=jdbc:mysql://localhost:3306/web06_1?useUnicode=true&  characterEncoding=utf8  
+username=root  
+password=******  
+  
+使用ResourceBundel对象 加载配置文件：  
+```
+private static String driver;
+    private static String url;
+    private static String username;
+    private static String password;
+
+static {
+        ResourceBundle bundle = ResourceBundle.getBundle("db");
+        driver = bundle.getString("driver");
+        url = bundle.getString("url");
+        username = bundle.getString("username");
+        password = bundle.getString("password");
+    }
+```
+
+类加载器获取配置文件输入流：  
+```
+private static String driver;
+    private static String url;
+    private static String username;
+    private static String password;
+
+// 通过当前类获取类加载器
+            ClassLoader cl = JDBCUtils_V3.class.getClassLoader();
+
+            // 通过类加载器获取 输入流
+            InputStream is = cl.getResourceAsStream("db.properties");
+
+            // 创建properties 对象
+            Properties props = new Properties();
+
+            // 加载输入流
+            props.load(is);
+
+            // 获取相关参数的值
+            driver = props.getProperty("driver");
+            url = props.getProperty("url");
+            username = props.getProperty("username");
+            password = props.getProperty("password");
+```
+
+JDBC插入数据：  
+```
+public void testAdd(){
+        Connection con = null;
+        PreparedStatement ps = null;
+        try{
+            con = JDBCUtils_V2.getConnection();
+            String sql = "insert into tbl_user values(null, ?, ?)";
+            ps = con.prepareStatement(sql);
+            ps.setString(1, "lisi");
+            ps.setString(2,"hehe");
+
+            int row = ps.executeUpdate();
+            if(row > 0){
+                System.out.println("添加成功");
+            }else {
+                System.out.println("添加失败");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils_V2.release(con, ps, null);
+        }
+    }
+```
+
+JDBC删除数据：  
+```
+public void testDeleteById(){
+        Connection con = null;
+        PreparedStatement ps = null;
+        try{
+            con = JDBCUtils_V3.getConnection();
+            String sql = "delete from tbl_user where uid=?";
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, 4);
+
+            int row = ps.executeUpdate();
+            if(row > 0){
+                System.out.println("删除成功");
+            }else {
+                System.out.println("删除失败");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils_V3.release(con, ps, null);
+        }
+    }
+```
+
+JDBC更新数据：  
+```
+public void testUpdateById(){
+        Connection con = null;
+        PreparedStatement ps = null;
+        try{
+            con = JDBCUtils_V3.getConnection();
+            String sql = "update tbl_user set upassword=? where uid=?";
+            ps = con.prepareStatement(sql);
+            ps.setString(1, "999");
+            ps.setInt(2,3);
+
+            int row = ps.executeUpdate();
+            if(row > 0){
+                System.out.println("更新成功");
+            }else {
+                System.out.println("更新失败");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils_V3.release(con, ps, null);
+        }
+    }
+```
+
+JDBC查询数据：  
+```
+public void testFindUserById() {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            // 1.获取连接
+            con = JDBCUtils_V1.getConnection();
+            // 2.编写sql
+            String sql = "select * from tbl_user where uid=?";
+            // 3.获取执行sql语句对象
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, 2);
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                System.out.println(rs.getString(2) + "----" + rs.getString("upassword"));
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils_V1.release(con, ps, rs);
+        }
+    }
+```
+数据库连接池：  
+实现接口：javax.sql.DataSource  
+手动创建linkedList容器存储数据库连接对象  
+实现：  
+调用连接对象connection.close()方法也能将其归还到连接池中：  
+方法：  
+继承  
+装饰者设计模式：  
+专门用于增强方法，必须有接口，需要将接口的方法全部实现  
+
+动态代理：在运行时动态创建代理类，前提时有接口，使用反射技术  
+
+字节码增强：运行时创建目标类子类  
+
+装饰者固定结构：  
+接口A, 已知实现类C, 需要装饰者创建代理类B  
+
+```
+
+/**
+ * @ClassName MyConnection
+ * @Description 使用装饰者模式 代理 实现 Connection接口
+ *              接口A(本例中为Connection接口)
+ *              已知实现类C(本例中为DriverManager.getConnection()方法返回的)
+ *              需要装饰者创建代理类B
+ *              步骤：
+ *              1.创建类B (MyConnection)
+ *              2.提供B 的构造方法,参数类型为A,用于接收A接口实现类C
+ *              3.给类 B 添加类型为 A 的成员变量, 用于存放 A 接口的其他实现类 C
+ *              4.增强需要的方法
+ * @Author QZ
+ * @Date 2020/7/21 23:52
+ * @Version 1.0
+ **/
+public class MyConnection implements Connection {
+
+    private Connection con;
+    private LinkedList<Connection> pool;
+
+    // Connection 接口做参数 是 接口和接口实现类的多态实现
+    public MyConnection(Connection con, LinkedList<Connection> pool){
+        this.con = con;
+        this.pool = pool;
+    }
+
+    // 增强方法：
+    @Override
+    public void close() throws SQLException {
+        pool.add(con);
+
+        // 为什么不是 pool.add(this);
+
+    }
+
+    @Override
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        /**
+         * description:
+         * 这里的con 因为从构造器参数传递进来的 其实是 JDBCUtils_V3.getConnection()
+         * 所以 直接调用 con.prepareStatement即可
+         * 如果不重新，则MyConnection对象调用此方法会返回空指针
+         */
+        return con.prepareStatement(sql);
+    }
+    
+    ...
+}
+
+```
+此时的连接池类：  
+```
+package JDBC;
+
+import javax.sql.DataSource;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.LinkedList;
+import java.util.logging.Logger;
+
+/**
+ * @ClassName MyDataSource_1
+ * @Description TODO
+ * @Author QZ
+ * @Date 2020/7/22 0:10
+ * @Version 1.0
+ **/
+public class MyDataSource_1 implements DataSource {
+    private static LinkedList<Connection> pool = new LinkedList<>();
+
+    static{
+        for (int i = 0; i < 5; i++) {
+            Connection con = JDBCUtils_V3.getConnection();
+
+            // 放入连接池的Connection对象是 封装过的MyConnection
+            MyConnection myConnection = new MyConnection(con, pool);
+            pool.add(myConnection);
+        }
+    }
+
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        Connection con = null;
+        if(pool.size() == 0){
+            for (int i = 0; i < 5; i++) {
+                con = JDBCUtils_V3.getConnection();
+                // 放入连接池的Connection对象是 封装过的MyConnection
+                MyConnection myConnection = new MyConnection(con, pool);
+                pool.add(myConnection);
+            }
+        }
+        // 从连接池中获取一个链接对象Connection
+
+        // 连接池还是这个连接池，只不过池中每个Connection对象穿了一件外套
+        // 一件已经改造过close() 方法的外套
+        // 此时 这个连接池中实际上全是MyConnection的对象
+        // 每个MyConnection 对象包含有原来的Connection
+        // remove获取到的 可以多态 赋值给Connection接口的引用
+        con = pool.remove(0);
+        return con;
+    }
 
 
 
+    /**
+     * 已经不需要这个归还Connection对象的方法了
+     * 因为直接con.close()就可以
+     * 而这个con对象 实际上在连接池中就是MyConnection对象
+     * 所以调用close()方法，走的是已经改造过的close()方法
+     */
+
+    /**
+     * description: 将连接对象返回到连接池
+     * @param
+     * @return: void
+     * @date: 2020/7/20 23:38
+     * @author: qz
+     */
+//    public void backConnection(Connection con){
+//        pool.add(con);
+//    }
+
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
+
+    @Override
+    public PrintWriter getLogWriter() throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void setLogWriter(PrintWriter out) throws SQLException {
+
+    }
+
+    @Override
+    public void setLoginTimeout(int seconds) throws SQLException {
+
+    }
+
+    @Override
+    public int getLoginTimeout() throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        return null;
+    }
+}
+
+```
+测试：  
+```
+/**
+ * @ClassName TestMyDataSource
+ * @Description TODO
+ * @Author QZ
+ * @Date 2020/7/21 22:54
+ * @Version 1.0
+ **/
+public class TestMyDataSource {
+
+    /**
+     * description: 使用改造过close()方法的 MyConnection
+     * @param
+     * @return: void
+     * @date: 2020/7/22 0:25
+     * @author: qz
+     */
+    @Test
+    public void testMyConnectionAddUser(){
+        Connection con = null;
+        PreparedStatement ps = null;
+        MyDataSource_1 dataSource = new MyDataSource_1();
+        try {
+            con = dataSource.getConnection();
+            String sql = "insert into tbl_user values(null,?,?)";
+
+            /**
+             * description:
+             * 因为这个 con 实际上已经是MyConnection对象
+             * 所以直接调用 走的是 MyConnection类里面的 prepareStatemen()方法
+             * 需要对该方法也进行改造重写
+             */
+            ps = con.prepareStatement(sql);
+
+
+            ps.setString(1,"吕布1");
+            ps.setString(2,"貂蝉1");
+            int rows = ps.executeUpdate();
+            if(rows > 0){
+                System.out.println("插入成功");
+            }else {
+                System.out.println("插入失败");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+//            if (con != null){
+//                try {
+//                    con.close();
+//                } catch (SQLException throwables) {
+//                    throwables.printStackTrace();
+//                }
+//            }
+
+            /**
+             * description:
+             *
+             */
+            JDBCUtils_V3.release(con,ps,null);
+        }
+    }
+
+    ...
+
+}
+```
+JDBCUtils工具类：
+```
+package JDBC;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.*;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
+/**
+ * @ClassName JDBCUtils_V3
+ * @Description TODO
+ * @Author QA
+ * @Date 2020/7/19 20:42
+ * @Version 1.0
+ **/
+public class JDBCUtils_V3 {
+    private static String driver;
+    private static String url;
+    private static String username;
+    private static String password;
+
+    /**
+     * description: 通过类加载器获取配置文件输入流
+     * @date: 2020/7/19 20:48
+     * @author: qz
+     */
+    static {
+        try {
+            // 通过当前类获取类加载器
+            ClassLoader cl = JDBCUtils_V3.class.getClassLoader();
+
+            // 通过类加载器获取 输入流
+            InputStream is = cl.getResourceAsStream("db.properties");
+
+            // 创建properties 对象
+            Properties props = new Properties();
+
+            // 加载输入流
+            props.load(is);
+
+            // 获取相关参数的值
+            driver = props.getProperty("driver");
+            url = props.getProperty("url");
+            username = props.getProperty("username");
+            password = props.getProperty("password");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Connection getConnection() {
+        Connection conn = null;
+        try {
+            Class.forName(driver);
+            conn = DriverManager.getConnection(url, username, password);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return conn;
+    }
+
+    public static void release(Connection con, PreparedStatement ps, ResultSet rs){
+        try {
+            if(rs != null){
+                rs.close();
+            }
+            if(ps != null){
+                ps.close();
+            }
+            if(con != null){
+                con.close();
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
+
+}
+
+```
+连接池：C3P0 DBCP
+=====
+###注意配置文件要放在src目录下  
+```
+public class DBCPUtils {
+    private static DataSource dataSource;
+    static {
+
+        try {
+            InputStream is = DBCPUtils.class.getClassLoader().getResourceAsStream("db.properties");
+            Properties props = new Properties();
+            props.load(is);
+
+            dataSource = BasicDataSourceFactory.createDataSource(props);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static DataSource getDataSource(){
+        return dataSource;
+    }
+
+    public static Connection getConnection(){
+        try {
+            return dataSource.getConnection();
+        } catch (SQLException throwables) {
+            throw new RuntimeException(throwables);
+        }
+    }
+}
+```
+DBUtils 连接池和 JavaBean
+====
+JavaBean的类放在 domain下面  
+特点：
+---
+QueryRunner 提供对sql语句操作的API 
+QueryRunner(DataSource ds)  提供数据源连接池，DBUtils底层自动维护连接Connection  
+update(String sql, Object... params) 执行更新数据  
+query(String sql, ResultSetHandle<T> rsh, Object...params) 执行查询  
 
 
 
+ResultSetHandle 接口 用于定义select操作后 怎样封装结果集  
+BeanHandle 将结果集中第一条记录封装到一直指定的javaBean中  
+```
+QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
+
+String sql = "select * from tbl_user where uid=?";
+
+Object[] params = {8};
+
+User user = qr.query(sql, new BeanHandler<User>(User.class), params);
+
+System.out.println(user.getUname() + ": " + user.getUpassword());
+```
+
+
+BeanListHandle 将结果集中每一条记录封装到指定的javaBean中，再将这些JavaBean封装到的List集合中  
+```
+QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
+
+String sql = "select * from tbl_user";
+
+List<User> users = qr.query(sql, new BeanListHandler<User>(User.class));
+for (User user : users){
+    System.out.println(user.getUname() + ": " + user.getUpassword());
+}
+```
+
+
+MapListHandle 将结果集中每一条揭露封装到Map<String, Object> 集合中，key是字段名称(列名),value是字段值,再将这些map封装到List集合中  
+```
+QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
+
+String sql = "select * from tbl_user";
+
+List<Map<String,Object>> list = qr.query(sql, new MapListHandler());
+for (Map<String, Object> map : list){
+    System.out.println(map);
+}
+```
+
+ScalarHandle 用于单数据，如 select count(*) from tbl_user 等操作  
+```
+QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
+
+String sql = "select count(*) from tbl_user";
+
+Long count = (Long) qr.query(sql, new ScalarHandler());
+
+System.out.println("There are " + count + " uesrs");
+```
+
+ColumnListHandle(String columnName) :  将结果集中指定列的字段值封装到一个List集合中  
+按列查询 不指定列的情况默认返回uid  
+```
+QueryRunner qr = new QueryRunner(C3P0Utils.getDataSource());
+
+String sql = "select * from tbl_user";
+
+List<Object> list = qr.query(sql, new ColumnListHandler("uname"));
+for (Object obj : list){
+    System.out.println(obj);
+}
+
+输出：
+老王
+zs
+张三
+lisi
+吕布3
+余淮
+```
+JavaBean封装到List集合中  
+ScalarHandle 用于单数据，例如 select count(*) from 表操作  
+DbUtils类 定义关闭资源和事务处理的方法  
+
+XML:
+======
+区分大小写：  
+xml属性值必须加 引号  
+特殊字符：  
+< 字符放在xml元素中会发生错误 需要进行替换：  
+小于： < ：&lt;  
+大于： > ：&gt;  
+&amp;  :  &  和  
+&apos; :  '  单引号  
+&quot; :  "  双引号  
+
+```
+<note date="08/08/2008">
+<to>George</to>
+<from>John</from>
+<heading>Reminder</heading>
+<body>Don't forget the meeting</body>
+</note>
+```
+文档声明：  
+---
+必须从文档的最起始 0行0列开始  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+```
+元素：
+----
+区分大小写 不能使用空格冒号 不以xml开头 必须只有一个根元素  
+属性：
+----
+必须出现在元素的开始标签中  
+属性值必须使用单引号或双引号  
+一个元素可以使用多个属性  
+属性名不能使用空格 冒号等特殊字符，且必须以字母开头  
+
+CDATA转义代码块：
+----
+<![CDATA[ code here ]]>  
+其中内容不能包含"]]>" 即结束定界符  
+
+DTD文档类型定义：
+===
+规定xml文档中的元素名称，子元素的名称和顺序，元素的属性  
+元素
+---
+```
+<!ELEMENT web-app (servlet*, servlet-mapping*, welcome-file-list?)>
+```
+servlet 子标签个数任意0~多次  
+servlet-mapping 子标签个数任意0~多次  
+welcome-file-list 子标签最多出现一次 或0 次  
+子标签名+  即该子标签最少出现一次  
+子标签1, 子标签2, 子标签3 即子标签必须按指定 1,2,3的顺序  
+子标签1 | 子标签2 即子标签只能为1 或者 2  
+
+属性：
+---
+根据约束写xml文档： 
+约束：  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	传智播客DTD教学实例文档。
+	模拟servlet2.3规范，如果开发人员需要在xml使用当前DTD约束，必须包括DOCTYPE。
+	格式如下：
+	<!DOCTYPE web-app SYSTEM "web-app_2_3.dtd">
+-->
+<!ELEMENT web-app (servlet*,servlet-mapping* , welcome-file-list?) >
+<!ELEMENT servlet (servlet-name,description?,(servlet-class|jsp-file))>
+<!ELEMENT servlet-mapping (servlet-name,url-pattern+) >
+<!ELEMENT servlet-name (#PCDATA)>
+<!ELEMENT servlet-class (#PCDATA)>
+<!ELEMENT url-pattern (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT jsp-file (#PCDATA)>
+
+<!ELEMENT welcome-file-list (welcome-file+)>
+<!ELEMENT welcome-file (#PCDATA)>
+
+<!ATTLIST web-app version CDATA #IMPLIED>
+```
+文档：  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app SYSTEM "web-app_2_3.dtd">
+<web-app version="1.0">
+    <servlet>
+        <servlet-name>
+            aaaaa
+<!--            <a></a>-->
+        </servlet-name>
+        <description></description>
+        <servlet-class></servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name></servlet-name>
+        <url-pattern></url-pattern>
+    </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file></welcome-file>
+    </welcome-file-list>
+</web-app>
+```
+Schema约束：
+====
+
+xml解析：
+====
+dom4j:  
+---
+常用API：  
+---
+SaxReader:  read()方法加载执行xml文档  
+Document: getRootElement() 获取根元素  
+Element对象： elements() 获取指定名称的所有子元素  
+element() 获取指定名称的第一个子元素  
+getName() 获取当前元素的元素名  
+attributeValue() 获取指定属性名的属性值  
+elementText() 获得指定名称子元素的文本值  
+getText() 获取当前元素的文本内容  
+```
+package XML;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.junit.Test;
+
+import java.util.List;
+
+/**
+ * @ClassName TestDom4j
+ * @Description TODO
+ * @Author QZ
+ * @Date 2020/7/27 0:26
+ * @Version 1.0
+ **/
+public class TestDom4j {
+
+    @Test
+    public void testReadWebXML(){
+
+        try {
+            SAXReader saxReader = new SAXReader();
+            Document doc = saxReader.read("src/XML/web02.xml");
+
+            Element rootElement = doc.getRootElement();
+            // 获取根元素的名称
+            System.out.println("root element name: " + rootElement.getName());
+
+            // 获取根元素的属性值
+            System.out.println("root element attribute value: " + rootElement.attributeValue("version"));
+
+            List<Element> childElements = rootElement.elements();
+
+            for (Element element : childElements){
+                if ("servlet".equals(element.getName())){
+                    Element servletName = element.element("servlet-name");
+                    Element servletClass = element.element("servlet-class");
+                    System.out.println(servletName.getText());
+                    System.out.println(servletClass.getText());
+                }
+            }
+
+
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+```
+反射：
+===
+可以在运行时对类class 构造方法Constructor 普通方法method 字段Field(域)进行操作  
+获取Class对象的方式：
+---
+1.通过对象的 getClass()方法  
+Person p = new Person();  
+Class cls = p.getClass();  
+2.通过类的class属性：  
+Class cls = Person.class;  
+3.通过Class类的静态方法forName():  
+Class cls = Class.forName("com.android.bean.Person");  
+
+常用方法：
+---
+1. 创建对象  
+Class cls = Class.forName(className);  
+Object obj = cls.newInstance();  
+2. 获取字节码文件中的实例域 field  
+Field field = cls.getDeclaredField("age"); // 私有实例域  
+私有实例域须取消对其的访问控制检查：  
+field.setAccessible(true); // 暴力访问  
+公有实例域 getField(fieldName) 包括从父类继承的,不包括非公开方法    
+3. 实例域操作：  
+field.set(obj, 789);  
+4. 获取实例域的值：  
+Object fieldValue = field.get(obj);  
+5. 获取指定类的公共成员方法, 方法参数为方法名和当前方法的参数  
+Method method = cls.getMethod("staticShow", null);  
+6. 调用该方法：  
+method.invoke(obj,paramsList);  
+7. 还能获取构造器  
+
+读取xml配置文件 创建对象并调用方法：
+---
+```
+// Test 
+SAXReader saxReader = new SAXReader();
+            Document document = saxReader.read("src/XML/servlet/web.xml");
+
+            Element rootEle = document.getRootElement();
+            Element servletEle = rootEle.element("servlet");
+
+            String servletClass = servletEle.element("servlet-class").getText();
+            System.out.println(servletClass);
+            Class cls = Class.forName(servletClass);
+
+            MyServlet1 my1 = (MyServlet1) cls.newInstance();
+
+            my1.init();
+            my1.service();
+            my1.destory();
+```
+```
+// web.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://www.example.org/web-app_2_5"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.example.org/web-app_2_5 ../web-app_2_5.xsd"
+         version="2.5">
+    <servlet>
+        <servlet-name>myServlet1</servlet-name>
+        <servlet-class>XML.servlet.MyServlet1</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>myServlet1</servlet-name>
+        <url-pattern>/myServlet1</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>myServlet2</servlet-name>
+        <servlet-class>XML.servlet.MyServlet2</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>myServlet2</servlet-name>
+        <url-pattern>/myServlet2</url-pattern>
+    </servlet-mapping>
+</web-app>
+```
+
+```
+package XML.servlet;
+
+import XML.MyServlet;
+public class MyServlet1 implements MyServlet {
+
+    @Override
+    public void init() {
+        System.out.println("MyServlet1 诞生了");
+    }
+
+    @Override
+    public void service() {
+        System.out.println("MyServlet1 开始服务");
+    }
+
+    @Override
+    public void destory() {
+        System.out.println("MyServlet1 销毁了");
+    }
+}
+
+```
+
+## Http  &&  Tomcat
+http协议：
+---
+分为请求和响应两部分：  
+请求：
+---
+```
+POST /web12/form.html HTTP/1.1    # 请求行：请求方式 资源地址 协议版本
+
+# 如下段落为请求头 
+Accept: text/html, application/xhtml+xml, */*       # 浏览器能接收的类型
+Referer: http://localhost:8080/web12/form.html      # 请求的来源
+Accept-Language: zh-CN                              # 语言
+User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)      # 内核
+Content-Type: application/x-ww-form-urlencoded      # 文本类型
+Accept-Encoding: gzip, deflate                      # 客户端能接受的压缩格式
+Host: localhost:8080                                # 主机
+If-Modified-since: Wed, 03 Aug 2016 01:54:00 GMT    # 本地缓存的资源的最新一次修改时间
+Content-Length: 28                                  # 请求内容长度
+Connection: Keep-Alive                              # 长连接
+Cache-Control: no-cache
+
+username=lisi&password=12345     # 请求体 post请求提交的参数
+```
+响应：
+---
+```
+# 状态码 常见：200 
+# 302(重定向跳转)
+# 304 拿本地缓存
+# 404 没有该资源
+# 500 服务器端报错
+HTTP/1.1 200 OK    
+
+# 响应头              
+Server: Apache-Coyote/1.1
+Accept-Range: bytes
+ETag: W/"305-1470186605044"
+Last-Modified: Wed, 03 Aug 2016 01:10:05 GMT        # 资源的最后修改时间
+Content-Type: text/html
+Content-Length: 305
+Date: Wed, 03 Aug 2016 01:11:07 GMT
+
+# 响应体
+<html>
+  <head>
+<%--    <title>$Title$</title>--%>
+    <title>第一个JavaWeb项目</title>
+  </head>
+  <body>
+<%--  $END$--%>
+第一个JavaWeb项目1
+  </body>
+</html>
+
+
+```
+Tomcat
+===
+常见问题：
+---
+端口被占用：  
+目录结构：  
+---
+项目根目录
+|  
+|----html,jsp, css,js文件  
+|  
+|----WEB-INF目录  
+        |  
+        |---classes 目录 Java类     
+        |---lib目录 Java依赖jar包  
+        |---web.xml 文件 web应用配置文件  
+注意事项：
+---
+WEB-INF目录受保护，外界不能直接访问  
+手动删除tomcat 下的项目目录，导致无法启动，需要先去server.xml中删除仍残留的context上下文  
+
+IDEA中Run --> Edit configurations -->选中tomcat --> Deloyment(发布)  -->  
+设置发布配置 --> 下方Application context 即是 默认的浏览器url路径  
+
+####tomcat 生成的url路径末尾带 / 问题没找到解决方法：
+
+Servlet
+====
+servlet filter listener  
+
+servlet 重写方法：  
+init():servlet对象创建的时候执行  
+service(ServletRequest servletRequest, ServletResponse servletResponse)：每次请求都会执行   
+destroy()  servlet对象销毁的时候执行
+
+Tomcat容器会解析请求地址，自动创建servlet对象  
+并创建代表请求的request对象和代表响应的response对象  
+每次浏览器请求都会创建一组 request和response  
+
+url-pattern配置方式：
+---
+1) 完全匹配：访问的资源域配置的资源完全相同  
+2) 目录匹配：/虚拟目录../*  
+3) 扩展名匹配：*.扩展名  
+不能同时使用： /aaa/bbb/*.abcd  
+
+在服务器启动时创建servlet对象-->  
+<!--        3 代表优先级 数字越小 优先级越高-->  
+<!--        <load-on-startup>3</load-on-startup>-->  
+
+默认servlet:   
+在url-pattern中配置 / 代表当前servlet为默认的servlet  
+当浏览器地址栏所有的资源的都无法找到匹配的servlet的时候，默认的负责处理  
+如果不配置自己的 默认servlet， 那么tomcat在项目的web.xml中查找完毕还没找到匹配的资源，则会去 conf中对tomcat的 web.xml进行查找，一般其中有配置一个默认的servlet,该servlet会查找项目目录中的静态资源，如果有则显示，没有则 报404  
+如果配置了自己默认的servlet 但是又没有找到资源，就会报404  
+
+###案例demo 登录：
+页面：
+---
+```
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>登录</title>
+    <!-- Bootstrap css 放在body前的head中-->
+    <link href="bootstrap/bootstrap.css" rel="stylesheet">
+    <style>
+
+        <!-- col-center-block是网上找到将登录框 垂直居中的方法： -->
+        .col-center-block {
+            position: absolute;
+            top: 50%;
+            -webkit-transform: translateY(-50%);
+            -moz-transform:  translateY(-50%);
+            -ms-transform:  translateY(-50%);
+            -o-transform:  translateY(-50%);
+            transform:  translateY(-50%);
+        }
+    </style>
+</head>
+
+<!-- 设置背景图片 无重复充满屏幕 并设置透明度 -->
+<body style="background: url(imgs/34.jpg) no-repeat center 0;background-size: cover; margin: 0px;">
+    <h1>Welcome!</h1>
+
+        <!-- 表单路径需要与 web.xml中一致 -->
+        <form action="/login" method="post" >
+
+            <!-- col-md col-lg 还有col-lg-offset设置登录框的位置和宽度 -->
+            <!-- border-radius 设置登录框的圆角 -->
+            <div class="col-md-4 col-lg-4 col-lg-offset-4 col-md-offset-4 col-center-block" style="background-color: white; opacity: 0.7; padding: 50px; border-radius: 10px">
+
+                <!-- bootstrap自带的登录表单组件： -->
+                <div class="form-group input-group input-group-lg" >
+
+                <!-- 每一行的组件group由span的文字和 后面的输入框组成 -->
+                <!-- span的文字元素 class input-group-addon 表示这是附加在当前input-group组里面的 -->
+                    <span class="input-group-addon" id="sizing-addon1" >Username</span>
+                    <input type="text" name="username" class="form-control" placeholder="Username" aria-describedby="sizing-addon1">
+                </div>
+
+                <div class="form-group input-group input-group-lg">
+                    <span class="input-group-addon" id="sizing-addon2" >Password&nbsp;</span>
+                    <input type="password" name="password" class="form-control" placeholder="Password" aria-describedby="sizing-addon2">
+
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">登录</button>
+                </div>
+                <!--        <div class="form-group">-->
+                <!--            <label for="" class="control-label">Paycheck</label>-->
+                <!--            <div class="input-group input-group-lg">-->
+                <!--                <span class="input-group-addon">$</span>-->
+                <!--                <input type="text" class="form-control" id="">-->
+                <!--            </div>-->
+                <!--        </div>-->
+            </div>
+        </form>
 
 
 
+    <!-- jquery和js要在body最后面引入 -->
+    <!-- 引入jQuery核心js文件 -->
+    <script src="bootstrap/jquery-1.11.3.min.js"></script>
+
+    <!-- 引入BootStrap核心js文件 -->
+    <script src="bootstrap/bootstrap.min.js"></script>
+</body>
+
+</html>
+
+```
+###注意事项：
+1. idea 项目默认url路径设置：run-edit-configuration 设置 deployment 里面的Application context 为空或者 /  
+2. 资源文件放在项目的web根目录下面，不能放在WEB-INFO里  
+3. idea自带的tomcat运行机制导致在webapps下找不到发布的工程文件夹，跟eclipse不一样  
+4. form表单 需要加 name 且 密码框的type必须为 password  
+5. servlet中不能随意重写service方法  
+我开始只是为了查看打印信息来debug一下，结果后面页面死活不显示，但是f12看返回的是200,请求的参数也都传递过去了，只可能是响应 部分出问题了，所以看 servlet
+
+ServletContext对象：
+===
+代表web应用对象，封装了该web应用的信息  
+获取方式：
+---
+1. ServletContext servletContext = config.getServletContext();  
+2. this.getServletContext();  
+
+作用：
+---
+1. 获取全局参数：  
+web.xml:  
+```
+<!--    配置全局初始化参数-->
+    <context-param>
+        <param-name>driver</param-name>
+        <param-value>com.mysql.jdbc.Driver</param-value>
+    </context-param>
+
+//通过context对象获取参数：
+ServletContext servletContext = getServletContext();
+        String initParamter = servletContext.getInitParameter("driver");
+        System.out.println(initParamter);
+
+```
+2. 获取web应用中任何资源的 绝对路径：  
+```
+String pathA = servletContext.getRealPath("a.txt");
+        System.out.println(pathA);
+
+        String pathB = servletContext.getRealPath("/WEB-INF/b.txt");
+        System.out.println(pathB);
+
+        String pathC = servletContext.getRealPath("/WEB-INF/classes/c.txt");
+        System.out.println(pathC);
+
+        // class下面的 c.txt可以通过类加载器方式获取
+        String pathC2 = ContextServlet.class.getClassLoader().getResource("c.txt").getPath();
+        System.out.println(pathC2);
+
+        // 获取不到工程根目录下的 d.txt
+```
+
+3. ServletContext是一个域对象   
+可以理解为对于所有Servlet的一个公共的存取区域、静态变量     
+所有web动态资源都可以随意对servletContext 域中存取对象，数据可以共享  
+ServletContext.setAttribute(name,valueObject)  
+ServletContext.getAttribute(name)   
+ServletContext.removeAttribute(name)  
 
 
+###案例demo 统计访问次数：
+使用 ServletContext.setAttribute(name,valueObject)  
+和 setAttribute 方法  
+先在init()方法中 初始化count变量并存储到ServletContext域  
+再在 doPost()方法中读取并 +1 然后再存储回去 ServletContext  
+
+```
+@Override
+    public void init() throws ServletException {
+        super.init();
+        int count = 0;
+        getServletContext().setAttribute("count", count);
+    }
+
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("do post ...");
+
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        System.out.println("username: " + username + "password: " + password);
+        QueryRunner runner = new QueryRunner(DataSourceUtils.getDataSource());
+        String sql = "select * from user where username=? and password=?";
+        System.out.println(sql);
+        User user = null;
+        try {
+            user = runner.query(sql, new BeanHandler<User>(User.class), username, password);
+        } catch (SQLException e) {
+            System.out.println("query sql error!");
+            e.printStackTrace();
+        }
+
+        if(user != null){
+            System.out.println("query ok!");
+
+            ServletContext context = getServletContext();
+            Integer count = (Integer) context.getAttribute("count");
+            count++;
+            context.setAttribute("count", count);
+
+            response.getWriter().write(user.toString() + "--- you are the " + count + " visitor");
+        }else {
+            response.getWriter().write("sorry your username or password is wrong");
+        }
+
+    }
+
+```
 
 
+web.xml示例:
+---
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>WEB13</display-name>
+  <context-param>
+    <param-name>driver</param-name>
+    <param-value>com.mysql.jdbc.Driver</param-value>
+  </context-param>
+  <servlet>
+    <servlet-name>abc</servlet-name>
+    <servlet-class>com.itheima.servlet.QuickStratServlet</servlet-class>
+    <init-param>
+      <param-name>url</param-name>
+      <param-value>jdbc:mysql:///mydb</param-value>
+    </init-param>
+    <load-on-startup>3</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>abc</servlet-name>
+    <url-pattern>/quickStratServlet</url-pattern>
+  </servlet-mapping>
+  <welcome-file-list>
+    <welcome-file>1.html</welcome-file>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <servlet-name>QuickStartServlet2</servlet-name>
+    <servlet-class>com.itheima.servlet.QuickStartServlet2</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QuickStartServlet2</servlet-name>
+    <url-pattern>/quickStartServlet2</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>LoginServlet</display-name>
+    <servlet-name>LoginServlet</servlet-name>
+    <servlet-class>com.itheima.login.LoginServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LoginServlet</servlet-name>
+    <url-pattern>/login</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ContextServlet</display-name>
+    <servlet-name>ContextServlet</servlet-name>
+    <servlet-class>com.itheima.context.ContextServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ContextServlet</servlet-name>
+    <url-pattern>/context</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ContextServlet2</display-name>
+    <servlet-name>ContextServlet2</servlet-name>
+    <servlet-class>com.itheima.context.ContextServlet2</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ContextServlet2</servlet-name>
+    <url-pattern>/context2</url-pattern>
+  </servlet-mapping>
+</web-app>
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###HttpServletResponse
 
 
 
