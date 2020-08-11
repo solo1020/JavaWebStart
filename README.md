@@ -2792,6 +2792,21 @@ web.xml示例:
 ```
 
 ###  HttpServletResponse  
+默认放在doGet()方法里：
+===
+设置response 响应行：
+---
+设置状态码：response.setStatus(302);   
+
+设置response 响应头：
+----
+addHeader(String name, String value)   
+addIntHeader(String name, int value)    
+addDateHeader(String name, long date)     
+setHeader(String name, String value)    
+setDateHeader(String name, long date)    
+setIntHeader(String name, int value)   
+
 
 
 
