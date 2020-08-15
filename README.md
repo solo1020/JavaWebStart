@@ -2846,7 +2846,23 @@ response.setStatus(302);
 // 5s 后进行跳转
         response.setHeader("refresh","5;url=localhost:8080/directDst");
 ```
+response的write方法：
+---
+顺序也很关键：  
+##### 设置编码和解码表需要在获取 PrintWrite之前
+实际只需要setHeader()/setContentType即可，setCharacterEncoding()方法没必要   
+response.setContentType("text/html;charset=UTF-8");   
+```
+// 中文会显示？，需设置response查询的编码表
+        response.setCharacterEncoding("UTF-8");
 
+        // 此时还需要告诉客户端使用哪个表进行解码
+        //response.setHeader("Content-Type", "text/html;charset=UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+
+        PrintWriter writer = response.getWriter();
+        writer.write("中国");
+```
 
 
 

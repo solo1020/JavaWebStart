@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @ClassName ${NAME}
@@ -21,6 +22,14 @@ public class WriteTextServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        
+//        writer.write("hello response!!");
+        // 中文会显示？，需设置response查询的编码表
+        response.setCharacterEncoding("UTF-8");
+
+        // 此时还需要告诉客户端使用哪个表进行解码
+//        response.setHeader("Content-Type", "text/html;charset=UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter writer = response.getWriter();
+        writer.write("中国");
     }
 }
