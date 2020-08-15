@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+    <!--    配置全局初始化参数-->
+    <context-param>
+        <param-name>driver</param-name>
+        <param-value>com.mysql.jdbc.Driver</param-value>
+    </context-param>
+
+    <!--    默认欢迎页匹配-->
+    <welcome-file-list>
+        <welcome-file>1.html</welcome-file>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.html</welcome-file>
+        <welcome-file>default.htm</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+    </welcome-file-list>
+
+
+    <servlet>
+        <servlet-name>demoResponse</servlet-name>
+        <servlet-class>servlet.DemoResponseServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>demoResponse</servlet-name>
+        <url-pattern>/demoResponse</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>statusServlet</servlet-name>
+        <servlet-class>servlet.StatusServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>statusServlet</servlet-name>
+        <url-pattern>/status</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>addHeaderServlet</servlet-name>
+        <servlet-class>servlet.HeaderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>addHeaderServlet</servlet-name>
+        <url-pattern>/header</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>srcDirectServlet</servlet-name>
+        <servlet-class>servlet.BeforeRedirectServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>srcDirectServlet</servlet-name>
+        <url-pattern>/directSrc</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>directdstServlet</servlet-name>
+        <servlet-class>servlet.RedirectServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>directdstServlet</servlet-name>
+        <url-pattern>/directDst</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>refreshServlet</servlet-name>
+        <servlet-class>servlet.RefreshServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>refreshServlet</servlet-name>
+        <url-pattern>/refresh</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>textServlet</servlet-name>
+        <servlet-class>servlet.WriteTextServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>textServlet</servlet-name>
+        <url-pattern>/text</url-pattern>
+    </servlet-mapping>
+</web-app>

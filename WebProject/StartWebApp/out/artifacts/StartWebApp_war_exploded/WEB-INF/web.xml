@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+    <display-name>StartWebApp</display-name>
+
+<!--    配置全局初始化参数-->
+    <context-param>
+        <param-name>driver</param-name>
+        <param-value>com.mysql.jdbc.Driver</param-value>
+    </context-param>
+
+<!--    servlet类的配置-->
+    <servlet>
+        <servlet-name>webApp</servlet-name>
+        <servlet-class>servlet.QuickStartServlet</servlet-class>
+        <init-param>
+            <param-name>url</param-name>
+            <param-value>jdbc:mysql:///mydb</param-value>
+        </init-param>
+
+<!--        在服务器启动时创建servlet对象-->
+<!--        3 代表优先级 数字越小 优先级越高-->
+<!--        <load-on-startup>3</load-on-startup>-->
+    </servlet>
+
+<!--    servlet 的虚拟路径的配置-->
+    <servlet-mapping>
+        <servlet-name>webApp</servlet-name>
+
+<!--        虚拟匹配-->
+<!--        <url-pattern>/quickStartServlet</url-pattern>-->
+
+<!--        目录匹配-->
+<!--        <url-pattern>/aaa/bbb/ccc/*</url-pattern>-->
+
+<!--        扩展名匹配-->
+        <url-pattern>/webapp</url-pattern>
+
+    </servlet-mapping>
+
+<!--    默认欢迎页匹配-->
+    <welcome-file-list>
+        <welcome-file>1.html</welcome-file>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.html</welcome-file>
+        <welcome-file>default.htm</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+    </welcome-file-list>
+
+
+    <servlet>
+        <servlet-name>QuickStartServlet2</servlet-name>
+        <servlet-class>servlet.QuickStartServlet2</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QuickStartServlet2</servlet-name>
+        <url-pattern>/quickStartServlet2</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+    <servlet-name>LoginServlet</servlet-name>
+    <servlet-class>login.LoginServlet</servlet-class>
+</servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>ContextServlet</servlet-name>
+        <servlet-class>context.ContextServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ContextServlet</servlet-name>
+        <url-pattern>/context</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ContextServlet2</servlet-name>
+        <servlet-class>context.ContextServlet2</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ContextServlet2</servlet-name>
+        <url-pattern>/context2</url-pattern>
+    </servlet-mapping>
+
+<!--    <servlet>-->
+<!--        <servlet-name>QuickStartServlet2</servlet-name>-->
+<!--        <servlet-class>com.itheima.servlet.QuickStartServlet2</servlet-class>-->
+<!--    </servlet>-->
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>QuickStartServlet2</servlet-name>-->
+<!--        <url-pattern>/quickStartServlet2</url-pattern>-->
+<!--    </servlet-mapping>-->
+<!--    <servlet>-->
+<!--        <description></description>-->
+<!--        <display-name>LoginServlet</display-name>-->
+<!--        <servlet-name>LoginServlet</servlet-name>-->
+<!--        <servlet-class>com.itheima.login.LoginServlet</servlet-class>-->
+<!--    </servlet>-->
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>LoginServlet</servlet-name>-->
+<!--        <url-pattern>/login</url-pattern>-->
+<!--    </servlet-mapping>-->
+<!--    <servlet>-->
+<!--        <description></description>-->
+<!--        <display-name>ContextServlet</display-name>-->
+<!--        <servlet-name>ContextServlet</servlet-name>-->
+<!--        <servlet-class>com.itheima.context.ContextServlet</servlet-class>-->
+<!--    </servlet>-->
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>ContextServlet</servlet-name>-->
+<!--        <url-pattern>/context</url-pattern>-->
+<!--    </servlet-mapping>-->
+<!--    <servlet>-->
+<!--        <description></description>-->
+<!--        <display-name>ContextServlet2</display-name>-->
+<!--        <servlet-name>ContextServlet2</servlet-name>-->
+<!--        <servlet-class>com.itheima.context.ContextServlet2</servlet-class>-->
+<!--    </servlet>-->
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>ContextServlet2</servlet-name>-->
+<!--        <url-pattern>/context2</url-pattern>-->
+<!--    </servlet-mapping>-->
+</web-app>

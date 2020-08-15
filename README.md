@@ -2807,6 +2807,45 @@ setHeader(String name, String value)
 setDateHeader(String name, long date)    
 setIntHeader(String name, int value)   
 
+多次addHeader()添加相同参数，会生成到列表
+---
+多次setHeader()设置相同参数，以最新的设置为准
+---
+```
+response.addHeader("name", "zhangsan");
+        response.addIntHeader("age", 288);
+        response.addDateHeader("birthday", date.getTime());
+        response.addHeader("name", "lisi");
+        response.setHeader("age", "28");
+
+响应：
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+name: zhangsan
+age: 28
+birthday: Wed, 12 Aug 2020 01:08:11 GMT
+name: lisi
+Content-Length: 0
+Date: Wed, 12 Aug 2020 01:08:11 GMT
+```
+
+重定向：
+===
+特点：  
+1. 访问服务器两次
+2. 地址栏的地址发生变化
+状态码302   
+响应头：location 重定向的地址   
+```
+response.setStatus(302);
+        response.setHeader("Location", "/directDst");
+```
+使用定时跳转：
+===
+```
+// 5s 后进行跳转
+        response.setHeader("refresh","5;url=localhost:8080/directDst");
+```
 
 
 
