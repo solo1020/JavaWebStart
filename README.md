@@ -2875,6 +2875,88 @@ git reset --hard
 然后 再将本地回退后的版本 push到远程：  
 git push --force   
 
+response write 图片字节流：
+====
+```
+//        response.setContentType("image/jpg");
+        // 使用response获取字节输出流
+        ServletOutputStream stream = response.getOutputStream();
+        //获取服务器上的图片 先获取绝对路径
+//        String picPath = this.getServletContext().getRealPath("imgs/a.jpg");
+        String picPath = this.getServletContext().getRealPath("b.jpg");
+        System.out.println(picPath);
+        System.out.println(this.getServletContext().getRealPath("/"));
+        InputStream in = new FileInputStream(picPath);
+
+//        InputStream in = this.getServletContext().getResourceAsStream("/a.jpg");
+
+        int len = 0;
+        byte[] buffer = new byte[1024];
+        while ( (len = in.read(buffer)) > 0){
+            stream.write(buffer,0,len);
+        }
+        in.close();
+        stream.close();
+```
+图片路径放在web-content根目录或其他非WEB-INF目录都可以  
+但是要确保每次run tomcat之后 out目录下有同步更新图片资源   
+
+### 案例Demo 文件下载
+浏览器默认不能解析的文件默认就需要下载(除图片文本等)
+---
+所以, 浏览器可以解析的文件需要编写下载代码，不能解析的浏览器默认会下载，不需要编写   
+
+页面编写：
+===
+在页面中写访问后台servlet的链接：  
+对应的地址是web.xml中的servlet name 不是 servlet-class   
+
+```
+<h1>使用服务端编码的方式实现文件下载</h1>
+    <!--链接的地址和web.xml中配置的servlet名一致，不是和servlet的类名一致-->
+    <a href="/downloadServlet?filename=a.flv">a.flv</a><br/>
+    <a href="/downloadServlet?filename=a.jpg">a.jpg</a><br/>
+    <a href="/downloadServlet?filename=a.mp3">a.mp3</a><br/>
+```
+下载代码：
+===
+通过页面href中写的url链接传递的参数 filename 获取服务器本地目录的资源，并进行文件读写操作    
+
+#### 设置文件以附件形式下载：
+response.setHeader("Content-Disposition", "attachment;filename="+fileName);    
+
+#### 获取文件的MIME类型
+response.setContentType(this.getServletContext().getMimeType(fileName));   
+但是这个好像只是根据后缀名判断？ 因为fileName传递进来的只是字符串   
+
+
+```
+ // 获取待下载文件名称
+        String fileName = request.getParameter("filename");
+
+
+        // 客户端通过文件的MIME类型去区分类型
+        response.setContentType(this.getServletContext().getMimeType(fileName));
+
+        // 告诉客户端浏览器 不要直接解析，以附件形式下载
+        response.setHeader("Content-Disposition", "attachment;filename="+fileName);
+
+        // 获取文件的绝对路径
+        String path = this.getServletContext().getRealPath("download/"+fileName);
+        System.out.println("local file path: " + path);
+        // 获取该文件的输入流
+        InputStream in = new FileInputStream(path);
+        // 获取输出流--通过response的输出流用于向客户端写数据
+        ServletOutputStream out = response.getOutputStream();
+
+        int len = 0;
+        byte[] buffer = new byte[1024];
+        while ( (len = in.read(buffer)) > 0){
+            out.write(buffer,0,len);
+        }
+        in.close();
+        out.close();
+```
 
 
 
