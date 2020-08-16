@@ -85,4 +85,13 @@
         <servlet-name>textServlet</servlet-name>
         <url-pattern>/text</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>byteServlet</servlet-name>
+        <servlet-class>servlet.ByteServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>byteServlet</servlet-name>
+        <url-pattern>/byte</url-pattern>
+    </servlet-mapping>
 </web-app>

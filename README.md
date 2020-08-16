@@ -2864,7 +2864,10 @@ response.setContentType("text/html;charset=UTF-8");
         writer.write("中国");
 ```
 
-
+### IDEA 配置tomcat自动更新
+compile independent modules in parallel     
+build project automaticlly    
+都要勾上 尤其是第一个 必须勾 不然经常出现web-content目录下的资源找不到的情况   
 
 
 
