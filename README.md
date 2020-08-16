@@ -2869,7 +2869,11 @@ compile independent modules in parallel
 build project automaticlly    
 都要勾上 尤其是第一个 必须勾 不然经常出现web-content目录下的资源找不到的情况   
 
-
+### git 回滚操作
+git log 获取旧的commitid   
+git reset --hard   
+然后 再将本地回退后的版本 push到远程：  
+git push --force   
 
 
 
