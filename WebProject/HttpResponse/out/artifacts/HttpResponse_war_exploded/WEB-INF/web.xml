@@ -105,4 +105,25 @@
         <servlet-name>downloadServlet</servlet-name>
         <url-pattern>/downloadServlet</url-pattern>
     </servlet-mapping>
+
+
+    <!--response的 getWriter 和 getOutputStream 不能同时调用-->
+    <servlet>
+        <servlet-name>writerOutputErrorServlet</servlet-name>
+        <servlet-class>servlet.WriterAndOutputServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>writerOutputErrorServlet</servlet-name>
+        <url-pattern>/writeroutputerror</url-pattern>
+    </servlet-mapping>
+
+    <!--验证码-->
+    <servlet>
+        <servlet-name>checkimgServlet</servlet-name>
+        <servlet-class>servlet.CheckImgServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>checkimgServlet</servlet-name>
+        <url-pattern>/checkImg</url-pattern>
+    </servlet-mapping>
 </web-app>
