@@ -2957,6 +2957,10 @@ response.setContentType(this.getServletContext().getMimeType(fileName));
         in.close();
         out.close();
 ```
+中文文件名下载：
+====
+// 中文的文件名需要进行编码转换  
+fileName = new String(fileName.getBytes("ISO8859-1"), "UTF-8");    
 
 ### 设置gitignore global
 git config --global core.excludesfile ~/.gitignore_global   

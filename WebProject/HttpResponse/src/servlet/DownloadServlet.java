@@ -20,6 +20,9 @@ public class DownloadServlet extends HttpServlet {
         // 获取待下载文件名称
         String fileName = request.getParameter("filename");
 
+        // 中文的文件名需要进行编码转换
+        fileName = new String(fileName.getBytes("ISO8859-1"), "UTF-8");
+
 
         // 客户端通过文件的MIME类型去区分类型
         response.setContentType(this.getServletContext().getMimeType(fileName));
