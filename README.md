@@ -3121,6 +3121,15 @@ git config --global core.excludesfile ~/.gitignore_global
     </script>
 ```
 
+### HttpServletRequest
+
+根据request获取请求行：
+===
+String getRequestURI() 请求资源   
+StringBuffer getRequestURL()   
+String getContextPath()  获取web应用的名称    
+String getQueryString()  获取get提交的url后携带的参数   
+
 
 
 
