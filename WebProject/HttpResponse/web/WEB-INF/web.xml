@@ -137,4 +137,15 @@
         <servlet-name>lineServlet</servlet-name>
         <url-pattern>/requestline</url-pattern>
     </servlet-mapping>
+
+
+    <!--request 请求头-->
+    <servlet>
+        <servlet-name>requestHeaderServlet</servlet-name>
+        <servlet-class>request.RequestHeaderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>requestHeaderServlet</servlet-name>
+        <url-pattern>/requestheader</url-pattern>
+    </servlet-mapping>
 </web-app>

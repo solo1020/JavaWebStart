@@ -3125,12 +3125,58 @@ git config --global core.excludesfile ~/.gitignore_global
 
 根据request获取请求行：
 ===
+getRemoteAddr() 获得客户端的ip    
+
+
 String getRequestURI() 请求资源   
 StringBuffer getRequestURL()   
 String getContextPath()  获取web应用的名称    
 String getQueryString()  获取get提交的url后携带的参数   
 
+```
+// 获取请求方式
+        String method = request.getMethod();
+        System.out.println("request method: " + method);
 
+        // 2.获取请求资源的相关内容
+        String requestURI = request.getRequestURI();
+        StringBuffer requestURL = request.getRequestURL();
+        System.out.println("request URI: " + requestURI);
+        System.out.println("request URL: " + requestURL);
+
+        //获取web应用名称
+        String contextPath = request.getContextPath();
+        System.out.println("web 应用: " + contextPath);
+
+        // 获取请求参数
+        String queryString = request.getQueryString();
+        System.out.println("request params: " + queryString);
+```
+
+
+输出：   
+其中web应用的路径 和idea中设置的Application context是一样的   
+getQueryString 因为post请求参数不是携带在请求行里面而是在请求体里面   
+```
+request method: POST
+request URI: /requestline
+request URL: http://localhost:8080/requestline
+web 应用: 
+request params: null
+```
+
+#### 修改后未生效：  
+1. 设置Setting-compiler-build project automaticlly
+2. ctrl+alt+shift+/ Registry 勾选 compiler.automake.allow.when.app.running   
+3. 查看out的目录下是否文件更新，如已经更新，清空浏览器缓存，且在f12中disable cache  
+
+根据request获取请求头：
+====
+long getDateHeader(String name)    
+String getHeader(String name)   
+Enumeration getHeaderNames()   
+Enumeration getHeaders(String name)    
+int getIntHeader(String name)    
 
 
 

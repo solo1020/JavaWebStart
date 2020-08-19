@@ -126,4 +126,15 @@
         <servlet-name>checkimgServlet</servlet-name>
         <url-pattern>/checkImg</url-pattern>
     </servlet-mapping>
+
+
+    <!--request 请求行-->
+    <servlet>
+        <servlet-name>lineServlet</servlet-name>
+        <servlet-class>request.LineServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>lineServlet</servlet-name>
+        <url-pattern>/requestline</url-pattern>
+    </servlet-mapping>
 </web-app>
