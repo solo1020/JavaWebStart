@@ -137,4 +137,35 @@
         <servlet-name>lineServlet</servlet-name>
         <url-pattern>/requestline</url-pattern>
     </servlet-mapping>
+
+
+    <!--request 请求头-->
+    <servlet>
+        <servlet-name>requestHeaderServlet</servlet-name>
+        <servlet-class>request.RequestHeaderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>requestHeaderServlet</servlet-name>
+        <url-pattern>/requestheader</url-pattern>
+    </servlet-mapping>
+
+    <!--referer 请求头 防盗链-->
+    <servlet>
+        <servlet-name>refererHeaderServlet</servlet-name>
+        <servlet-class>request.RefererServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>refererHeaderServlet</servlet-name>
+        <url-pattern>/referer</url-pattern>
+    </servlet-mapping>
+
+    <!--request 请求体-->
+    <servlet>
+        <servlet-name>contentServlet</servlet-name>
+        <servlet-class>request.ContentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>contentServlet</servlet-name>
+        <url-pattern>/content</url-pattern>
+    </servlet-mapping>
 </web-app>

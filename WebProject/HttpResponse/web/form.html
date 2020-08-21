@@ -5,9 +5,20 @@
     <title>request 表单</title>
 </head>
 <body>
+    <!--<a href="/requestheader">访问requestheader资源</a>-->
+    <a href="/referer">访问requestheader资源</a>
     <form action="/requestline" method="get">
         <input type="text" name="username"><br>
         <input type="password" name="password"><br>
+        <input type="submit" value="提交"><br>
+    </form>
+    <hr/>
+    <form action="/content" method="post">
+        <input type="text" name="username"><br>
+        <input type="password" name="password"><br>
+        <input type="checkbox" name="hobby" value="soccer">足球<br>
+        <input type="checkbox" name="hobby" value="paiqiu">排球<br>
+        <input type="checkbox" name="hobby" value="pingpong">乒乓球<br>
         <input type="submit" value="提交"><br>
     </form>
 </body>

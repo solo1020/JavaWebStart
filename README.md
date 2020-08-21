@@ -3178,7 +3178,168 @@ Enumeration getHeaderNames()
 Enumeration getHeaders(String name)    
 int getIntHeader(String name)    
 
+header示例：
+referer: 代表当前请求的来源页面 可以做 防盗链     
 
+方法：
+---
+```
+//获取所有头名称
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()){
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            System.out.println(headerName + " : " + headerValue);
+        }
+```
+
+```
+agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36
+host : localhost:8080
+connection : keep-alive
+upgrade-insecure-requests : 1
+user-agent : Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36
+accept : text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+sec-fetch-site : same-origin
+sec-fetch-mode : navigate
+sec-fetch-user : ?1
+sec-fetch-dest : document
+referer : http://localhost:8080/form.html
+accept-encoding : gzip, deflate, br
+accept-language : zh-CN,zh;q=0.9
+cookie : Idea-6a75e9c1=61b4759b-ca18-4f3d-bd88-53997540f963; JSESSIONID=A0768F66022A989C4C9BBBB64866B80C
+
+```
+
+防盗链示例：
+===
+正常访问的页面：
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>request 表单</title>
+</head>
+<body>
+    <!--<a href="/requestheader">访问requestheader资源</a>-->
+    <a href="/referer">访问requestheader资源</a>
+    <form action="/requestline" method="get">
+        <input type="text" name="username"><br>
+        <input type="password" name="password"><br>
+        <input type="submit" value="提交"><br>
+    </form>
+</body>
+</html>
+```
+即正常从该页面点击 a 链接访问的就是refer资源    
+referer 中运行从该页面获取展示的内容    
+```
+// 对新闻来源进行判断
+        String header = request.getHeader("referer");
+        // 因为是本地测试 多加了一条判断  endWith()
+        if(header != null && header.startsWith("http://localhost") && header.endsWith("form.html")){
+            // startWith用来判断referer是否是本网站打开的链接
+            response.setContentType("text/html;charset=UTF-8");
+            response.getWriter().write("中国已经100块金牌");
+        }else {
+            response.getWriter().write("盗链可耻。。。");
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 跳转来源页
+            response.setStatus(302);
+            response.setHeader("Location", "/form.html");
+        }
+```
+
+而盗链的页面也copy了这个链接a 准备访问：   
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>盗链跳转</title>
+</head>
+<body>
+    <a href="/referer">访问referer资源</a>
+    <form action="/requestline" method="get">
+        <input type="text" name="username"><br>
+        <input type="password" name="password"><br>
+        <input type="submit" value="提交"><br>
+    </form>
+</body>
+</html>
+```
+则此时 页面的 header里 referer的值是盗链页面news_referer.html 而不是 正常的页面form.html   可以通过判断不让其进行访问    
+
+request 获取请求体
+===
+请求体的内容是 post提交的请求参数：   
+username=zhangsan&password=123&hobby=football&hobbybasketball    
+
+获取参数方法：
+getParameter("username") 获取单个值表单：  
+getParameterValues("hobby") 获取多个值的表单   
+getParameterNames() 获取所有参数名   
+getParameterMap() 获取所有的参数存储到map里   
+ Map<String,String[]> paramterMap = request.getParameterMap();   
+        for(Map.Entry<String,String[]> entry:paramterMap.entrySet()){    
+            System.out.println("parameter key: " + entry.getKey());   
+            for(String s : entry.getValue()){    
+
+```
+// 获得单个表单值
+        String username = request.getParameter("username");
+        System.out.println("username: " + username);
+        String password = request.getParameter("password");
+        System.out.println("password: " + password);
+
+        // 获取多个表单的值
+        String[] hobbys = request.getParameterValues("hobby");
+        for(String hobby: hobbys){
+            System.out.println("hobby: " + hobby);
+        }
+        // 获取所有请求参数的名称
+        Enumeration<String> parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements()){
+            System.out.println(parameterNames.nextElement());
+        }
+
+        // 获取所有参数 到 一个Map<String,String[]>
+        Map<String,String[]> paramterMap = request.getParameterMap();
+        for(Map.Entry<String,String[]> entry:paramterMap.entrySet()){
+            System.out.println("parameter key: " + entry.getKey());
+            for(String s : entry.getValue()){
+                System.out.println("parameter " + entry.getKey() + " value: " + s);
+            }
+            System.out.println("------------------------");
+        }
+
+```
+输出：  
+---
+```
+username: 545
+password: ghgryty
+hobby: soccer
+hobby: paiqiu
+username
+password
+hobby
+parameter key: username
+parameter username value: 545
+------------------------
+parameter key: password
+parameter password value: ghgryty
+------------------------
+parameter key: hobby
+parameter hobby value: soccer
+parameter hobby value: paiqiu
+------------------------
+```
 
 
 
