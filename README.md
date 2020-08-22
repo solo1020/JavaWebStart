@@ -3360,9 +3360,9 @@ requestDispatcher.forword(ServletRequest request, ServletResponse response)
 
 请求转发：
 ---
-请求转发是客户端请求服务端之后，服务端自动将该请求发送给 含有用户请求资源的服务servlet,而目标servlet进行响应   
-区别：
-===
+请求转发是客户端请求服务端之后，服务端自动将该请求发送给 含有用户请求资源的服务servlet,而目标servlet进行响应    
+
+#### 区别：
 1. 重定向需要两次请求，请求转发只需要一次    
 2. 重定向的浏览器地址栏会发生改变，而请求转发浏览器地址不变  
 3. 重定向可以访问外部网站   
@@ -3372,7 +3372,7 @@ requestDispatcher.forword(ServletRequest request, ServletResponse response)
 request域对象的作用范围仅限一次完整请求中：  
 
 如下代码中的ForwardSrc 如果设置的name属性后，不是使用请求转发而是使用重定向，则 目标ForwardDst 无法获取到该name属性    
-====
+---
 
 
 代码：    
@@ -3510,21 +3510,20 @@ CREATE TABLE `user_tbl` (
 )
 ```
 
-中文乱码：  
----
-// 防止中文参数乱码 设置request 编码   
-request.setCharacterEncoding("UTF-8");  ---- 只适合post方式的请求    
-get方式的乱码：
+#####  中文乱码：  
+// 防止中文参数乱码 设置request 编码     
+request.setCharacterEncoding("UTF-8");  ---- 只适合post方式的请求      
+get方式的乱码原理：   
 ---
 页面中文字符 --使用UTF-8编码 ---服务端使用ISO8859-1解码    
 解决乱码：   
 使用ISO8859-1编码--UTF-8解码 --- 逆向获取   
 编码使用： String.getBytes("iso8859-1")    
-解码使用：  new String(byte[] bytes, "UTF-8")    
-一般情况请求都是post 所以使用 setCharacterEncoding即可  
----
+解码使用：  new String(byte[] bytes, "UTF-8")   
 
-注册代码：
+##### 一般情况请求都是post 所以使用 setCharacterEncoding即可  
+
+注册代码：  
 ```
 // 注册方法
     public void regist(User user) throws SQLException {
@@ -3565,10 +3564,10 @@ response.sendRedirect(request.getContextPath() + "/login.jsp");
 > Map<String, String[]> request.getParameterMap()
 > String[] request.getParameterValues(name)    
 > Notes: 客户端发送的参数到服务器端都是字符串
-> -------------------------------------------------
-> 中文乱码解决：
-> > post请求： request.setCharacterEncoding("UTF-8);   
-> > get 请求： parameter = new String(parameter.getBytes("iso8859-1"), "UTF-8")    
+********
+中文乱码解决：  
+> post请求： request.setCharacterEncoding("UTF-8);   
+> get 请求： parameter = new String(parameter.getBytes("iso8859-1"), "UTF-8")    
 
 4. request 转发和域
 > request.getRequestDispatcher(转发的地址).forward(request,response)   
