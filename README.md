@@ -3341,6 +3341,118 @@ parameter hobby value: paiqiu
 ------------------------
 ```
 
+#### request 其他功能
+1. request是一个域对象 作用域是 一次请求中   
+setAttribute(String name, Object o)    
+getAttribute(String name)    
+removeAttribute(String name)    
+2. request 完成请求转发
+获取请求转发器：  
+RequestDispatcher getRequestDispatcher(String path 转发地址)    
+通过转发器对象转发：    
+requestDispatcher.forword(ServletRequest request, ServletResponse response)    
+
+转发与重定向：
+===
+重定向：
+---
+重定向是 客户端浏览器 向 服务端发送某个资源的请求，服务端返回给客户端一个location的header和重定向后的真实资源地址，客户端再去获取该资源      
+
+请求转发：
+---
+请求转发是客户端请求服务端之后，服务端自动将该请求发送给 含有用户请求资源的服务servlet,而目标servlet进行响应   
+区别：
+===
+1. 重定向需要两次请求，请求转发只需要一次    
+2. 重定向的浏览器地址栏会发生改变，而请求转发浏览器地址不变  
+3. 重定向可以访问外部网站   
+4. 转发的性能优于重定向   
+
+
+request域对象的作用范围仅限一次完整请求中：  
+
+如下代码中的ForwardSrc 如果设置的name属性后，不是使用请求转发而是使用重定向，则 目标ForwardDst 无法获取到该name属性    
+====
+
+
+代码：    
+源servlet:   
+```
+// ForwardSrcServlet.java
+
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        // request域对象存储数据
+        request.setAttribute("name","tom");
+
+        // 当前servlet 将请求转发给 目标servlet ForwardDstServlet
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/forwarddst");
+        dispatcher.forward(request,response);
+    }
+```
+目标servlet:     
+```
+// ForwardDstServlet.java
+
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        Object name =  request.getAttribute("name");
+        response.getWriter().write("hello ForwardSrcServlet " + name );
+    }
+
+
+// web.xml
+<!--request 请求转发-->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>request.ForwardSrcServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/forwardsrc</url-pattern>
+    </servlet-mapping>
+
+    <!--request 请求转发接收-->
+    <servlet>
+        <servlet-name>dispatcherReceiveServlet</servlet-name>
+        <servlet-class>request.ForwardDstServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherReceiveServlet</servlet-name>
+        <url-pattern>/forwarddst</url-pattern>
+    </servlet-mapping>
+```
+总结：
+===
+get方法的表单参数通过 getQueryString() 方法获取请求行  
+post方法的表单参数通过     
+getParameter("username")   
+getParameterValues("hobby")    
+getParameterNames()    
+getParameterMap()   等方法获取请求体中的参数
+
+### 案例demo 实现注册功能
+1. 表单中文乱码问题
+2. 参数过多： 使用BeanUtils 将map中的数据与实体类Javabean进行映射  
+创建表：
+---
+```
+CREATE TABLE `user_tbl` (
+  `uid` varchar(32) NOT NULL,
+  `username` varchar(20) DEFAULT NULL,
+  `password` varchar(20) DEFAULT NULL,
+  `name` varchar(20) DEFAULT NULL,
+  `email` varchar(30) DEFAULT NULL,
+  `telephone` varchar(20) DEFAULT NULL,
+  `birthday` varchar(20) DEFAULT NULL,
+  `sex` varchar(10) DEFAULT NULL,
+  `state` int(11) DEFAULT NULL,
+  `code` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`uid`)
+)
+```
+
+
 
 
 

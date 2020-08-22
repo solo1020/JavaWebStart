@@ -7,12 +7,15 @@
 <body>
     <!--<a href="/requestheader">访问requestheader资源</a>-->
     <a href="/referer">访问requestheader资源</a>
+    <p>访问/requestline的表单 get方法 只能从请求行获取参数</p>
     <form action="/requestline" method="get">
         <input type="text" name="username"><br>
         <input type="password" name="password"><br>
         <input type="submit" value="提交"><br>
     </form>
     <hr/>
+
+    <p>访问/content的表单 post方法 从请求体获取参数</p>
     <form action="/content" method="post">
         <input type="text" name="username"><br>
         <input type="password" name="password"><br>

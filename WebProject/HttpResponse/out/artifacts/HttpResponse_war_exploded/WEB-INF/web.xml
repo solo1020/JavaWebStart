@@ -168,4 +168,24 @@
         <servlet-name>contentServlet</servlet-name>
         <url-pattern>/content</url-pattern>
     </servlet-mapping>
+
+    <!--request 请求转发-->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>request.ForwardSrcServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/forwardsrc</url-pattern>
+    </servlet-mapping>
+
+    <!--request 请求转发接收-->
+    <servlet>
+        <servlet-name>dispatcherReceiveServlet</servlet-name>
+        <servlet-class>request.ForwardDstServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherReceiveServlet</servlet-name>
+        <url-pattern>/forwarddst</url-pattern>
+    </servlet-mapping>
 </web-app>
