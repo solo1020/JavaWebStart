@@ -3434,11 +3434,69 @@ getParameterMap()   等方法获取请求体中的参数
 ### 案例demo 实现注册功能
 1. 表单中文乱码问题
 2. 参数过多： 使用BeanUtils 将map中的数据与实体类Javabean进行映射  
-创建表：
+> 创建表：BeanUtils.populate()    
+```
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        // 防止中文参数乱码 设置request 编码 --只限于post请求
+        request.setCharacterEncoding("UTF-8");
+
+        // get请求
+//        String username = request.getParameter("username");
+//        // 先用ISO8859-1编码
+//        username = new String(username.getBytes("iso8859-1"),"UTF-8");
+
+        // 获取数据
+        // 多个参数时下面的方式太繁琐，使用BeanUtils解决
+//        String username = request.getParameter("username");
+//        String password = request.getParameter("password");
+
+        // 将原始数据封装到JavaBean中
+        // 多个参数时下面的方式太繁琐，使用BeanUtils解决
+//        User user = new User();
+//        user.setUsername(username);
+//        user.setPassword(password);
+
+        // 使用BeanUtils自动进行映射封装
+        // 工作原理：将map中数据 根据key 与实体类的属性对应关系进行封装
+        // 只要key的名字和尸体属性名一样，就自动封装
+        Map<String,String[]> properties = request.getParameterMap();
+        User user = new User();
+        try {
+            BeanUtils.populate(user,properties);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        // 此时 user对象已经封装完毕
+        // 手动封装uid--使用uuid--32位随机不重复字符串 加 四位的短划线 生成的Java代码是36位
+        user.setUid(UUID.randomUUID().toString());
+
+        // 将参数传递给业务操作方法
+        try {
+            regist(user);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // 注册成功跳转登录页面,不推荐用请求转发，需要让用户看到跳转的地址变化，使用重定向
+//        response.sendRedirect("/login.jsp");
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+
+
+
+    }
+```
+
+uid因为使用UUID生成 所有需要大于36位   
+
+修改表字段长度： alter table user_tbl modify column uid varchar(50);   
 ---
+
 ```
 CREATE TABLE `user_tbl` (
-  `uid` varchar(32) NOT NULL,
+  `uid` varchar(50) NOT NULL,
   `username` varchar(20) DEFAULT NULL,
   `password` varchar(20) DEFAULT NULL,
   `name` varchar(20) DEFAULT NULL,
@@ -3451,6 +3509,71 @@ CREATE TABLE `user_tbl` (
   PRIMARY KEY (`uid`)
 )
 ```
+
+中文乱码：  
+---
+// 防止中文参数乱码 设置request 编码   
+request.setCharacterEncoding("UTF-8");  ---- 只适合post方式的请求    
+get方式的乱码：
+---
+页面中文字符 --使用UTF-8编码 ---服务端使用ISO8859-1解码    
+解决乱码：   
+使用ISO8859-1编码--UTF-8解码 --- 逆向获取   
+编码使用： String.getBytes("iso8859-1")    
+解码使用：  new String(byte[] bytes, "UTF-8")    
+一般情况请求都是post 所以使用 setCharacterEncoding即可  
+---
+
+注册代码：
+```
+// 注册方法
+    public void regist(User user) throws SQLException {
+        // 操作数据库
+        QueryRunner runner = new QueryRunner(DataSourceUtils.getDataSource());
+        String sql = "insert into user_tbl values(?,?,?,?,?,?,?,?,?,?)";
+        runner.update(sql,user.getUid(),user.getUsername(),user.getPassword(),
+                user.getName(), user.getEmail(),null,user.getBirthday(),
+                user.getSex(),null,null);
+    }
+```
+
+登录后跳转首页
+---
+注册成功跳转登录页面,不推荐用请求转发，需要让用户看到跳转的地址变化，使用重定向    
+response.sendRedirect(request.getContextPath() + "/login.jsp");    
+不直接写路径，防止后期web项目名称修改后找不到资源   
+
+登录失败信息回显：
+----
+借助servlet转发请求时设置的attribute 动态改变jsp内容   
+
+
+
+### request 总结:
+1. request 获取请求行的内容 
+> request.getMethod()     
+> request.getRequestURI()   
+> request.getRequestURL()   
+> request.getContextPath()   
+> request.getRemoteAddr()  
+
+2. request 获取请求头的内容
+> request.getHeader(name)
+
+3. request 获取请求体的内容
+> String request.getParameter(name)
+> Map<String, String[]> request.getParameterMap()
+> String[] request.getParameterValues(name)    
+> Notes: 客户端发送的参数到服务器端都是字符串
+> -------------------------------------------------
+> 中文乱码解决：
+> > post请求： request.setCharacterEncoding("UTF-8);   
+> > get 请求： parameter = new String(parameter.getBytes("iso8859-1"), "UTF-8")    
+
+4. request 转发和域
+> request.getRequestDispatcher(转发的地址).forward(request,response)   
+> request.setAttribute(String name,Object value);
+
 
 
 
