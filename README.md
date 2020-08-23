@@ -3510,9 +3510,10 @@ CREATE TABLE `user_tbl` (
 )
 ```
 
-#####  中文乱码：  
-// 防止中文参数乱码 设置request 编码     
-request.setCharacterEncoding("UTF-8");  ---- 只适合post方式的请求      
+#####  中文乱码：
+> // 防止中文参数乱码 设置request 编码     
+> request.setCharacterEncoding("UTF-8");  ---- 只适合post方式的请求     
+
 get方式的乱码原理：   
 ---
 页面中文字符 --使用UTF-8编码 ---服务端使用ISO8859-1解码    
@@ -3572,6 +3573,60 @@ response.sendRedirect(request.getContextPath() + "/login.jsp");
 4. request 转发和域
 > request.getRequestDispatcher(转发的地址).forward(request,response)   
 > request.setAttribute(String name,Object value);
+
+#### 会话技术 Cookie & session
+会话技术是帮助服务端区分客户端   
+会话技术从打开浏览器开始到关闭浏览器结束，为一次会话   
+
+1. cookie  
+> 数据存储在客户端本地，安全性不好，客户端可以清除
+2. session  
+> 数据存储在服务器端，安全性好，增加服务器压力   
+
+cookie
+===
+1. 服务器如何将cookie写给客户端
+2. 服务器如何获取客户端携带的cookie  
+
+创建Cookie
+---
+Cookie cookie = new Cookie(String cookieName, String cookieValue);  
+接着该cookie会以响应头的形式发送给客户端：   
+Set-cookie:"name=zhangsan"   
+
+向客户端发送cookie: 
+----
+response.addCookie(Cookie cookie);   
+#### cookie不能存储中文
+默认cookie是会话级别,即浏览器关闭后cookie信息不存在       
+常用API：
+---
+1. 设置cookie在客户端的持久化时间
+> cookie.setMaxAge(int seconds);  
+> 设置了持久化时间后 cookie则会别存储到磁盘文件里   
+
+2. 设置cookie的携带路径  
+> cookie.setPath(String path);  
+> 如果不设置路径，那么默认cookie信息会在访问 产生 该cookie的 web 资源所在的路径下都携带cookie信息， 即如果访问地址是 localhost:8080/demo/cookie 那么在 所有的/demo 路径都会携带该cookie
+
+3. 删除cookie   
+> 设置同名cookie，设置一致的携带路径，将持久化时间设置为0   
+
+4. 获取所有cookie
+> Cookie[] cookies = request.getCookies()
+5. 获取cookie的键名
+> cookies.getName()
+6. 获取cookie键值 
+> cookie.getValue()  
+
+
+
+
+
+
+
+
+
 
 
 

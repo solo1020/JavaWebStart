@@ -208,4 +208,14 @@
         <servlet-name>loginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
     </servlet-mapping>
+
+    <!--    cookie-->
+    <servlet>
+        <servlet-name>cookieServlet</servlet-name>
+        <servlet-class>cookie.CookieServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>cookieServlet</servlet-name>
+        <url-pattern>/cookie</url-pattern>
+    </servlet-mapping>
 </web-app>
