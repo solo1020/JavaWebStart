@@ -3618,11 +3618,57 @@ response.addCookie(Cookie cookie);
 > cookies.getName()
 6. 获取cookie键值 
 > cookie.getValue()  
+```
+// 获取客户端携带的cookie数据
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies){
+                String cookieName = cookie.getName();
+                if (cookieName.equals("name")){
+                    String cookieValue = cookie.getValue();
+                    System.out.println("cookie value: " + cookieValue);
+                }
+            }
+        }
+```
 
+### 案例demo 记录用户上次访问时间
+```
+Date date = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String currentTime = format.format(date);
+        // 创建cookie 存储最新访问时间
+        Cookie cookie = new Cookie("lastAccessTime", currentTime);
+        cookie.setMaxAge(60 * 10 * 500);
+        response.addCookie(cookie);
 
+        // 获取客户端携带的cookie
+        String lastAccessTime = null;
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null){
+            for(Cookie coo : cookies){
+                if("lastAccessTime".equals(coo.getName())){
+                    lastAccessTime = coo.getValue();
+                }
+            }
+        }
 
+        response.setContentType("text/html;charset=UTF-8");
+        if (lastAccessTime == null){
+            response.getWriter().write("您是第一次访问本站");
+        }else {
+            response.getWriter().write("您上次访问时间是： " + lastAccessTime);
+        }
+```
 
+#### session 技术
+session基于cookie， 需要客户端存储JSESSIONID       
 
+1. 如何创建专属每个客户端的session存储区域
+> HttpSession session = request.getSession()   
+
+2. 如何向session中存储数据
+3. session生命周期  
 
 
 

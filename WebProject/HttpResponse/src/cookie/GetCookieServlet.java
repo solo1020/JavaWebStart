@@ -25,12 +25,15 @@ public class GetCookieServlet extends HttpServlet {
 
         // 获取客户端携带的cookie数据
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies){
-            String cookieName = cookie.getName();
-            if (cookieName.equals("name")){
-                String cookieValue = cookie.getValue();
-                System.out.println("cookie value: " + cookieValue);
+        if (cookies != null) {
+            for (Cookie cookie : cookies){
+                String cookieName = cookie.getName();
+                if (cookieName.equals("name")){
+                    String cookieValue = cookie.getValue();
+                    System.out.println("cookie value: " + cookieValue);
+                }
             }
         }
+
     }
 }

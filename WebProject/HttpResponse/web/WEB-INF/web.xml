@@ -218,4 +218,14 @@
         <servlet-name>cookieServlet</servlet-name>
         <url-pattern>/cookie</url-pattern>
     </servlet-mapping>
+
+    <!--    cookie last access time-->
+    <servlet>
+        <servlet-name>lastAccessServlet</servlet-name>
+        <servlet-class>cookie.LastAccessTimeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>lastAccessServlet</servlet-name>
+        <url-pattern>/getcookie</url-pattern>
+    </servlet-mapping>
 </web-app>
