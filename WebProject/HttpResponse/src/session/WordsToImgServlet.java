@@ -1,4 +1,4 @@
-package servlet;
+package session;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 @WebServlet(name = "WordsToImgServlet")
-public class CheckImgServlet extends HttpServlet {
+public class WordsToImgServlet extends HttpServlet {
     // 集合中保存所有成语
     private List<String> words = new ArrayList<String>();
 
@@ -69,7 +69,8 @@ public class CheckImgServlet extends HttpServlet {
 
         Random random = new Random();// 生成随机数
         int index = random.nextInt(words.size());
-        String word = words.get(index);// 获得成语
+//        String word = words.get(index);// 获得成语
+        String word = new String(words.get(index).getBytes(),"UTF-8");// 获得成语
 
         // 定义x坐标
         int x = 10;

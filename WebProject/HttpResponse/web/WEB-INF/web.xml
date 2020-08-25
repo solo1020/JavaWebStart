@@ -248,4 +248,24 @@
         <servlet-name>getsessionServlet</servlet-name>
         <url-pattern>/getsession</url-pattern>
     </servlet-mapping>
+
+    <!--    从成语文本生成验证码图片  -->
+    <servlet>
+        <servlet-name>wordstoimgServlet</servlet-name>
+        <servlet-class>session.WordsToImgServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>wordstoimgServlet</servlet-name>
+        <url-pattern>/wordtoimg</url-pattern>
+    </servlet-mapping>
+
+    <!--    校验前端填写验证码和后台验证码是否一致  -->
+    <servlet>
+        <servlet-name>checkloginimgServlet</servlet-name>
+        <servlet-class>session.CheckLoginImgServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>checkloginimgServlet</servlet-name>
+        <url-pattern>/checkloginimg</url-pattern>
+    </servlet-mapping>
 </web-app>

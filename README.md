@@ -3371,8 +3371,13 @@ requestDispatcher.forword(ServletRequest request, ServletResponse response)
 
 request域对象的作用范围仅限一次完整请求中：  
 
-如下代码中的ForwardSrc 如果设置的name属性后，不是使用请求转发而是使用重定向，则 目标ForwardDst 无法获取到该name属性    
+如下代码中的ForwardSrc 如果设置的name属性后，不是使用请求转发而是使用重定向，则 目标ForwardDst 无法获取到该name属性   
 ---
+
+为什么重定向获取不到name属性：
+===
+
+
 
 
 代码：    
@@ -3674,7 +3679,8 @@ session基于cookie， 需要客户端存储JSESSIONID
 3. session生命周期  
 > 关闭浏览器，只会是浏览器端内存里的session cookie消失，但不会使保存在服务器端的session对象消失，同样也不会使已经保存到硬盘上的持久化cookie消失。  
 > 在服务器的tomcat web.xml 或项目的web.xml配置中 session-config : session-timeout设置服务器的session过期时间   
-> 服务器session过期时间是指 没有最新请求后 过30min    
+> 服务器session过期时间是指 没有最新请求后 过30min  
+> session不建议存储一次性信息    
 
 
 #### 关于session和cookie失效：
@@ -3699,7 +3705,39 @@ session基于cookie， 需要客户端存储JSESSIONID
 ```
 
 ### 案例Demo 验证码校验功能
+成语验证码中文乱码：
+---
+String word = new String(words.get(index).getBytes(),"UTF-8");    
 
+### 问题
+1. 用户登录信息回显 为什么是用request.setAttribute 不是response
+因为 登录失败后需要自动跳转(不使用重定向)登录页面,且要通过jsp设置页面显示登录错误信息，而且该信息必须在页面加载的时候就显示出来，所以通过设置 转发前的request中添加属性,而跳转后的登录页面的 jsp 中的 request也能拿到该属性    
+
+2. 重定向为什么无法获取设置的header属性   
+因为 重定向后 客户端会重新发送请求给重定向后的地址，此时的request对象已经不是原来设置属性时的request对象    
+
+
+### cookie & session 总结:
++ cookie
+1. 发送cookie
+> Cookie cookie = new Cookie(name,value)
+> 只能存储 非中文 字符串
+> cookie.setMaxAge(int second)
+> cookie.setPath()
+> respons.addCookie(cookie)
+2. 获取cookie
+> Cookie[] cookies = request.getCookies();
+> cookie.getName();
+> cookie.getValue();
+
++ session
+1. HttpSession sessin = request.getSession()
+2. setAttribute(name,value)
+3. getAttribute(name)
+4. session 生命周期
+> 创建：第一次指定request.getSession();
+> 销毁：服务器关闭或 session失效/过期/客户端清理cookie丢失JSESSIONID
+> 作用范围：默认一次会话中
 
 
 
