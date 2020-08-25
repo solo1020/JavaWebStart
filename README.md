@@ -3668,7 +3668,37 @@ session基于cookie， 需要客户端存储JSESSIONID
 > HttpSession session = request.getSession()   
 
 2. 如何向session中存储数据
+> session.setAttribute("name", "jerry");
+> String name = (String) session.getAttribute("name");
+> session.removeAttribute(String name);  
 3. session生命周期  
+> 关闭浏览器，只会是浏览器端内存里的session cookie消失，但不会使保存在服务器端的session对象消失，同样也不会使已经保存到硬盘上的持久化cookie消失。  
+> 在服务器的tomcat web.xml 或项目的web.xml配置中 session-config : session-timeout设置服务器的session过期时间   
+> 服务器session过期时间是指 没有最新请求后 过30min    
+
+
+#### 关于session和cookie失效：
+
++ Cookie保存在客户端浏览器，Session保存在服务器。  
++ Cookie可以设置过期时间。    
+> 如果Cookie不包含到期日期，则可视为会话Cookie（Session Cookie）。会话Cookie存储在客户端的内存（浏览器占用的内存）中，决不会写入磁盘。当浏览器关闭时，Cookie将从此永久丢失。   
+> 如果Cookie包含到期日期，则可视为持久性Cookie，存储在客户端的磁盘中。在指定的到期日期，Cookie将从磁盘中删除。    
++ 客户端请求服务端时，如果客户端的Cookie中没有当前会话的Session Id，则服务端会新分配一个Session，并将与该Session对应的Session Id存到Cookie中发回给客户端浏览器。      
++ 由于大部分的网站在发回Session Id时使用了会话Cookie（即没有设置过期时间），导致该Cookie存在客户端内存中，所以关闭浏览器即丢失了Session Id信息，再次访问服务端时才找不到对应的Session，于是才有了“关闭浏览器则Session过期”的说法！     
++ 服务端在保存Session时也可以设置该Session的过期时间，服务端的Web服务容器通常也有一个默认的过期时间(tomcat 30min)。若访问服务器后，保持不关闭浏览器一段时间，超过Session过期时间后再次访问，会发现依然Session过期找不到了（比如表现为跳转到登录页面），则是“没有关浏览器但Session过期了”！    
++ 当（存放着Session Id的）Cookie和Session中两者有任一过期，即宣告会话过期
+
+#### 实现 关闭浏览器时 cookie中存储的sessionid不被删除
+```
+// 手动存储JSESSIONID到cookie并设置cookie持久化时间
+        // 此时第一次访问/session后关闭浏览器再打开，访问/getsession 可以看到之前session设置的属性
+        Cookie cookie = new Cookie("JSESSIONID",id);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 10);
+        response.addCookie(cookie);
+```
+
+### 案例Demo 验证码校验功能
 
 
 

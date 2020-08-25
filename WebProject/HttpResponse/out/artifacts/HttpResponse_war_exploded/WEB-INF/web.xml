@@ -228,4 +228,24 @@
         <servlet-name>lastAccessServlet</servlet-name>
         <url-pattern>/getcookie</url-pattern>
     </servlet-mapping>
+
+    <!--    session-->
+    <servlet>
+        <servlet-name>sessionServlet</servlet-name>
+        <servlet-class>session.SessionServlet1</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>sessionServlet</servlet-name>
+        <url-pattern>/session</url-pattern>
+    </servlet-mapping>
+
+    <!--    获取session存储的数据  -->
+    <servlet>
+        <servlet-name>getsessionServlet</servlet-name>
+        <servlet-class>session.GetSessionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>getsessionServlet</servlet-name>
+        <url-pattern>/getsession</url-pattern>
+    </servlet-mapping>
 </web-app>
