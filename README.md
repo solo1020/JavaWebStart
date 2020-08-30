@@ -3739,9 +3739,85 @@ String word = new String(words.get(index).getBytes(),"UTF-8");
 > 销毁：服务器关闭或 session失效/过期/客户端清理cookie丢失JSESSIONID
 > 作用范围：默认一次会话中
 
+#### JSP 
+用servlet生成动态html代码太繁琐   
+
+jsp脚本及注释：
+===
+1. <%Java代码%>  被转换成service方法内部
+2. <%=Java变量或表达式%> 会被转换成service方法内out.print()
+3. <%!Java代码%> 代码会被转换到生成的file_jsp.java的成员变量的位置  
+4. 注释：不同注释的可见范围不一致
+```
+<!-- html注释-->   // 可见范围：jsp源码、jsp转换后的servet源码、html均存在
+
+// 单行注释  // Java注释可见范围：jsp源码、jsp转换后的servet源码
+
+/*
+多行注释
+*/
+
+<%-- jsp注释 --%>    // jsp注释可见范围：只在jsp源码内可见
+
+```
+jsp运行原理：
+---
+jsp首次访问或更新的时候会被翻译为servlet放到tomcat的work目录下   
+
+jsp指令：
+===
+1. page指令---属性最多
+> language: jsp脚本可以嵌入的语言  
+> contentType: response.setContentType("text/html; charset=UTF-8")
+> pageEncoding: 当前jsp文件的编码
+> session="True" 默认为True 可以在jsp脚本中使用session  
+> import： 导入包 如 import="java.util.*"
+> errorPage: 当前页面执行出错跳转的页面
+如 在jsp页面Java代码内写int y = 1/0;  则会跳到errorPage 
+> isErrorPage: 当前页面是一个处理错误的页面   
+errorPage 只能作为 服务端错误500开头的错误导致而显示的页面  
+如果是404这种找不到资源的错误 需要 在web.xml中配置全局错误页面  
+
+```
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+```
+2. include 指令 页面包含   
+将一个jsp页面包含到另一个jsp页面：  
+```
+格式： <%@include file="被包含文件的地址"%>
+```
+<%--引用其他页面--%>  
+<%@include file="/includedDemo.jsp" %>    
+
+应用：  
+可以将页面一些重复使用的部分写到单独的jsp，如header.jsp footer.jsp 等然后在不同的页面直接引用即可  
+
+3. taglib 指令 引入标签库
+在jsp 引入jstl, struts2标签库   
+格式：
+```
+<%@ taglib uri="标签库地址" prefix="前缀" %>
+如： 
+<!-- 引入-->
+<%@ taglib uri="http://..." prefix="c" %>
+
+<!-- 使用引用的库中的if 标签， prefix 用来标识哪个库 -->
+<c:if></c:if>   
+```
+
+jsp内置/隐式对象
+===
 
 
 
+### web 应用全局错误页面配置
+```
+<!--  web应用 全局错误页面 配置 -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.jsp</location>
+    </error-page>
+```
 
 
 
