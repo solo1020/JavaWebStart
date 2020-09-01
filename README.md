@@ -2617,6 +2617,57 @@ url-pattern配置方式：
 5. servlet中不能随意重写service方法  
 我开始只是为了查看打印信息来debug一下，结果后面页面死活不显示，但是f12看返回的是200,请求的参数也都传递过去了，只可能是响应 部分出问题了，所以看 servlet
 
+ServletConfig 对象：
+===
+作用：  
+1. getInitParameter(鍵名):获取servlet初始化的时候附带的参数(在web.xml中)   
+2. getServletName(): 获取当前servlet的servlet-name   
+3. getServletContext(): 获取当前servlet的上下文对象ServletContext  
+
+如何获取web.xml里的全局参数context-param：    
+---
+通过ServletContext对象去获取：  
+getServletContext().getInitParameter("driver"));   
+
+
+
+```
+// content of QuickStartServlet
+@Override
+    public void init(ServletConfig servletConfig) throws ServletException {
+        System.out.println("servlet name: " + servletConfig.getServletName());
+
+        String initParam = servletConfig.getInitParameter("url");
+        System.out.println("servlet config : " + initParam);
+
+        ServletContext servletContext = servletConfig.getServletContext();
+
+        System.out.println("init running...");
+    }
+
+
+// content of web.xml
+
+<!--    配置全局初始化参数-->
+    <context-param>
+        <param-name>driver</param-name>
+        <param-value>com.mysql.jdbc.Driver</param-value>
+    </context-param>
+
+
+<!--    servlet类的配置-->
+    <servlet>
+        <servlet-name>webApp</servlet-name>
+        <servlet-class>servlet.QuickStartServlet</servlet-class>
+        <init-param>
+            <param-name>url</param-name>
+            <param-value>jdbc:mysql:///mydb</param-value>
+        </init-param>
+
+
+
+```
+
 ServletContext对象：
 ===
 代表web应用对象，封装了该web应用的信息  
@@ -3739,6 +3790,19 @@ String word = new String(words.get(index).getBytes(),"UTF-8");
 > 销毁：服务器关闭或 session失效/过期/客户端清理cookie丢失JSESSIONID
 > 作用范围：默认一次会话中
 
+
+### web 应用全局错误页面配置
+```
+<!--  web应用 全局错误页面 配置 -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.jsp</location>
+    </error-page>
+```
+
+
+
+
 #### JSP 
 用servlet生成动态html代码太繁琐   
 
@@ -3805,11 +3869,6 @@ errorPage 只能作为 服务端错误500开头的错误导致而显示的页面
 <c:if></c:if>   
 ```
 
-jsp内置/隐式对象
-===
-
-
-
 ### web 应用全局错误页面配置
 ```
 <!--  web应用 全局错误页面 配置 -->
@@ -3818,6 +3877,19 @@ jsp内置/隐式对象
         <location>/error.jsp</location>
     </error-page>
 ```
+
+jsp内置/隐式对象
+===
+1. javax.servlet.jsp.JspWriter out : 用于页面输出
+2. javax.servlet.http.HttpServletRequest request: 得到用户请求  
+3. javax.servlet.http.HttpServletResponse response: 服务器向客户端响应信息   
+4. javax.servlet.ServletConfig config : 服务器配置，可以获取初始化参数  
+5. javax.servlet.http.HttpSession session: 保存用户信息
+6. javax.servlet.ServletContext application ： 所有用户共享应用环境上下文
+7. java.lang.Object page: 指当前页面转换后的Servlet类的实例
+8. javax.servlet.jsp.PageObject pageContext : JSP页面容器
+9. java.lang.Throwable exception 表示JSP页面发生的异常，在errorPage才起作用  
+
 
 
 
