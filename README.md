@@ -3887,8 +3887,86 @@ jsp内置/隐式对象
 5. javax.servlet.http.HttpSession session: 保存用户信息
 6. javax.servlet.ServletContext application ： 所有用户共享应用环境上下文
 7. java.lang.Object page: 指当前页面转换后的Servlet类的实例
-8. javax.servlet.jsp.PageObject pageContext : JSP页面容器
+8. javax.servlet.jsp.PageObject pageContext : JSP页面容器   
+
 9. java.lang.Throwable exception 表示JSP页面发生的异常，在errorPage才起作用  
+exception.getMessage()   
+
+out对象
+---
+类型：JspWriter  
+作用：向客户端输出内容--- out.write()   
+out.write()的内容写到out缓冲区  
+response.getWriter().write() 写到response的缓冲区   
+##### tomcat会将out 缓冲 追加到 response 缓冲区
+out缓冲区默认就是jsp页面page中配置的buffer="8kb" 默认8kb   
+如果将 buffer设置为0kb/none, 则 out 无法写到out缓冲区，直接写到response缓冲区  
+
+pageContext对象
+---
+pageContext是域对象  
+作用：   
+1. 向request域存数据
+pageContext.setAttribute("name","wangwu", PageContext.SESSION_SCOPE)   
+pageContext.setAttribute("name","tianqi", PageContext.APPLICATION_SCOPE)  
+pageContext.findAttribute("name")    
+```
+<%
+//        使用pageContext向request域存数据
+        request.setAttribute("name","zhangsan");
+        pageContext.setAttribute("name","sunba");       // pageContext域
+//        参数设置作用范围为 request域
+        pageContext.setAttribute("name","lisi", PageContext.REQUEST_SCOPE);
+//        参数作用范围为session域
+        pageContext.setAttribute("name","wangwu", PageContext.SESSION_SCOPE);
+//        参数作用范围为 application域 整个应用域范围
+        pageContext.setAttribute("name","tianqi", PageContext.APPLICATION_SCOPE);
+    %>
+
+        <%=request.getAttribute("name")%>
+    <%=pageContext.getAttribute("name",PageContext.REQUEST_SCOPE)%>
+
+    <%--findAttribute 从域的范围从小到大依次查找该属性--%>
+    <%--pageContext域 < request域 < session域 < application域--%>
+    <%=pageContext.findAttribute("name")%>
+```
+
+四大作用域总结：
+---
+page域：当前jsp页面范围  
+request域：一次请求  
+session域: 一次会话   
+application域：整个web应用   
+
+
+2. 获取其他8 大 隐式对象
+pageContext.getRequest()  
+pageContext.getSession()  
+
+jsp标签(动作)
+---
+1. 页面包含(动态包含): 
+<jsp:include page="被包含的页面"/>   
+2. 请求转发：  
+<jsp:forward page="要转发的资源"/>  
+
+动态包含和静态包含区别：  
+---
+1. 静态包含
+静态包含是将两个页面合并在一起，再转成servlet   
+2. 动态包含
+动态包含是分别将两个页面都转成servlet   
+
+### 案例demo 商品列表展示
+获取数据库中商品数据：ProductServlet   
+获取到商品的数据List<Product>  
+servlet将该数据集合存到request域中  就可以通过jsp页面进行访问      
+jsp页面进行显示该商品集合数据  
+
+
+
+
+
 
 
 

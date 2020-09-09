@@ -7,7 +7,7 @@
     <!--  web应用 全局错误页面 配置 -->
     <error-page>
         <error-code>404</error-code>
-        <location>/error.jsp</location>
+        <location>/jsp/error.jsp</location>
     </error-page>
     
     <!--    配置全局初始化参数-->
