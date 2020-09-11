@@ -3963,6 +3963,89 @@ jsp标签(动作)
 servlet将该数据集合存到request域中  就可以通过jsp页面进行访问      
 jsp页面进行显示该商品集合数据  
 
+数据库基本操作：
+---
+```
+QueryRunner qr = new QueryRunner(DataSourceUtils.getDataSource());
+        String sql = "select * from product_jsp";
+        List<Product> productList = null;
+        try {
+             productList = qr.query(sql, new BeanListHandler<Product>(Product.class));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+```
+ProductListServlet: 获取数据库中的商品信息并存储到request 域：
+---
+```
+QueryRunner qr = new QueryRunner(DataSourceUtils.getDataSource());
+        String sql = "select * from product_jsp";
+        List<Product> productList = null;
+        try {
+             productList = qr.query(sql, new BeanListHandler<Product>(Product.class));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        //将数据存储到request域
+        request.setAttribute("productList", productList);
+        // 将request 域数据转发到 /product_list.jsp
+        request.getRequestDispatcher("/product_list.jsp").forward(request,response);
+```
+
+jsp页面:
+---
+1. getAttribute获取所有的商品数据  
+2. 遍历商品列表，将每个商品都按照页面的格式，使用out.write()输出
+3. 访问对应的servlet 就能获取到转发后的页面数据
+
+```
+<%
+			List<Product> productList = (List<Product>)request.getAttribute("productList");
+			if (productList != null){
+				for (Product p : productList){
+					out.write("<div class='col-md-2' style='height:250px '>");
+					out.write("<a href='product_info.htm'> ");
+
+					//	out.write("<img src='products/1/cs10001.jpg' width='170' height='170' style='display: inline-block;'>");
+
+					out.write("<img src='" + p.getPimage() +  "' width='170' height='170' style='display: inline-block;'>");
+					out.write("</a>");
+					out.write("<p>");
+
+					//	out.write("<a href='product_info.html' style='color: green'>冬瓜</a>");
+
+					out.write("<a href='product_info.html' style='color: green'>" + p.getPname() + "</a>");
+
+					//	out.write("<p><font color='#FF0000'>商城价：&yen;299.00</font></p>");
+
+					out.write("<p><font color='#FF0000'>商城价：&yen;" + p.getShop_price() + "</font></p>");
+					out.write("</div>");
+
+				}
+			}
+
+		%>
+
+        <%--		<div class="col-md-2">--%>
+<%--			<a href="product_info.htm">--%>
+<%--				<img src="products/1/cs10001.jpg" width="170" height="170" style="display: inline-block;">--%>
+<%--			</a>--%>
+<%--			<p>--%>
+<%--				<a href="product_info.html" style='color: green'>冬瓜</a>--%>
+<%--			</p>--%>
+<%--			<p><font color="#FF0000">商城价：&yen;299.00</font></p>--%>
+<%--		</div>--%>
+```
+
+
+
+
+
+
+
+
+
 
 
 
