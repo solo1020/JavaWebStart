@@ -285,5 +285,15 @@
         <url-pattern>/writehtml</url-pattern>
     </servlet-mapping>
 
+    <!--    显示商品列表-->
+    <servlet>
+        <servlet-name>productlist</servlet-name>
+        <servlet-class>jsp.ProductListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>productlist</servlet-name>
+        <url-pattern>/productlist</url-pattern>
+    </servlet-mapping>
+
 
 </web-app>

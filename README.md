@@ -4038,11 +4038,28 @@ jsp页面:
 <%--		</div>--%>
 ```
 
+#### EL表达式
+Express Language表达式：
+---
+可以嵌入jsp页面内部，减少jsp脚本的编写  
+
+从域中取出数据： ${EL表达式}
+===
+jsp脚本：request.getAttribute(name);   
+el表达式:   
+* ${key}: 按域从小到大查找pageContext --> request session application 和pageContext.findAttribute("name") 一样       
+* ${requestScope.name}      
+* ${requestScope.company}   
+* ${sessionScope.user.name}   
+* ${applicationScope.list[1].name}   
+* ${pageContextScope.key}   
 
 
+jsp中创建集合new ArrayList需要指定类型，Java代码中不需要：   
+List<User> list = new ArrayList<User>();  
 
-
-
+el 内置对象：
+---
 
 
 
