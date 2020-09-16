@@ -3781,6 +3781,21 @@ String word = new String(words.get(index).getBytes(),"UTF-8");
 > cookie.getName();
 > cookie.getValue();
 
+##### cookie可以创建多个，每个cookie都是一对自定义的键值对：
+获取时遍历request.getCookies里的cookie.getName() 和键比较来判断是不是想要的cookie    
+```
+
+Cookie cookie = new Cookie("myname","myage");
+cookie.setMaxAge(-1);//关闭浏览器失效
+
+Cookie cookie1 = new Cookie("myname1","myage1");
+cookie1.setMaxAge(0);//立刻失效 
+
+Cookie cookie2 = new Cookie("myname2","myage2");
+cookie2.setMaxAge(3600);//1小时候生效
+```
+
+
 + session
 1. HttpSession sessin = request.getSession()
 2. setAttribute(name,value)
@@ -4042,7 +4057,7 @@ jsp页面:
 Express Language表达式：
 ---
 可以嵌入jsp页面内部，减少jsp脚本的编写  
-
+可以放在jsp的字符串内部"${request....}"
 从域中取出数据： ${EL表达式}
 ===
 jsp脚本：request.getAttribute(name);   
@@ -4060,6 +4075,20 @@ List<User> list = new ArrayList<User>();
 
 el 内置对象：
 ---
+* pageContextScope 
+* requestScope 
+* sessionScope 
+* applicationScope   
+* param: 相当于requset.getParameter()
+* paramValues: 相当于request.getParameterValues() 获取有多个值的同一name参数如checkbox  
+* header: request.getHeader(name)
+* headerValues: 获取请求头信息
+* initParam: 相当于全局初始化参数 this.getServletContext().getInitParameter(name)  
+* cookie: request.getCookies 遍历后获取cookie.getName() cookie.getValue()  
+> 使用时 如果cookie的key不为"name" 则需要使用${cookie["key"].value} 获取cookie中存储的值   
+* pageContext: 获取其他八大对象
+
+
 
 
 
