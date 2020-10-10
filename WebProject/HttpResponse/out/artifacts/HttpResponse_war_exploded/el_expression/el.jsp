@@ -62,5 +62,12 @@
     ${user.name}
     ${list[1].name}
 
+    <%--el执行表达式运算--%>
+    ${1+1}
+    ${1==1?true:false}
+
+    <%--判断某个对象是否为null,是null返回true--%>
+    ${empty user}
+    ${empty list}
 </body>
 </html>

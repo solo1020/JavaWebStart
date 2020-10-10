@@ -295,5 +295,16 @@
         <url-pattern>/productlist</url-pattern>
     </servlet-mapping>
 
+    <!--    MVC模式显示商品列表-->
+    <servlet>
+        <servlet-name>productlistmvc</servlet-name>
+        <servlet-class>startmvc.web.ProductListMVCServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>productlistmvc</servlet-name>
+        <url-pattern>/productlistmvc</url-pattern>
+    </servlet-mapping>
+
+
 
 </web-app>

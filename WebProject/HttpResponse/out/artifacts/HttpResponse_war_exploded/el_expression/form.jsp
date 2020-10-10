@@ -30,5 +30,11 @@
 
     ${cookie["abc-key"].value}<br/>
 
+    <%--通过el获取request--%>
+    ${pageContext.request}<br/>
+
+    <%--通过el获取web应用的路径contextPath--%>
+    ${pageContext.request.contextPath}<br/>
+
 </body>
 </html>

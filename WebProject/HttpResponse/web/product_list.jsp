@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 		 pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,32 +42,49 @@ body {
 			</ol>
 		</div>
 
-		<%
-			List<Product> productList = (List<Product>)request.getAttribute("productList");
-			if (productList != null){
-				for (Product p : productList){
-					out.write("<div class='col-md-2' style='height:250px '>");
-					out.write("<a href='product_info.htm'> ");
+		<%--使用mvc分层从DAO查询数据进行显示--%>
+		<c:forEach items="${productList}" var="product" >
+			<div class="col-md-2" style="height: 250px">
+				<a href="product_info.htm">
+					<img src="${pageContext.request.contextPath}/${product.getPimage()}" width="170" height="170" style="display: inline-block;">
+				</a>
 
-					//	out.write("<img src='products/1/cs10001.jpg' width='170' height='170' style='display: inline-block;'>");
+				<p>
+					<a href="product_info.html" style='color: green'>${product.getPname()}</a>
+				</p>
 
-					out.write("<img src='" + p.getPimage() +  "' width='170' height='170' style='display: inline-block;'>");
-					out.write("</a>");
-					out.write("<p>");
+				<p><font color="#FF0000">商城价：&yen;${product.getShop_price()}</font></p>
+			</div>
+		</c:forEach>
 
-					//	out.write("<a href='product_info.html' style='color: green'>冬瓜</a>");
 
-					out.write("<a href='product_info.html' style='color: green'>" + p.getPname() + "</a>");
+		<%--原servlet直接查询数据库方式--%>
+		<%--<%--%>
+			<%--List<Product> productList = (List<Product>)request.getAttribute("productList");--%>
+			<%--if (productList != null){--%>
+				<%--for (Product p : productList){--%>
+					<%--out.write("<div class='col-md-2' style='height:250px '>");--%>
+					<%--out.write("<a href='product_info.htm'> ");--%>
 
-					//	out.write("<p><font color='#FF0000'>商城价：&yen;299.00</font></p>");
+					<%--//	out.write("<img src='products/1/cs10001.jpg' width='170' height='170' style='display: inline-block;'>");--%>
 
-					out.write("<p><font color='#FF0000'>商城价：&yen;" + p.getShop_price() + "</font></p>");
-					out.write("</div>");
+					<%--out.write("<img src='" + p.getPimage() +  "' width='170' height='170' style='display: inline-block;'>");--%>
+					<%--out.write("</a>");--%>
+					<%--out.write("<p>");--%>
 
-				}
-			}
+					<%--//	out.write("<a href='product_info.html' style='color: green'>冬瓜</a>");--%>
 
-		%>
+					<%--out.write("<a href='product_info.html' style='color: green'>" + p.getPname() + "</a>");--%>
+
+					<%--//	out.write("<p><font color='#FF0000'>商城价：&yen;299.00</font></p>");--%>
+
+					<%--out.write("<p><font color='#FF0000'>商城价：&yen;" + p.getShop_price() + "</font></p>");--%>
+					<%--out.write("</div>");--%>
+
+				<%--}--%>
+			<%--}--%>
+
+		<%--%>--%>
 
 <%--		<div class="col-md-2">--%>
 <%--			<a href="product_info.htm">--%>

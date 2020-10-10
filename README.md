@@ -4086,12 +4086,139 @@ el 内置对象：
 * initParam: 相当于全局初始化参数 this.getServletContext().getInitParameter(name)  
 * cookie: request.getCookies 遍历后获取cookie.getName() cookie.getValue()  
 > 使用时 如果cookie的key不为"name" 则需要使用${cookie["key"].value} 获取cookie中存储的值   
-* pageContext: 获取其他八大对象
+* pageContext: 获取其他八大对象    
+
+页面加载：
+---
+```
+<link href="${pageContext.request.contextPath}/xxx.css">
+<script type="text/javascript" src="${pageContext.request.contextPath}/yyy.js"></script>
+<img src="${pageContext.request.contextPath}/1.jpg">
+<img src="${pageContext.request.contextPath}/2.jpg">
+<img src="${pageContext.request.contextPath}/1.jpg">
+```
+页面加载时先加载jsp,再请求link,script等资源，然后是图片等资源最好使用${pageContext.request.contextPath} 获取web应用的路径   
+
+el执行表达式：
+---
+${1+1}   
+${1==1?true:false}   
+${empty user} empty关键字 判断对象是否为null,为null返回true   
+
+JSTL jsp标准标签库：
+===
+
+* 导入jar包：  
+* 使用jsp的taglib指令导入(<%@ page/include/taglib %> ):
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>  
+
+jstl核心库常用标签：
+---
+1. test/if
+test关键字代表检查引号内部的boolean表达式的真假，为真则进入，否不进入   
+<c:if test=" "> 标签
+```
+
+<c:if test="${count == 10}">
+        count == 10
+    </c:if>
+```
+
+2. forEach
+使用方式：两种组合形式    
+```
+<!-- 类似 for(int i = 0; i<=5; i++)  -->
+<c:forEach begin="0" end="5" var="i"   >
+        ${i}<br/>
+    </c:forEach>
+
+<!--
+    模拟增强for循环 for(Product p: productList)
+    items: 相当于productList
+    var: 元素
+    -->
+    <c:forEach items="${productList}" var="product"  >
+        ${product.pname}
+    </c:forEach>
+
+    <%
+        List<String> strList = new ArrayList<String>();
+        strList.add("jstl_forEach_1");
+        strList.add("jstl_forEach_2");
+        strList.add("jstl_forEach_3");
+        strList.add("jstl_forEach_4");
+        request.setAttribute("strList", strList);
+
+        List<User> userList = new ArrayList<User>();
+        User user = new User();
+        user.setId(1);
+        user.setName("zhangsan");
+        user.setPassword("123");
+        User user1 = new User();
+        user1.setId(2);
+        user1.setName("lisi");
+        user1.setPassword("123");
+        User user2 = new User();
+        user2.setId(3);
+        user2.setName("wangwu");
+        user2.setPassword("123");
+        userList.add(user1);
+        userList.add(user2);
+        application.setAttribute("userList", userList);
+
+        Map<String,String> strMap = new HashMap<String, String>();
+        strMap.put("name", "lucy");
+        strMap.put("age", "30");
+        strMap.put("addr", "xisanqi");
+        strMap.put("email", "lucy@java.com");
+        session.setAttribute("strMap", strMap);
+
+    %>
+
+    <h1>取出strList</h1>
+    <c:forEach items="${strList}" var="str" >
+        ${str}<br/>
+    </c:forEach>
+
+    <h1>取出userList的数据</h1>
+    <c:forEach items="${userList}" var="user" >
+        user-name:${user.name}-----${user.password}<br/>
+    </c:forEach>
+
+    <h1>取出map数据</h1>
+    <c:forEach items="${strMap}" var="entry" >
+        ${entry.key}:${entry.value}<br/>
+    </c:forEach>
+```
 
 
+应用：
+---
+网站登录后显示用户名：   
+```
+<!-- 用户未登录 -->
+<c:if test="${empty user}">
+    <li><a href="login.jsp">登录</a></li>
+    <li><a href="register.jsp">注册</a></li>
+</c:if>
 
+<!-- 用户已登录 -->
+<c:if test="${!empty user}">
+    <li>${user.name}</li>
+    <li><a href="#">退出</a></li>
+</c:if>
+```
 
+#### javaEE开发模式
+MVC:  web开发设计模式   
+M:Model--javaBean   
+V:View --视图   
+C:Controller--servlet页面逻辑 封装数据 传递数据 指派显示的jsp页面   
 
+JavaEE三层架构：  
+* web层：与客户端交互  
+* service 层：复杂业务处理    
+* dao 层： 与数据库交互   
 
 
 
