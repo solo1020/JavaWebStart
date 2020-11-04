@@ -4221,13 +4221,304 @@ JavaEE三层架构：
 * dao 层： 与数据库交互   
 
 
+### 数据库JDBC事务
+事务：  
+一件事有n个组成单元，这n个组成单元要么同时成功，要么同时失败  
+
+开启事务：  
+start transaction;  
+
+执行事务：  
+insert into account values(null,'lucy',3000);  
+
+提交事务：  
+commit;  
+
+回滚事务：  
+rollback;  
+
+回滚后之前的事务不会提交  
+
+JDBC事务：
+===
+
+开启事务：  
+connection.setAutoCommit(false);  
+
+提交事务：  
+connection.commit();  
+
+回滚事务：  
+connection.rollback();   
+
+执行sql的connection和开启事务的connection必须是同一个才能对事务进行控制   
 
 
+```
+Connection conn = null;
+try{
+    class.forName("com.mysql.jdbc.Driver");
+    conn = DriverManager.getConnection("jdbc:mysql:///web06_1", root, password);
+
+    // 手动开启事务
+    conn.setAutoCommit(false);
+
+    // 获取执行平台
+    Statement stmt = conn.createStatement();
+
+    // 操作sql
+    // 可以将executeUpdate的返回值进行校验判断sql是否成功
+    stme.executeUpdate("insert into account values(null, 'lisi', 3000);")
+
+    // 提交事务
+    conn.commit();
+
+    stmt.close();
+    conn.close();
+
+}catch (Exception e) {
+    conn.rollback();
+    e.printStackTrace();
+}
+```
+
+DBUtils事务操作：
+====
+
+```
+Connection conn = null;
+try{
+    QueryRunner runner = new QueryRunner();
+
+    conn = DataSourceUtils.getConnection();
+    
+    // 手动开启事务
+    conn.setAutoCommit(false);
+
+    runner.update(conn, "update account set money=15000 where name='tom');
+
+    // 提交或回滚事务
+    conn.commit();
+    
+}catch (Exception e) {
+    conn.rollback();
+    e.printStackTrace();
+}
+```
+
+ThreadLocal:
+===
+使用ThreadLocal存储connection   
+
+```
+public class MyDataSourceUtils{
+    
+    private static ComboPooledDataSource dataSource = new ComboPooledDataSource();
+
+    //创建ThreadLocal
+    private static ThreadLocal<Connection> tl = new ThreadLocal<Connection>();
+
+    // 开启事务
+    public static void startTransaction(){
+        Connection con = getCurrentConnection();
+        conn.setAutoCommit(false);
+    }
+
+    //回滚事务
+    public static void rollback(){
+        getCurrentConnection().rollback();
+    }
+
+    //提交事务
+    public static void commit(){
+        Connection conn = getCurrentConnection(); 
+        conn.commit();
+        // 将connection从ThreadLocal中移除
+        tl.remove();
+        conn.close();
+    }
+
+    // 获取当前线程上绑定的conntion
+    public static Connection getCurrentConnection() throws SQLException{
+
+        // 从ThreadLocal寻找当前线程是否有对应的Connection
+        Connection conn = tl.get();
+        if(conn == null){
+            conn = getConnection();
+            // 将新创建的connection资源绑定到ThradLocal(map)上
+            tl.set(conn);
+        }
+        return conn;
+    }
+
+    public static Connection getConnection() throws SQLException{
+        return dataSource.getConnection();
+    }
+}
+```
+
+并发访问隔离性引起的问题：
+---
+1. 脏读：  
+B 事务读取到了A事务尚未提交的数据
+2. 不可重复读：  
+一个事务中两次读取的数据不一致  
+即 A 事务执行过程中 即使B事务进行了修改, A事务也不能/应该查询到更新数据   
+3. 幻读/虚读:  
+一个事务中两次读取的数据数量不一致  
+
+事务的隔离级别
+---
+* read uncommitted 读取尚未提交的数据：不能解决以上问题  
+* read committed 读取已经提交的数据，可以解决脏读--oracle默认  
+* repeatable read 重读读取 可以解决 脏读 和 不可重复读--mysql默认   
+* serializable 串行化 可以解决以上所有问题  
+
+查询数据库隔离级别：
+---
+select @@tx_isolation  
+
+设置mysql隔离级别:
+---
+set session transaction isolation level read uncommitted   
+
+问题：
+---
+使用repeatable read 级别时，后修改的commit是否会覆盖前面的事务修改????  
 
 
+### 后台页面增删改查：
+```
+d = new dTree('d');
 
+//01代表本级节点的编号  -1代表根节点
+d.add('01',-1,'系统菜单树'); 
 
+//0102代表本级节点编号，01 代表父级节点
+d.add('0102','01','分类管理','','','mainFrame');  
 
+// 点击本级时 将list.jsp显示到 mainFrame 类似a 标签的 href 和 target
+d.add('010201','0102','分类管理','${pageContext.requestcontextPath}/admin/category/list.jsp','','mainFrame'); 
 
+d.add('0104','01','商品管理');
+d.add('010401','0104','商品管理','${pageContext.requestcontextPath}/admin/product/list.jsp','','mainFrame');
+document.write(d);
+```
+一般：  
+有事务控制在service层try catch   
+没有 在web层进行catch 并显示
 
+```
+jstl循环状态
+<c:forEach items="${productList}" var="pro" varStatus="vs">
+```
 
+新增商品页面中的商品类别需要进行动态加载，因为可能类别信息已经经过修改，所以需要在新增按钮的事件设置成servlet，并在servlet中查询数据库，存储到request域中再转发给页面中显示， 而不是静态jsp  
+或者 通过Ajax 在jsp中加载   
+
+文件上传：  
+```
+enctype="multipart/form-data"
+```
+
+一般 没有request 域数据的传递都使用重定向进行跳转   
+如果有 使用转发  
+
+##### 后台页面新增商品功能：
+1. 首先需要根据数据库动态的更新页面的商品类别字段
+2. 通过在点击添加按钮的时候跳转到servlet而不是jsp(后期可以用Ajax在jsp中解决数据动态更新问题)  
+3. 在servlet中一层层调用到dao层查询商品类别的数据库并返回，然后存储到request域中
+4. 跳转到新增商品的jsp时，使用jstl表达式foreach遍历商品的类别，完成页面的更新  
+5. 点击确定提交按钮的绑定事件，form表单的action路径到servlet
+6. servlet中获取表单提交的新增商品数据，在servlet中调用service，service中调用dao更新数据库插入
+7. 插入完成后再跳转至商品列表，需要进行一次查询操作并显示
+```
+// 步骤1，2，3
+
+// AdminAddProductUIServlet.java
+// 获取所有的商品的类别数据
+    AdminProductService service = new AdminProductService();
+    List<Category> categoryList = null;
+    try {
+        categoryList = service.findAllCategory();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    request.setAttribute("categoryList", categoryList);
+    request.getRequestDispatcher("/admin/product/add.jsp").forward(request,response);
+
+// AdminProductDao.java
+public List<Category> findAllCategory() throws SQLException {
+    QueryRunner runner = new QueryRunner(DataSourceUtils.getDataSource());
+    String sql = "select * from category_admin";
+    List<Category> list = runner.query(sql, new BeanListHandler<Category>(Category.class));
+    return list;
+}
+
+//步骤4
+// add.jsp
+<%@ page language="java" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<select name="cid">
+
+	<c:forEach items="${categoryList}" var="category">
+		<option value="${category.cid}">${category.cname}</option>
+	</c:forEach>
+
+<%--	<option value="">大型电器</option>--%>
+<%--	<option value="">手机数码</option>--%>
+<%--	<option value="">衣帽箱包</option>--%>
+</select>
+
+//步骤5
+// add.jsp
+<form id="userAction_save_do" name="Form1" action="${pageContext.request.contextPath}/adminAddProduct" method="post"
+
+//步骤6
+//AdminAddProductServlet.java
+// 获取表单提交的数据
+    Map<String, String[]> parameterMap = request.getParameterMap();
+    // 封装数据 使用beanutils
+    // beanutils 使用必须保证表单中的name 和对象的属性名一致
+    Product product = new Product();
+    try {
+        BeanUtils.populate(product, parameterMap);
+    } catch (IllegalAccessException e) {
+        e.printStackTrace();
+    } catch (InvocationTargetException e) {
+        e.printStackTrace();
+    }
+    // 此时Product对象已经封装完毕
+    // 手动设置product其他属性 和中文乱码问题解决
+    // pid
+    product.setPid(UUID.randomUUID().toString());
+    // pimage
+    product.setPimage("products/1/c_0033.jpg");
+    // pdate 上架日期
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    String pdate = format.format(new Date());
+    product.setPdate(pdate);
+    // pflag 是否下架 0代表未下架
+    product.setPflag(0);
+    // 传递数据给service 层
+    AdminProductService service = new AdminProductService();
+    try {
+        service.addProduct(product);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+
+//步骤7
+//AdminAddProductServlet.java
+//此时不能跳转到jsp,因为jsp需要从数据库查询数据，跳转到 AdminProductListServlet
+    response.sendRedirect(request.getContextPath() + "/adminProductList");
+
+```
+
+##### 后台页面删除商品功能
+1. 首先实现页面的确认删除按钮
+2. 在确认删除按钮点击时，获取商品的id信息
+3. 在对应servlet中传递请求到dao层删除数据
+4. 返回页面后查询最新数据
