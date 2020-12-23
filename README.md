@@ -4522,3 +4522,383 @@ public List<Category> findAllCategory() throws SQLException {
 2. 在确认删除按钮点击时，获取商品的id信息
 3. 在对应servlet中传递请求到dao层删除数据
 4. 返回页面后查询最新数据
+
+注意事项：  
+
+1. 因为删除按钮是a标签,默认会在执行完onclick()后继续跳转href链接, 即使改成"#" 也会跳转本页,体验不好
+2. 需要将href跳转这个操作屏蔽掉，使用：href="javascript:void(0);"  
+2. 在弹窗完毕后如何判断是否进行了跳转本页的操作：  
+3. 点击页面下半部分，如果进行了跳转本页，会自动跳转到页面起始位置，如果没有跳转，则保持当前页面的进度
+
+```
+<td align="center" style="HEIGHT: 22px">
+	<a
+			href="javascript:void(0);"
+			onclick="delProduct()"
+	>
+		<img src="${pageContext.request.contextPath}/images/i_del.gif"
+		width="16" height="16" border="0" style="CURSOR: hand">
+	</a>
+</td>
+```
+如何在点击事件获取商品的id信息：   
+通过在jstl表达式的foreach循环中拿到每个product的id,传递给onlick(product.pid)方法即可   
+代码：  
+```
+onclick="delProduct('${pro.pid}')"
+```
+
+servlet代码：  
+```
+package adminpage.web;
+
+import adminpage.service.AdminProductService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+
+/**
+ * @ClassName ${NAME}
+ * @description:
+ * @author: QZ
+ * @time: 2020/11/6 0:12
+ */
+@WebServlet(name = "AdminDelProductServlet")
+public class AdminDelProductServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 获取传递的参数pid
+        String pid = request.getParameter("pid");
+
+        // 传递pid到service层
+        AdminProductService service = new AdminProductService();
+        try {
+            service.deleteProductByPid(pid);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        // 刷新页面
+        response.sendRedirect(request.getContextPath() + "/adminProductList");
+    }
+}
+
+```
+
+#### jsp中引入jquery失败：
+
+点击更新按钮时，如何从数据库的商品信息中拿到商品分类并在页面显示正确选中的分类：  
+```
+<script type="text/javascript">
+
+    //页面加载完成后 确定商品类别的哪个select 被选中
+    window.onload = function () {
+        // 获取当前回显商品数据的cid
+        var cid = "${product.cid}";
+        // 获取所有select 元素的option
+        var options = document.getElementById("cid").getElementsByTagName("option");
+        // alert(cid);
+        // 比较每个option 的value 与cid
+        for(var i=0;i<options.length;i++){
+            if(cid==options[i].value){
+                options[i].selected = true;
+            }
+        }
+        var is_hot = ${product.is_hot};
+        var is_hot_option = document.getElementById("is_hot").getElementsByTagName("option");
+        for(var n = 0; n<is_hot_option.length; n++){
+            if(is_hot == is_hot_option[n].value){
+                is_hot_option[n].selected = true;
+            }
+        }
+    }
+
+</script>
+
+
+<td class="ta_01" bgColor="#ffffff">
+	
+	<select  id="is_hot" name="is_hot">
+		<option value="1">是</option>
+		<option value="0">否</option>
+	</select>
+</td>
+
+```
+
+##### 商品搜索和分页功能：
+```
+<form id="Form1" name="Form1"
+action="${pageContext.request.contextPath}/user/list.jsp"
+method="post">
+    商品名称：<input type="text" name="pname" autocomplete="off">&nbsp;&nbsp;
+    是否热门：<select name="is_hot">
+                <option value="0">否</option>
+                <option value="1">是</option>
+            </select>&nbsp;&nbsp;
+    商品类别：<select name="cid">
+                <option value="">手机数码</option>
+                <option value="">电脑办公</option>
+            </select>&nbsp;&nbsp;
+    <input type="submit" value="搜索按钮">
+        <table style="margin-top: 10px" cellSpacing="1" cellPadding="0" width="100%" align="center"
+            bgColor="#f5fafe" border="0">
+            <TBODY>
+```
+
+将request参数封装到实体：   
+BeanUtils.populate(condition,parameterMap);   
+
+### Ajax
+同步异步：  
+同步：客户端发送请求到服务端，当服务器返回响应之前，客户端都处于等待卡死状态  
+异步：客户端发送请求，无论服务器是否返回响应，客户端都可以随意进行其他事件不会被卡死   
+
+体现在页面中就是：  
+同步按钮点击后其他的按钮点击没反应  
+异步按钮点击后其他的按钮点击立即执行
+
+
+Ajax原理:  
+页面发起请求，会将请求发送给浏览器内核的Ajax引擎，该引擎会提交请求到服务端，在这段时间内，客户端可以进行任意操作，知道服务器将数据返回Ajax引擎后，会触发设置的事件，从而执行自定义的js逻辑代码完成功能   
+
+onreadystatechange事件：  
+每当readystate改变时，触发onreadystatechange事件   
+readystate: 存有XMLHTTPRequest的状态，从0到4变化  
+0：请求未初始化  
+1：服务器连接已建立  
+2：请求已接收  
+3：请求处理中  
+4：请求已完成，且响应已就绪   
+
+```
+function fun1(){
+    // 创建ajax引擎对象---所有操作都是通过引擎对象
+    var xmlHttp = new XMLHttpRequest();
+    // 绑定监听---监听服务器是否已经返回相应数据
+    xmlHttp.onreadystatechange = function(){
+
+        if(xmlHttp.readystate == 4 && xmlHttp.status == 200){
+            // 接收相应数据
+            var res = xmlHttp.responseText;
+            alert(res)
+        }
+        
+        alert(res);
+    }
+    xmlHttp.open("GET","/webproject/ajaxServlet",true);
+    xmlHttp.send();
+}
+```
+##### AJax优势：  
+可以直接更新一部分网页内容，而不需要重新刷新整个网页  
+可以异步访问  
+
+##### Ajax传递参数
+GET请求：  
+直接在ajax引擎对象的open方法传递的url路径中给出  
+POST请求：  
+先使用setRequestHeader() 添加http头,再在ajax引擎对象的send方法中传递  
+xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");  
+
+##### Json
+json是js的原生内容，js可以直接取出json对象中的数据   
+js中使用json:  
+```
+<script language="JavaScript">
+  	/**
+	 * 案例二
+	 *  [{key:value,key:value},{key:value,key:value}]
+	 *  
+	 */
+
+  	var persons = [
+      {
+        "firstname":"张",
+        "lastname":"三丰",
+        "age":100
+      },
+      {
+        "firstname":"李",
+        "lastname":"四",
+        "age":80
+      }
+    ];
+
+  	// 数组取值
+    alert(persons[1].firstname);
+
+
+    var json = {
+	   "baobao":[
+         {
+           "name":"小双",
+           "age":28,
+           "addr":"扬州"
+         },{
+           "name":"建宁",
+           "age":18,
+           "addr":"紫禁城"
+         },{
+           "name":"阿珂",
+           "age":10,
+           "addr":"山西",
+           "father":"李自成"
+         }
+       ]
+	 };
+
+	 // 取建宁
+	 alert(json.baobao[1].name);
+	 // 取addr 山西
+	 alert(json.baobao[2].addr)
+	 
+  </script>
+```
+
+#### jquery的Ajax
+* jQuery.get(url,[data],[callback],[type])  
+url: 请求页面的地址  
+data: 待发送的key/value参数数据  
+callback: 请求成功时的回调函数  
+type: 返回内容的格式 xml html script json text   
+
+jQuery ajax请求 get 和post的区别：  
+除了传统的区别，jquery ajax 的post方法解决了get方法的中文乱码问题   
+传统的get 请求和post请求如果出现中文乱码，添加request.setCharacterEncoding("UTF-8") 可以解决，但是jquery ajax中该方法无效  
+
+```
+// jquery_ajax.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript">
+
+        // $(function () {
+        //    alert("check jQuery");
+        // });
+
+        function f1() {
+            //get 异步访问
+            $.get(
+                "/jqueryAjaxServlet", // url
+                {"name":"张三","age":25}, // 请求参数
+                function (data) { // 执行成功后的回调
+                    // {"name":"tom","age":21}
+                    alert(data.name);
+                },
+                // "text" //返回数据的类型
+                "json"
+            );
+        }
+        function f2() {
+            //post异步访问
+            $.post(
+                "/jqueryAjaxServlet", // url
+                {"name":"李四","age":25}, // 请求参数
+                function (data) { // 执行成功后的回调
+                    // {"name":"tom","age":21}
+                    alert(data.name);
+                },
+                // "text" //返回数据的类型
+                "json"
+            );
+
+        }
+
+        function f3() {
+            //jquery.ajax()方法发送请求
+            $.ajax(
+                {
+                    url:"/jqueryAjaxServlet",
+                    async:true,
+                    type:"POST",
+                    data:{"name":"鲁西", "age":18},
+                    success:function (data) {
+                        alert(data.name);
+                    },
+                    error:function () {
+                        alert("请求失败");
+                    },
+                    dataType:"json"
+
+                }
+            );
+
+        }
+    </script>
+</head>
+<body>
+    <input type="button" value="get访问服务器端" onclick="f1()"><span id="span1"></span>
+    <br>
+    <input type="button" value="post访问服务器端" onclick="f2()"><span id="span22"></span>
+    <br>
+
+    <input type="button" value="Ajax方法访问服务器端" onclick="f3()"><span id="span33"></span>
+    <br>
+</body>
+</html>
+
+
+
+// JqueryAjaxServlet.java
+package ajax;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * @ClassName ${NAME}
+ * @description: jquery 的ajax 请求响应servlet
+ * @author: isquz
+ * @time: 2020/12/20 13:58
+ */
+@WebServlet(name = "jqueryAjaxServlet")
+public class JqueryAjaxServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request,response);
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        String name = request.getParameter("name");
+        String age = request.getParameter("age");
+        System.out.println(name + " " + age);
+
+        int i = 1 / 0;  // 演示ajax 方法请求失败的error回调
+
+        // jquery ajax 解析返回数据时指定为json会报错，实际返回的是字符串
+        // java代码只能返回一个json 格式的字符串
+
+//        response.getWriter().write("success...");
+        response.setContentType("text/html;charset=UTF-8");// 解决响应数据中文乱码
+        response.getWriter().write("{\"name\":\"汤姆\",\"age\":21}");
+    }
+}
+
+```
+
+关注点：  
+点击事件的经典jQuery写法 $.post()方法，参数按照api文档定义的url,请求参数,回调函数,返回数据类型传递即可
+回调方法中的形参名可以任意，一般写成data，data中即为 response 封装的数据  
+
+* jquery.ajax({option1:value1, option2:value2...});  
+常用选项参数：  
+async:是否异步 默认true 即异步  

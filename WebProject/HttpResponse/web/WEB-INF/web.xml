@@ -306,5 +306,85 @@
     </servlet-mapping>
 
 
+    <!--    MVC模式商城后台管理页面 商品管理列表-->
+    <servlet>
+        <servlet-name>adminProductList</servlet-name>
+        <servlet-class>adminpage.web.AdminProductListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>adminProductList</servlet-name>
+        <url-pattern>/adminProductList</url-pattern>
+    </servlet-mapping>
+
+    <!--    MVC模式商城后台管理页面 新增商品管理页面-自动获取商品分类 -->
+    <servlet>
+        <servlet-name>adminAddCategoryInAddProductUI</servlet-name>
+        <servlet-class>adminpage.web.AdminAddProductUIServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>adminAddCategoryInAddProductUI</servlet-name>
+        <url-pattern>/adminAddProductUI</url-pattern>
+    </servlet-mapping>
+
+    <!--    MVC模式商城后台管理页面 新增商品管理页面-确定提交表单 -->
+    <servlet>
+        <servlet-name>adminAddProduct</servlet-name>
+        <servlet-class>adminpage.web.AdminAddProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>adminAddProduct</servlet-name>
+        <url-pattern>/adminAddProduct</url-pattern>
+    </servlet-mapping>
+
+    <!--    MVC模式商城后台管理页面 删除商品页面按钮的点击事件弹窗确认后跳转删除的servlet -->
+    <servlet>
+        <servlet-name>delProduct</servlet-name>
+        <servlet-class>adminpage.web.AdminDelProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>delProduct</servlet-name>
+        <url-pattern>/adminDelProduct</url-pattern>
+    </servlet-mapping>
+
+    <!--    MVC模式商城后台管理页面 修改商品信息时查询数据库对页面的表单数据进行回显 -->
+    <servlet>
+        <servlet-name>showProduct</servlet-name>
+        <servlet-class>adminpage.web.AdminUpdateProductUIServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>showProduct</servlet-name>
+        <url-pattern>/adminUpdateProductUI</url-pattern>
+    </servlet-mapping>
+
+    <!--    MVC模式商城后台管理页面 修改商品数据点击确定 -->
+    <servlet>
+        <servlet-name>updateProduct</servlet-name>
+        <servlet-class>adminpage.web.AdminUpdateProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>updateProduct</servlet-name>
+        <url-pattern>/adminUpdateProduct</url-pattern>
+    </servlet-mapping>
+
+    <!--    ajax页面 -->
+    <servlet>
+        <servlet-name>ajaxServlet</servlet-name>
+        <servlet-class>ajax.AjaxServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ajaxServlet</servlet-name>
+        <url-pattern>/ajaxServlet</url-pattern>
+    </servlet-mapping>
+
+    <!--    jquery ajax页面 -->
+    <servlet>
+        <servlet-name>jqueryAjaxServlet</servlet-name>
+        <servlet-class>ajax.JqueryAjaxServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>jqueryAjaxServlet</servlet-name>
+        <url-pattern>/jqueryAjaxServlet</url-pattern>
+    </servlet-mapping>
+
 
 </web-app>

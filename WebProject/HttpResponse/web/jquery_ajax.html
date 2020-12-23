@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript">
+
+        // $(function () {
+        //    alert("check jQuery");
+        // });
+
+        function f1() {
+            //get 异步访问
+            $.get(
+                "/jqueryAjaxServlet", // url
+                {"name":"张三","age":25}, // 请求参数
+                function (data) { // 执行成功后的回调
+                    // {"name":"tom","age":21}
+                    alert(data.name);
+                },
+                // "text" //返回数据的类型
+                "json"
+            );
+        }
+        function f2() {
+            //post异步访问
+            $.post(
+                "/jqueryAjaxServlet", // url
+                {"name":"李四","age":25}, // 请求参数
+                function (data) { // 执行成功后的回调
+                    // {"name":"tom","age":21}
+                    alert(data.name);
+                },
+                // "text" //返回数据的类型
+                "json"
+            );
+
+        }
+
+        function f3() {
+            //jquery.ajax()方法发送请求
+            $.ajax(
+                {
+                    url:"/jqueryAjaxServlet",
+                    async:true,
+                    type:"POST",
+                    data:{"name":"鲁西", "age":18},
+                    success:function (data) {
+                        alert(data.name);
+                    },
+                    error:function () {
+                        alert("请求失败");
+                    },
+                    dataType:"json"
+
+                }
+            );
+
+        }
+    </script>
+</head>
+<body>
+    <input type="button" value="get访问服务器端" onclick="f1()"><span id="span1"></span>
+    <br>
+    <input type="button" value="post访问服务器端" onclick="f2()"><span id="span22"></span>
+    <br>
+
+    <input type="button" value="Ajax方法访问服务器端" onclick="f3()"><span id="span33"></span>
+    <br>
+</body>
+</html>

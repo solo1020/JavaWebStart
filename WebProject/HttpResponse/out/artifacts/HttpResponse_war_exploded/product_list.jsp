@@ -44,7 +44,7 @@ body {
 
 		<%--使用mvc分层从DAO查询数据进行显示--%>
 		<c:forEach items="${productList}" var="product" >
-			<div class="col-md-2">--%>
+			<div class="col-md-2" style="height: 250px">
 				<a href="product_info.htm">
 					<img src="${pageContext.request.contextPath}/${product.getPimage()}" width="170" height="170" style="display: inline-block;">
 				</a>

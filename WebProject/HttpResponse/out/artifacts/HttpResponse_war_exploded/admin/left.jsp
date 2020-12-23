@@ -23,11 +23,13 @@
 	<script type="text/javascript">
 	
 		d = new dTree('d');
-		d.add('01',-1,'系统菜单树');
-		d.add('0102','01','分类管理','','','mainFrame');
-		d.add('010201','0102','分类管理','${pageContext.request.contextPath}/admin/category/list.jsp','','mainFrame');
+		d.add('01',-1,'系统菜单树'); //01代表本级节点的编号  -1 代表根节点
+		d.add('0102','01','分类管理','','','mainFrame');    // 0102代表本级节点编号，01 代表父级节点
+		d.add('010201','0102','分类管理','${pageContext.request.contextPath}/admin/category/list.jsp','','mainFrame');  // 点击本级时 将list.jsp显示到 mainFrame
 		d.add('0104','01','商品管理');
-		d.add('010401','0104','商品管理','${pageContext.request.contextPath}/admin/product/list.jsp','','mainFrame');
+		d.add('010401','0104','商品管理','${pageContext.request.contextPath}/adminProductList','','mainFrame');
+		d.add('0105', '01', '人事管理');
+		d.add('010501', '0105', '人事管理','${pageContext.request.contextPath}/admin/product/list.jsp','','mainFrame')
 		document.write(d);
 		
 	</script>
