@@ -48,4 +48,20 @@ public class AdminProductService {
         AdminProductDao dao = new AdminProductDao();
         dao.updateProduct(product);
     }
+
+    // 根据关键字查询商品
+    public List<Object> findProductByKeyword(String word) throws SQLException {
+        AdminProductDao dao = new AdminProductDao();
+        return dao.findProductByKeyword(word);
+    }
+
+
+
+
+
+
+
+
+
+
 }

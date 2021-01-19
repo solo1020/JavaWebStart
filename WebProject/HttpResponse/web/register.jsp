@@ -2,33 +2,76 @@
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
-<head></head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>会员注册</title>
-<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
-<script src="js/jquery-1.11.3.min.js" type="text/javascript"></script>
-<script src="js/bootstrap.min.js" type="text/javascript"></script>
-<!-- 引入自定义css文件 style.css -->
-<link rel="stylesheet" href="css/style.css" type="text/css" />
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>会员注册</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
+	<script src="js/jquery-1.11.3.min.js" type="text/javascript"></script>
+	<script src="js/bootstrap.min.js" type="text/javascript"></script>
+	<!-- 引入自定义css文件 style.css -->
+	<link rel="stylesheet" href="css/style.css" type="text/css" />
 
-<style>
-body {
-	margin-top: 20px;
-	margin: 0 auto;
-}
 
-.carousel-inner .item img {
-	width: 100%;
-	height: 300px;
-}
+	<style>
+		body {
+			margin-top: 20px;
+			margin: 0 auto;
+		}
 
-font {
-	color: #3164af;
-	font-size: 18px;
-	font-weight: normal;
-	padding: 0 10px;
-}
-</style>
+		.carousel-inner .item img {
+			width: 100%;
+			height: 300px;
+		}
+
+		font {
+			color: #3164af;
+			font-size: 18px;
+			font-weight: normal;
+			padding: 0 10px;
+		}
+	</style>
+
+<%--	使用js自带 onmouseout事件--%>
+<%--	<script type="text/javascript">--%>
+<%--		function queryusername() {--%>
+<%--			var username = $("#username").val();--%>
+<%--			alert(username);--%>
+<%--		}--%>
+<%--	</script>--%>
+
+<%--	使用jquery 的失去焦点事件--%>
+	<script type="text/javascript">
+		$(function () {
+			$("#username").blur(function () {
+				// var usernameInput = $("#username").val();
+				var usernameInput = this.value;
+				// var usernameInput = $(this).val();
+				// alert(usernameInput);
+
+				$.post(
+						"${pageContext.request.contextPath}/checkUsername",
+						{"username":usernameInput},
+						function (data) {
+							var isExist = data.isExist;
+							var usernameInfo = "";
+							// 判断
+							if(isExist){
+								usernameInfo = "该用户名已经存在";
+								$("#usernameInfo").css("color","red");
+							}else {
+								usernameInfo = "该用户名可以使用";
+								$("#usernameInfo").css("color","green");
+							}
+
+							$("#usernameInfo").html(usernameInfo);
+
+						},
+						"json"
+				);
+			});
+		});
+	</script>
+
 </head>
 <body>
 
@@ -47,7 +90,9 @@ font {
 						<label for="username" class="col-sm-2 control-label">用户名</label>
 						<div class="col-sm-6">
 							<input type="text" class="form-control" id="username"
+								   onmouseout="queryusername()"
 								placeholder="请输入用户名" name="username">
+							<span id="usernameInfo"></span>
 						</div>
 					</div>
 					<div class="form-group">

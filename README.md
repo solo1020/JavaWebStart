@@ -3639,6 +3639,28 @@ response.sendRedirect(request.getContextPath() + "/login.jsp");
 2. session  
 > 数据存储在服务器端，安全性好，增加服务器压力   
 
+
+```
+当浏览器连接上一个网页时，session就被创建，在同一个服务器下，session的对象不变，当离开当前服务器，来到另一个服务器时（浏览器未关闭）那么原服务器的session还存在吗，如果否，代表离开服务器session就注销，如果是，代表原服务器session存在和新服务器session在一起并存是
+只要浏览器未关闭，session就在吗,还有我说的是在同一个窗口中打开原先的服务器被新的服务器代替，这样子session还存在吗
+
+
+在jsp页面中，如果没有明确的给出 <% @page session="false"%>，web服务器就会自动创bai建session。
+过程是这样的，第一次在浏览器中查询某个jsp页面，web服务器接到请求，会根据服务器端的jsp页面创建java文件。如果没有给出<% @page session="false"%>，jsp会自动的、偷偷的增加一句javax.servlet.http.HttpSession session = request.getSession(true)。session就是在这里被创建的。然后编译calss文件，生成html页面。
+session的一个特性：存在于服务其中。它在服务器中作为一个对象使用的。
+session的另一个特性：session具有周期。session过期的时间是可以设置的。
+session还有一个特性：具有独立性，拥有自己的id。这个id可以被浏览器记住。
+下面来回答问题：
+第一个问题：在同一个服务器下，session的对象不变，当离开当前服务器，来到另一个服务器时（浏览器未关闭）那么原服务器的session还存在吗？
+答：所谓到另一个服务器，就是在浏览器端访问另一个网站。而没有给原来的网站服务器通信，原来session肯定不会被关闭。只要不超过session的周期，还是存在的。
+问题二：如果是，代表原服务器session存在和新服务器session在一起并存 只要浏览器未关闭，session就在吗？
+答：只要不超过session的周期，还是存在的。另，你说的session并存没错，但不在同一个地方，它在不同的服务器里面。你用的浏览器里并存的只是session的id，用来区分session的。
+问题三：还有我说的是在同一个窗口中打开原先的服务器被新的服务器代替，这样子session还存在吗。
+答：你这样的说法我有点迷惑，就按你重启服务器来回答了。session是对象，你重启服务器，原来的对象自然就没了，session也就不存在了。
+
+```
+
+
 cookie
 ===
 1. 服务器如何将cookie写给客户端
@@ -3849,7 +3871,7 @@ jsp指令：
 > language: jsp脚本可以嵌入的语言  
 > contentType: response.setContentType("text/html; charset=UTF-8")
 > pageEncoding: 当前jsp文件的编码
-> session="True" 默认为True 可以在jsp脚本中使用session  
+> session="True" 默认为True 表示在访问时自动为该jsp创建session  
 > import： 导入包 如 import="java.util.*"
 > errorPage: 当前页面执行出错跳转的页面
 如 在jsp页面Java代码内写int y = 1/0;  则会跳到errorPage 
@@ -4902,3 +4924,155 @@ public class JqueryAjaxServlet extends HttpServlet {
 * jquery.ajax({option1:value1, option2:value2...});  
 常用选项参数：  
 async:是否异步 默认true 即异步  
+
+
+##### 输入表单验证用户名是否存在
+
+实现原理：  
+1. 为input表单元素绑定事件onBlur失去焦点或鼠标移开  
+2. 在该事件中发起ajax请求 或jquery的ajax请求    
+3. 后台servlet接收后响应并查询数据库返回是否用户名存在    
+4. js事件的回调中根据后台返回进行展示  
+
+
+```
+<%--	使用js自带 onmouseout事件--%>
+<%--	<script type="text/javascript">--%>
+<%--		function queryusername() {--%>
+<%--			var username = $("#username").val();--%>
+<%--			alert(username);--%>
+<%--		}--%>
+<%--	</script>--%>
+
+<%--	使用jquery 的失去焦点事件--%>
+	<script type="text/javascript">
+		$(function () {
+			$("#username").blur(function () {
+				// var usernameInput = $("#username").val();
+				var usernameInput = this.value;
+				// var usernameInput = $(this).val();
+				// alert(usernameInput);
+
+				$.post(
+						"${pageContext.request.contextPath}/checkUsername",
+						{"username":usernameInput},
+						function (data) {
+							var isExist = data.isExist;
+							var usernameInfo = "";
+							// 判断
+							if(isExist){
+								usernameInfo = "该用户名已经存在";
+								$("#usernameInfo").css("color","red");
+							}else {
+								usernameInfo = "该用户名可以使用";
+								$("#usernameInfo").css("color","green");
+							}
+
+							$("#usernameInfo").html(usernameInfo);
+
+						},
+						"json"
+				);
+			});
+		});
+	</script>
+
+
+// 部分input表单
+<div class="form-group">
+	<label for="username" class="col-sm-2 control-label">用户名</label>
+	<div class="col-sm-6">
+		<input type="text" class="form-control" id="username"
+			   onmouseout="queryusername()"
+			placeholder="请输入用户名" name="username">
+		<span id="usernameInfo"></span>
+	</div>
+</div>
+
+
+// 后台servlet:
+request.setCharacterEncoding("UTF-8");
+String username = request.getParameter("username");
+UserService service = new UserService();
+boolean isExist = false;
+try {
+    isExist = service.checkUsername(username);
+} catch (SQLException e) {
+    e.printStackTrace();
+}
+response.getWriter().write("{\"isExist\":"+isExist+"}");
+
+```
+
+##### 站内搜索下拉框
+
+
+### 监听器Listener
+域对象：  
+request session servletContext 除了pageContext之外前三个都可以进行监听  
+监听器相关：  
+1. 事件源  
+被监听的对象 ---request session servletContext  
+2. 监听器  
+监听事件源对象  
+3. 注册监听器  
+将监听器与事件源进行绑定  
+4. 响应行为  
+监听器监听到事件源的状态变化所对应的功能代码  
+
+监听器分类：  
+按被监听的对象划分：  
+> ServletRequest域 HttpSession域 ServletContext域  
+按监听的内容划分：  
+> 监听域对象的创建与销毁  监听域对象的属性变化    
+|                    | ServletRequest域               | HttpSession域               | ServletContext域               |
+| ------------------ | ------------------------------- | ---------------------------- | ------------------------------- |
+| 域对象的创建与销毁 | ServletRequestListener          | HttpSessionListener          | ServletContextListener          |
+| 域对象属性的变化 | ServletRequestAttributeListener | HttpSessionAttributeListener | ServletContextAttributeListener |
+
+
+ServletContextListener应用为主 
+  
+监听ServletContext域的创建和销毁：  
+Servlet域的生命周期  
+何时创建：服务器启动时创建  
+何时销毁：服务器关闭销毁    
+
+监听HttpSession域的创建和销毁：  
+session域的生命周期    
+创建：第一次执行request.getSession时创建  
+销毁：3种： 非正常关闭  手动销毁  session过期(默认30min 在web.xml中配置)   
+
+监听ServletRequest域创建与销毁：  
+创建：每次请求  
+销毁：请求结束  
+
+监听三大域对象的属性变化：  
+域对象的通用方法：  
+setAttribute(name, value)  
+getAttribute(name,value)   
+removeAttribute(name, value)  
+
+
+  
+##### 监听器的编写：  
+1. 编写一个监听器类去实现监听器接口  
+2. 覆盖监听器方法  
+3. 在web.xml中配置  
+
+作用：  
+1. 进行一些初始化操作 加载数据库驱动 连接池初始化等  
+2. 加载一些初始化配置文件  spring配置文件  
+3. 进行任务调度 定时器 Timer   
+
+比如 开启一个计息任务调度--- 每天晚上12点计息   
+
+
+jsp中默认自动创建session 但是 首页index.jsp中包含header.jsp 和foot.jsp  
+所以 会以最后一个创建的session为准 个人理解 不知道对不对  
+
+
+
+
+
+

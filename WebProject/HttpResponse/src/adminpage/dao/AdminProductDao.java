@@ -5,6 +5,7 @@ import adminpage.domain.Product;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import utils.DataSourceUtils;
 
 import java.sql.SQLException;
@@ -86,5 +87,12 @@ public class AdminProductDao {
                 product.getPflag(),
                 product.getCid(),
                 product.getPid() );
+    }
+
+    public List<Object> findProductByKeyword(String word) throws SQLException {
+        QueryRunner runner = new QueryRunner(DataSourceUtils.getDataSource());
+        String sql = "select * from product_jsp where pname like ? limit 0,8";
+        List<Object> query = runner.query(sql, new ColumnListHandler("pname"), "%" + word + "%");
+        return query;
     }
 }

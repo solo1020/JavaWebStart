@@ -4,6 +4,15 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+    <!--注册监听器-->
+    <!--<listener>-->
+        <!--<listener-class>listener.MyServletContextListener</listener-class>-->
+    <!--</listener>-->
+
+    <listener>
+        <listener-class>listener.MyHttpSessionListener</listener-class>
+    </listener>
+
     <!--  web应用 全局错误页面 配置 -->
     <error-page>
         <error-code>404</error-code>
@@ -384,6 +393,26 @@
     <servlet-mapping>
         <servlet-name>jqueryAjaxServlet</servlet-name>
         <url-pattern>/jqueryAjaxServlet</url-pattern>
+    </servlet-mapping>
+
+    <!--    jquery ajax 查询用户名是否存在 -->
+    <servlet>
+        <servlet-name>checkUsername</servlet-name>
+        <servlet-class>ajax.CheckUsernameServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>checkUsername</servlet-name>
+        <url-pattern>/checkUsername</url-pattern>
+    </servlet-mapping>
+
+    <!--    jquery ajax 查询用户名是否存在 -->
+    <servlet>
+        <servlet-name>searchKeyword</servlet-name>
+        <servlet-class>ajax.SearchKeywordServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>searchKeyword</servlet-name>
+        <url-pattern>/searchKeyword</url-pattern>
     </servlet-mapping>
 
 
