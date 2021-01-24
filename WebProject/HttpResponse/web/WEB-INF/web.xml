@@ -4,13 +4,44 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+
+
+    <filter>
+        <filter-name>QuickFilter</filter-name>
+        <filter-class>filter.QuickFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>QuickFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>QuickFilter2</filter-name>
+        <filter-class>filter.QuickFilter2</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>QuickFilter2</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+
     <!--注册监听器-->
     <!--<listener>-->
         <!--<listener-class>listener.MyServletContextListener</listener-class>-->
     <!--</listener>-->
 
+    <!--<listener>-->
+        <!--<listener-class>listener.MyHttpSessionListener</listener-class>-->
+    <!--</listener>-->
+
+    <!--发送生日祝福-->
+    <!--<listener>-->
+        <!--<listener-class>listener.BirthdayListener</listener-class>-->
+    <!--</listener>-->
+
     <listener>
-        <listener-class>listener.MyHttpSessionListener</listener-class>
+    <listener-class>listener.attribute.MyServletContextAttributeListener</listener-class>
     </listener>
 
     <!--  web应用 全局错误页面 配置 -->
@@ -413,6 +444,70 @@
     <servlet-mapping>
         <servlet-name>searchKeyword</servlet-name>
         <url-pattern>/searchKeyword</url-pattern>
+    </servlet-mapping>
+
+
+    <!--    servletContext 监听器监听属性Attribute修改 -->
+    <servlet>
+        <servlet-name>servletAttributeListener</servlet-name>
+        <servlet-class>listener.attribute.TestServletContextAttributeListenerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>servletAttributeListener</servlet-name>
+        <url-pattern>/servletAttributeListener</url-pattern>
+    </servlet-mapping>
+
+
+    <!--    对象绑定解绑监听器 -->
+    <servlet>
+        <servlet-name>objectBinding</servlet-name>
+        <servlet-class>listener.domian.TestPersonBindingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>objectBinding</servlet-name>
+        <url-pattern>/objectBinding</url-pattern>
+    </servlet-mapping>
+
+    <!--    对象钝化活化监听器 -->
+    <servlet>
+        <servlet-name>objectActive</servlet-name>
+        <servlet-class>listener.domian.TestCustomerActiveServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>objectActive</servlet-name>
+        <url-pattern>/objectActive</url-pattern>
+    </servlet-mapping>
+
+    <!--    对象活化监听器 读取session中对象 -->
+    <servlet>
+        <servlet-name>objectActiveGet</servlet-name>
+        <servlet-class>listener.domian.TestGetActivedCustomerSessionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>objectActiveGet</servlet-name>
+        <url-pattern>/objectActiveGet</url-pattern>
+    </servlet-mapping>
+
+
+    <!--    Filter拦截器的servlet -->
+    <servlet>
+        <servlet-name>quickfilterServlet</servlet-name>
+        <servlet-class>filter.QuickFilterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>quickfilterServlet</servlet-name>
+        <url-pattern>/quickfilterServlet</url-pattern>
+    </servlet-mapping>
+
+
+    <!--    Filter拦截器的登录页面 -->
+    <servlet>
+        <servlet-name>filterlogin</servlet-name>
+        <servlet-class>filter.FilterLoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>filterlogin</servlet-name>
+        <url-pattern>/filterlogin</url-pattern>
     </servlet-mapping>
 
 

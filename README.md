@@ -5008,6 +5008,26 @@ response.getWriter().write("{\"isExist\":"+isExist+"}");
 
 
 ### 监听器Listener
+
+### 前置操作：
+先配置tomcat/conf/context.xml 或项目META-INF下面的context.xml:  
+主要配置两点：  
+钝化时间：即 多久不操作后存储session  
+还有钝化文件存储目录  
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/">
+    <!-- maxIdleSwap:session中的对象多长时间不使用就钝化 -->
+    <!-- directory:钝化后的对象的文件写到磁盘的哪个目录下  配置钝化的对象文件在	work/catalina/localhost/钝化文件 -->
+    <Manager className="org.apache.catalina.session.PersistentManager" maxIdleSwap="1">
+        <Store className="org.apache.catalina.session.FileStore" directory="catalinaSessionStore" />
+    </Manager>
+
+</Context>
+
+```
+
 域对象：  
 request session servletContext 除了pageContext之外前三个都可以进行监听  
 监听器相关：  
@@ -5032,6 +5052,23 @@ request session servletContext 除了pageContext之外前三个都可以进行�
 
 
 ServletContextListener应用为主 
+
+##### 监听器的编写：  
+1. 编写一个监听器类去实现监听器接口  
+2. 覆盖监听器方法  
+3. 在web.xml中配置  
+
+作用：  
+1. 进行一些初始化操作 加载数据库驱动 连接池初始化等  
+2. 加载一些初始化配置文件  spring配置文件  
+3. 进行任务调度 定时器 Timer   
+
+比如 开启一个计息任务调度--- 每天晚上12点计息   
+
+
+jsp中默认自动创建session 但是 首页index.jsp中包含header.jsp 和foot.jsp  
+所以 会以最后一个创建的session为准 个人理解 不知道对不对
+
   
 监听ServletContext域的创建和销毁：  
 Servlet域的生命周期  
@@ -5053,26 +5090,462 @@ setAttribute(name, value)
 getAttribute(name,value)   
 removeAttribute(name, value)  
 
+与session中绑定对象相关的监听器--对象感知监听器：  
+===
+即将被绑定到session中的对象有几种状态：
 
-  
-##### 监听器的编写：  
-1. 编写一个监听器类去实现监听器接口  
-2. 覆盖监听器方法  
-3. 在web.xml中配置  
+* 绑定状态：一个对象被放大session域中了
+* 解绑状态：该对象被session域中移除了    
+* 钝化状态：将session内存中的对象持久化(序列化)到磁盘  
+* 活化状态：将磁盘的对象再次恢复到session内存中  
 
-作用：  
-1. 进行一些初始化操作 加载数据库驱动 连接池初始化等  
-2. 加载一些初始化配置文件  spring配置文件  
-3. 进行任务调度 定时器 Timer   
+HttpSessionBindingListener: 对应绑定和解绑的状态 
+---
+注册给对象 而不是session域  
+```
+package listener.domian;
 
-比如 开启一个计息任务调度--- 每天晚上12点计息   
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+
+/**
+ * @ClassName Person
+ * @description: 对象绑定/解绑 感知监听器
+ * @author: isquz
+ * @time: 2021/1/20 20:40
+ */
+public class Person implements HttpSessionBindingListener {
+    private String id;
+    private String name;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void valueBound(HttpSessionBindingEvent httpSessionBindingEvent) {
+        System.out.println("person: " + this.getName() + " bounding...");
+    }
+
+    @Override
+    public void valueUnbound(HttpSessionBindingEvent httpSessionBindingEvent) {
+        System.out.println("person: " + this.getName() + " unbounding...");
+    }
+}
+
+```
+
+HttpSessionActivationListener 对应对象的钝化和活化监听器：
+注意事项：需要钝化的对象需要同时实现序列化接口Serializable  
+---  
+```
+package listener.domian;
+
+import javax.servlet.http.HttpSessionActivationListener;
+import javax.servlet.http.HttpSessionEvent;
+import java.io.Serializable;
+
+/**
+ * @ClassName Customer
+ * @description:
+ * @author: isquz
+ * @time: 2021/1/20 21:56
+ */
+public class Customer implements HttpSessionActivationListener, Serializable {
+    private String id;
+    private String name;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void sessionWillPassivate(HttpSessionEvent httpSessionEvent) {
+        System.out.println("customer: " + this.getName() + " being passivated...");
+    }
+
+    @Override
+    public void sessionDidActivate(HttpSessionEvent httpSessionEvent) {
+        System.out.println("customer: " + this.getName() + " being activated...");
+    }
+}
+
+```
+
+#### 面试题：当用户很多时 如何对服务器进行优化  
+可以考虑将session及其中的数据持久化暂时存储在硬盘上  
+
+##### 邮箱服务器：
+邮件发送协议：  
+接收：POP3 IMAP  
+发送：SMTP  
 
 
-jsp中默认自动创建session 但是 首页index.jsp中包含header.jsp 和foot.jsp  
-所以 会以最后一个创建的session为准 个人理解 不知道对不对  
+##### 定时生日祝福
+```
+package mail;
+
+import java.util.Properties;
+
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
+
+public class MailUtils {
+	/**
+	 * @description:
+	 * @param: email 邮件目标地址
+	 * @param: subject 邮件主题
+	 * @param: emailMsg 邮件内容
+	 * @return: void
+	 * @author: isquz
+	 * @date: 2021/1/20 23:21
+	 */
+	public static void sendMail(String email, String subject, String emailMsg)
+			throws AddressException, MessagingException {
+		// 1.创建一个程序与邮件服务器会话对象 Session
+
+		Properties props = new Properties();
+		props.setProperty("mail.transport.protocol", "SMTP");
+//		props.setProperty("mail.host", "smtp.126.com");
+//		props.setProperty("mail.host", "smtp.qq.com");
+		props.setProperty("mail.host", "localhost");
+		props.setProperty("mail.smtp.auth", "true");// 指定验证为true
+
+		// 创建验证器
+		Authenticator auth = new Authenticator() {
+			public PasswordAuthentication getPasswordAuthentication() {
+				// 发件邮箱账户密码
+				return new PasswordAuthentication("1819*********", "*****");
+			}
+		};
+
+		Session session = Session.getInstance(props, auth);
+
+		// 2.创建一个Message，它相当于是邮件内容
+		Message message = new MimeMessage(session);
+
+		// 设置邮件的发件人信息
+		message.setFrom(new InternetAddress("18****@qq.com")); // 设置发送者
+
+		// 设置邮件收件人
+		message.setRecipient(RecipientType.TO, new InternetAddress(email)); // 设置发送方式与接收者
+
+		message.setSubject(subject);
+		// message.setText("这是一封激活邮件，请<a href='#'>点击</a>");
+
+		message.setContent(emailMsg, "text/html;charset=utf-8");
+
+		// 3.创建 Transport用于将邮件发送
+
+		Transport.send(message);
+	}
+}
+
+```
+
+### Filter
+对客户端访问资源的过滤，符合条件放行，不符合拦截  
+1. 编写一个过滤器的类实现Filter接口  
+2. 实现方法 主要是 doFilter  
+3. 在web.xml中进行配置 主要配置对哪些资源过滤  
+
+filter作用在于 从tomcat引擎处理请求和响应 到 servlet资源处理请求和响应之间做一个过滤墙  
+且多个filter需要同时满足才能放行  
+多个filter的顺序与web.xml中配置的filter-mapping顺序一致  
+
+doFilter:  核心功能  
+参数：ServletRequest ServletResponse FilterChain  
+FilterChain对象维护了多个Filter的调用顺序
+
+url-pattern匹配模式：
+===
+后缀名匹配不能用/abc/*.jsp 只能用 *.jsp  
+
+Filter作用：
+===
+公共代码提取 如统一设置请求中文乱码格式  
+对request response的方法进行增强(装饰者模式/动态代理)  
+进行权限控制  
+
+##### 登录的基本实现
+```
+// FilterLoginServlet.java
+package filter;
+
+import filter.domain.User;
+import filter.service.UserService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.sql.SQLException;
+
+/**
+ * @ClassName ${NAME}
+ * @description:
+ * @author: isquz
+ * @time: 2021/1/23 1:58
+ */
+@WebServlet(name = "FilterLoginServlet")
+public class FilterLoginServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request,response);
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        UserService service = new UserService();
+        User user = null;
+        try {
+            user = service.login(username,password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if(user!=null){
+
+            // 一般将User对象信息存到session中
+            session.setAttribute("user",user);
+
+            //  登录成功 地址栏需要改变 重定向至首页
+            response.sendRedirect(request.getContextPath());
+        }else {
+            request.setAttribute("loginInfo","用户名和密码错误");
+            request.getRequestDispatcher("/login.jsp").forward(request,response);
+        }
+    }
+}
+
+
+// login.jsp
+<font>会员登录</font>USER LOGIN
+
+<%-- 原来方式实现判断用户名存在--%>
+<%--<div><%=request.getAttribute("loginInfo"==null?"":request.getAttribute("loginInfo")%><div>--%>
+
+<div>
+	<span style="color: red;">${loginInfo}</span>
+</div>
+
+// header.jsp 判断登录成功后显示用户名和退出按钮
+
+// 先添加el表达式
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+
+<c:if test="${empty user}">
+	<li><a href="login.jsp">登录</a></li>
+	<li><a href="register.jsp">注册</a></li>
+</c:if>
+<c:if test="${!empty user}">
+	<li>欢迎您,${user.username}</li>
+	<li><a href="#">退出</a></li>
+</c:if>
+
+```
+
+##### 自动登录实现：
+主要思路是首次登录时将用户信息存储在cookie中    
+并在自动登录的拦截器中将该用户信息存储到session    
+
+判断用户是否勾选自动登录   
+设置cookie的携带路径  
+
+```
+// FilterLoginServlet.java
+
+package filter;
+
+import filter.domain.User;
+import filter.service.UserService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.sql.SQLException;
+
+/**
+ * @ClassName ${NAME}
+ * @description:
+ * @author: isquz
+ * @time: 2021/1/23 1:58
+ */
+@WebServlet(name = "FilterLoginServlet")
+public class FilterLoginServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request,response);
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        UserService service = new UserService();
+        User user = null;
+        try {
+            user = service.login(username,password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if(user!=null){
+
+            // 判断用户是否勾选自动登录
+            String isAutoLogin = request.getParameter("autologin");
+            if(isAutoLogin != null){
+                Cookie cookie_username = new Cookie("cookie_username", user.getUsername());
+                Cookie cookie_password = new Cookie("cookie_password", user.getPassword());
+                cookie_username.setMaxAge(60*60);
+                cookie_password.setMaxAge(60*60);
+                // 设置cookie的携带路径
+                cookie_username.setPath(request.getContextPath());
+                cookie_password.setPath(request.getContextPath());
+                response.addCookie(cookie_username);
+                response.addCookie(cookie_password);
+            }
+
+            // 一般将User对象信息存到session中
+            session.setAttribute("user",user);
+
+            //  登录成功 地址栏需要改变 重定向至首页
+            response.sendRedirect(request.getContextPath());
+        }else {
+            request.setAttribute("loginInfo","用户名和密码错误");
+            request.getRequestDispatcher("/login.jsp").forward(request,response);
+        }
+    }
+}
+
+
+// AutoLoginFilter.java 过滤器
+
+package filter;
+
+import com.sun.deploy.net.HttpResponse;
+import filter.domain.User;
+import filter.service.UserService;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.sql.SQLException;
+
+public class AutoLoginFilter implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        System.out.println("autoLoginFilter....");
+
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        String cookie_username = null;
+        String cookie_password = null;
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null){
+            for(Cookie cookie : cookies){
+                if("cookie_username".equals(cookie.getName())){
+                    cookie_username = cookie.getValue();
+                }
+                if("cookie_password".equals(cookie.getName())){
+                    cookie_password = cookie.getValue();
+                }
+            }
+        }
+
+        if(cookie_username != null && cookie_password != null ){
+            UserService service = new UserService();
+            User user = null;
+            try {
+                user = service.login(cookie_username,cookie_password);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            HttpSession session = request.getSession();
+            session.setAttribute("user",user);
+        }
+        filterChain.doFilter(request,response);
+
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}
 
 
 
+```
 
+// 判断用户是否勾选自动登录    
+判断用户勾选自动登录后 将用户名和密码存储到cookie中同时将cookie放到response中    
+
+// 在过滤器中读取cookie 并且拿到用户名和密码 自动进行登录 最后放行  
+
+
+##### 解决全局中文乱码
+对中文进行编码    
+乱码过滤器  
+全局乱码解决   原始方案    
+
+简单的设置编码对于get请求无法生效  
+
+使用装饰者模式 在filter传递request之前进行 request的getParameter方法增强  
+具体实现：
+1. 增强类与被增强的类实现统一接口  
+2. 在增强类中传入被增强类的  
+3. 需要增强的方法重写 不需要的方法调用被增强对象的
 
 

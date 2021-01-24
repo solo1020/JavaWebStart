@@ -53,10 +53,23 @@ font {
 				<div
 					style="width: 440px; border: 1px solid #E7E7E7; padding: 20px 0 20px 30px; border-radius: 5px; margin-top: 60px; background: #fff;">
 					<font>会员登录</font>USER LOGIN
-					<div><%=request.getAttribute("loginInfo")==null?"":request.getAttribute("loginInfo")%></div>
+					
+					<%-- 原来方式实现判断用户名存在--%>
+					<%--<div><%=request.getAttribute("loginInfo")==null?"":request.getAttribute("loginInfo")%></div>--%>
+					
+					
+					<div>
+						<span style="color: #red;">${loginInfo}</span>
+					</div>
+					
+					
+					
 					<%--<form class="form-horizontal" action="/login" method="post">--%>
 					<%--原来是登录时校验用户名和密码，现在先校验验证码，新增CheckLoginImgServlet--%>
-					<form class="form-horizontal" action="/checkloginimg" method="post">
+
+					<%--<form class="form-horizontal" action="/checkloginimg" method="post">--%>
+
+					<form class="form-horizontal" action="${pageContext.request.contextPath}/filterlogin" method="post">
 						<div class="form-group">
 							<label for="username" class="col-sm-2 control-label">用户名</label>
 							<div class="col-sm-6">
@@ -74,7 +87,7 @@ font {
 						<div class="form-group">
 							<label for="inputPassword3" class="col-sm-2 control-label">验证码</label>
 							<div class="col-sm-3">
-								<input type="text" class="form-control" id="inputPassword3"
+								<input type="text" class="form-control" id="inputPassword4"
 									placeholder="请输入验证码"
 									name="checkCode">
 							</div>
