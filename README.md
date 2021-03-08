@@ -1292,6 +1292,129 @@ select * from tbl limit 6,3;
 
 ******
 
+
+#### mysql 操作与面试：
+distinct 返回不重复的字段   
+distinct 必须放在所有查询字段的开头  
+select distinct name,id from user 正确  
+select id, distinct name from user 错误  
+一般用于查询不重复记录的条数  
+要查询不重复的记录 可以用group by  
+select id, name from user group by name  
+
+先有group by的分组再确定select 检索的列  
+```
+select a,b,c from table_name group by a,b,c,d;
+select a,b from table_name group by a,b,c;
+select a,max(a) from table_name group by a,b,c;
+```
+
+操作：
+---
+表格数据：  
+```
+mysql> select * from test1;
++------+--------+
+| id   | name   |
++------+--------+
+| 1001 | 张三   |
+| 1002 | 李四   |
+| 1003 | 王五   |
+| 1003 | 王五   |
+| 1004 | 陈六   |
++------+--------+
+
+```
+问题：  
+查询去重后的人员信息:  
+查出存在重复记录的人员id 或人员全部信息  
+```
+mysql> select id,name, count(name) as times from test1 group by name,id having times>1;
++------+--------+-------+
+| id   | name   | times |
++------+--------+-------+
+| 1003 | 王五   |     2 |
++------+--------+-------+
+```
+
+联查：  
+---
+```
+mysql> select * from math_table;
++------+-----------+------------+
+| id   | name      | math_score |
++------+-----------+------------+
+|    1 | 李明      |         83 |
+|    3 | 张建国    |         76 |
+|    5 | 王华      |         57 |
++------+-----------+------------+
+
+mysql> select * from english_table;
++------+-----------+---------------+
+| id   | name      | english_score |
++------+-----------+---------------+
+|    2 | 陈斌      |            73 |
+|    3 | 张建国    |            65 |
+|    5 | 王华      |            89 |
++------+-----------+---------------+
+
+```
+
+问题：  
+查询两项成绩都有的学生name 清单：  
+select a.id, a.name,a.math_score,b.english_score from math_table a join english_table b on a.id = b.id;  
+
+查询只有数学表成绩 没有英语成绩的学生：  
+```
+mysql> select name from math_table where name not in (select name from english_table);
++--------+
+| name   |
++--------+
+| 李明   |
++--------+
+
+mysql> select a.id, a.name, a.math_score from math_table a left join english_table b on a.id = b.id where b.english_score is null;
++------+--------+------------+
+| id   | name   | math_score |
++------+--------+------------+
+|    1 | 李明   |         83 |
++------+--------+------------+
+
+
+mysql> select * from math_table a where (select count(*) as num from english_table b where a.id = b.id) = 0;
++------+--------+------------+
+| id   | name   | math_score |
++------+--------+------------+
+|    1 | 李明   |         83 |
++------+--------+------------+
+
+
+```
+
+select a.math_score, b.english_score from math_table a left join english_table b on a.id = b.id where a.math_score > 60 and b.english_score >60;
+
+
+select a.SID c.Sname from (select SID,score from SC where CID='01') a, (select SID,score from SC where CID='02') b where a.SID=b.SID and a.score > b.score left join Student c on c.SID=a.SID
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 JDBC
 ====
 一般不使用硬编码创建驱动  一般使用Class.forName() 加载指定类,在类的静态代码块中 注册驱动  
@@ -3918,7 +4041,7 @@ errorPage 只能作为 服务端错误500开头的错误导致而显示的页面
 jsp内置/隐式对象
 ===
 1. javax.servlet.jsp.JspWriter out : 用于页面输出
-2. javax.servlet.http.HttpServletRequest request: 得到用户请求  
+2. javax.servlet.http.HttpServletRequest request: ��到用户请求  
 3. javax.servlet.http.HttpServletResponse response: 服务器向客户端响应信息   
 4. javax.servlet.ServletConfig config : 服务器配置，可以获取初始化参数  
 5. javax.servlet.http.HttpSession session: 保存用户信息
@@ -5547,5 +5670,456 @@ public class AutoLoginFilter implements Filter {
 1. 增强类与被增强的类实现统一接口  
 2. 在增强类中传入被增强类的  
 3. 需要增强的方法重写 不需要的方法调用被增强对象的
+
+```
+// EncodingServlet.java
+
+package filter;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@WebServlet(name = "EncodingServlet")
+public class EncodingServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        doGet(request,response);
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String username = request.getParameter("username");
+
+        // get请求中文乱码 原始解决方案
+//        username = new String(username.getBytes("iso8859-1"),"UTF-8");
+
+        System.out.println("username: " + username);
+    }
+}
+
+
+// EncodingFilter.java
+
+package filter;
+
+import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
+@WebFilter(filterName = "EncodingFilter")
+public class EncodingFilter implements Filter {
+    public void destroy() {
+    }
+
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
+        // 简单的设置编码对于get请求无法生效
+        req.setCharacterEncoding("UTF-8");
+
+        // 在filter传递request之前进行 request的getParameter方法增强
+        /**
+         * 使用装饰者模式
+         * 1. 增强类与被增强的类实现统一接口
+         * 2. 在增强类中传入被增强类的
+         * 3. 需要增强的方法重写 不需要的方法调用被增强对象的
+         */
+
+        // 被增强对象
+        HttpServletRequest request = (HttpServletRequest) req;
+        // 增强对象---装饰者
+        EnhanceRequest enhanceRequest = new EnhanceRequest(request);
+
+        chain.doFilter(enhanceRequest, resp);
+    }
+
+    public void init(FilterConfig config) throws ServletException {
+
+    }
+
+}
+class EnhanceRequest extends HttpServletRequestWrapper {
+
+    private HttpServletRequest request;
+
+    public EnhanceRequest(HttpServletRequest request) {
+        super(request);
+        this.request = request;
+    }
+
+    @Override
+    public String getParameter(String name) {
+        String parameter = request.getParameter(name);
+        System.out.println("before Enhance getParameter: " + parameter);
+        try {
+            parameter = new String(parameter.getBytes("iso8859-1"),"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        System.out.println("after Enhance  getParameter: " + parameter);
+        return parameter;
+    }
+}
+
+
+
+
+```
+
+#### 基础增强
+
+类加载器
+====
+类加载器类型：  
+1. BootStrap 引导类加载器：加载最基础文件JRE/lib/rt.jar    
+2. ExtClassLoader 扩展类加载器：加载基础文件JRE/lib/ext/*.jar      
+3. AppClassLoader 应用类加载器：三方jar包和自己编写的Java文件    
+
+三种获取字节码对象的方式  
+
+
+获取类加载器：
+====
+字节码对象.getClassLoader();  
+classLoader.getResource(name);  获取classes(src) 下的任何资源  
+
+```
+Class cls = Demo.class;
+ClassLoader classLoader = cls.getClassLoader();
+// 获取classes(src) 下的任何资源
+String path = classLoader.getResource("classloaderclassloaderjdbc.properties").getPath();
+System.out.println("load properties path: " + path);
+```
+
+注解
+====
+注解优点：开发效率高 成本低   
+缺点：耦合性大 不利于维护 使用配置文件降低耦合性  
+
+JDK5提供的注解：  
+@Override @Deprecated @SuppressWarnings  
+
+自定义注解：
+----
+注解的属性的类型：  
+基本类型 String 枚举类型 注解类型 Class类型 以上类型的一维数组  
+
+元注解：修饰注解的注解METHOD
+@Target 修饰注解的使用范围 类TYPE使用 方法METHOD使用 或者域FIELD变量使用    
+@Rentention   
+SOURCE 源码级别可见 CLASS字节码文件可见  RUNTIME运行时仍可见　　
+
+##### 实现自定义单元测试
+```
+// MyTest.java 注解
+package classloader.unittest;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MyTest {
+    // attribute...
+}
+
+// 单元测试 TestDemo.java
+package classloader.unittest;
+
+import org.junit.Test;
+
+public class TestDemo {
+
+    @Test
+    public void test1(){
+        System.out.println("test1 running...");
+    }
+
+    @MyTest
+    public void test2(){
+        System.out.println("mytest running...");
+    }
+}
+
+
+
+// 单元测试执行MyTestParser.java
+package classloader.unittest;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+public class MyTestParser {
+    public static void main(String[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Class cls = TestDemo.class;
+        Method[] methods = cls.getMethods();
+        if(methods != null){
+            for(Method m: methods){
+                if(m.isAnnotationPresent(MyTest.class) ){
+                    m.invoke(cls. newInstance(),null);
+                }
+            }
+        }
+
+    }
+}
+
+
+```
+
+动态代理
+====
+代理:  
+目标对象 ----房主:真正租房的方法    
+代理对象 ---- 中介 调用房主的租房方法     
+执行代理对象方法的对象 ---- 租房的人    
+
+流程:  租房---中介(租房的方法) ----> 房主(租房的方法)  
+调用对象 --- 代理对象 ----> 目标对象  
+
+代理对象和目标对象 实现同一接口保证方法一致  
+
+与目标对象相同的类加载器  
+目标对象实现的接口的字节码对象数组  
+句柄  InvocationHandler接口对象  
+实现方法invoke 在代理对象处理方法调用 并返回结果  
+
+```
+
+package classloader.proxy;
+
+import org.junit.Test;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+public class ProxyTest {
+
+    @Test
+    public void test1(){
+        // get dynamic proxy
+        TargetInterface objProxy = (TargetInterface) Proxy.newProxyInstance(
+                Target.class.getClassLoader(), //与目标对象相同的类加载器
+                new Class[]{TargetInterface.class}, // 目标对象实现的接口的字节码对象数组
+                new InvocationHandler() {   // 句柄
+
+                    // invoke 执行的是代理对象的方法
+                    // 参数method 代表目标对象方法的字节码
+
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        System.out.println("before target method");
+                        Object o = method.invoke(new Target(),args);
+                        System.out.println("after target method");
+                        return o;
+                    }
+                });
+
+        // 调用上方invoke方法 其中参数Method: 目标对象的method1方法  args: null
+        objProxy.method1("123");
+
+        // 调用上方invoke方法 其中参数Method: 目标对象的method2方法  args: null
+        String return2 = objProxy.method2();
+        System.out.println(return2);
+
+        // 调用上方invoke方法 其中参数Method: 目标对象的method3方法  args: Object[]{100}
+        objProxy.method3(100);
+    }
+}
+
+
+```
+
+动态代理作用：
+----
+1. 增强目标对象方法 在代理对象的invoke方法中可以对目标对象方法进行增强  
+2. 目标对象和目标对象实现的接口改动时 动态代理不需要修改 仍然可以调用新实现的方法  
+
+##### 使用动态代理完成全局编码
+```
+package filter;
+
+import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+@WebFilter(filterName = "EncodingFilter")
+public class EncodingFilter implements Filter {
+    public void destroy() {
+    }
+
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
+        // 简单的设置编码对于get请求无法生效
+        req.setCharacterEncoding("UTF-8");
+
+        // 使用动态代理完成全局编码
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletRequest enhanceRequest = (HttpServletRequest) Proxy.newProxyInstance(
+                request.getClass().getClassLoader(),
+                request.getClass().getInterfaces(),
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        String name = method.getName();
+                        if("getParameter".equals(name)){
+                            String invokeParam = (String) method.invoke(request,args);
+                            invokeParam = new String(invokeParam.getBytes("iso8859-1"),"UTF-8");
+                            return invokeParam;
+                        }
+                        return method.invoke(request,args);
+                    }
+                }
+        );
+
+        chain.doFilter(enhanceRequest,resp);
+
+
+
+        // 在filter传递request之前进行 request的getParameter方法增强
+        /**
+         * 使用装饰者模式
+         * 1. 增强类与被增强的类实现统一接口
+         * 2. 在增强类中传入被增强类的
+         * 3. 需要增强的方法重写 不需要的方法调用被增强对象的
+         */
+
+        // 被增强对象
+//        HttpServletRequest request = (HttpServletRequest) req;
+//        // 增强对象---装饰者
+//        EnhanceRequest enhanceRequest = new EnhanceRequest(request);
+//
+//        chain.doFilter(enhanceRequest, resp);
+    }
+
+    public void init(FilterConfig config) throws ServletException {
+
+    }
+
+}
+class EnhanceRequest extends HttpServletRequestWrapper {
+
+    private HttpServletRequest request;
+
+    public EnhanceRequest(HttpServletRequest request) {
+        super(request);
+        this.request = request;
+    }
+
+    @Override
+    public String getParameter(String name) {
+        String parameter = request.getParameter(name);
+        System.out.println("before Enhance getParameter: " + parameter);
+        try {
+            parameter = new String(parameter.getBytes("iso8859-1"),"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        System.out.println("after Enhance  getParameter: " + parameter);
+        return parameter;
+    }
+}
+
+
+```
+
+
+### NoSql & Redis
+nosql: 主要 MongoDB Redis Hbase  
+非关系型数据库：redis为内存中存储的键值对数据  
+
+redis支持的键值存储数据类型：  
+字符串类型  
+散列类型hash  
+列表类型lists  
+集合类型sets  
+有序集合类型  
+
+##### 远程访问redis需要开启端口6379防火墙 
+
+后台模式启动redis:  
+修改redis.conf中 daemonize为yes  
+./bin/redis-server ./redis.conf 启动  
+
+./redis-cli  
+
+
+停止redis:  
+./bin/redis-cli shutdown  
+
+连接客户端：  
+redis-cli -h ip 地址 -p 端口  
+
+
+```
+JedisPoolConfig poolConfig = new JedisPoolConfig();
+// 最大闲置个数
+poolConfig.setMaxIdle(30);
+// 最小闲置个数
+poolConfig.setMinIdle(10);
+// 最大连接数
+poolConfig.setMaxTotal(50);
+
+JedisPool pool = new JedisPool(poolConfig,"localhost",6379);
+```
+##### 字符串value:
+字符串类型value最多512M  
+基本操作：  
+get set del 
+incr/decr key 仅限于数字型字符串  
+incrby/decrby key increment 增加/减小指定数值 仅限于数字型字符串  
+append key value 追加字符串  
+
+##### hash value:
+每个hash可以存储4294967295个键值对  
+基本操作：  
+hset key field value: 为指定key设置 field/value键值对  
+
+hget key field: 获取
+
+hmset key field value field2 value2 设置key中多个field/value键值对  
+
+hmget key field field2 field3  
+
+获取所有键值对：  
+hgetall key   
+
+
+删除某个键值对：hdel key field  
+删除整个hash: del key  
+
+hincrby key field increment 设置key中field值增加increment  
+
+查找是否存在：  
+hexists key field  存在返回1 不存在返回0  
+
+获取hash的长度：  
+hlen key  
+
+获取hash中所有的key:  
+hkeys key  
+
+获取所有的value:  
+hvals key  
+
+
+##### list value:
+最大元素数量：4294967295  
+
+
+
 
 
