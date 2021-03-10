@@ -6119,6 +6119,209 @@ hvals key
 ##### list value:
 最大元素数量：4294967295  
 
+两端添加：  
+左侧添加：lpush key value1 value2...   
+右侧添加：rpush key value1 value2...  
+
+```
+127.0.0.1:6379> lpush mylist a b c d
+(integer) 4
+
+127.0.0.1:6379> lrange mylist 0 -1
+1) "d"
+2) "c"
+3) "b"
+4) "a"
+```
+类似于栈stack 先进后出  
+
+获取:  
+lrange key start end 起始索引start从0开始 结束索引可以为-1 表示最后一个元素 类似python  
+
+
+两端弹出：  
+lpop key: 返回并弹出指定key的list中第一个元素 如果key不存在返回nil  
+rpop key:  
+
+查看元素个数：  
+llen key  
+
+
+插入时检查key是否存在:  
+lpushx key value  
+rpushx key value  
+
+删除多个元素：  
+lrem key count value: 删除count个值为value的元素   
+
+设置修改指定索引位置的值：  
+lset key index value:  index不存在则抛出异常  
+
+插入元素：  
+linsert key before/after pivot value:在pivot 这个元素 前或者后 插入value  
+
+
+##### set value:
+添加：  
+sadd key value1 value2...  添加key的数据 key已存在不会重复添加  
+
+获取key中所有成员：  
+smembers key:  
+
+查看成员是否存在：  
+sismember key member:  1表示存在 0不存在 无论集合有多少元素都可以极速返回结果 类似hash?   
+
+集合差集操作：  
+sdiff key1 key2 返回key1中独有的成员 类似left join    
+
+集合交集：  
+sinter key1 key2 key3...   
+
+集合并集：  
+sunion key1 key2 key3...  
+
+获取成员数量：  
+scard key:  
+
+随机获取成员：  
+srandmember key 随机返回key中的一个成员  
+
+
+##### sortedset value:
+与Set类型的区别是每个成员会有一个分数/权重score 与之关联  
+redis通过分数来为集合中的成员进行从小到大的排序  
+添加删除更新一个成员都是集合中成员个数的对数 且因为是有序集合 访问集合中部的成员也是非常高效  
+应用：  
+游戏排名 微博热点话题  
+
+添加：  
+zadd key socre member score2 member2...  
+
+获取：  
+zscore key member: 获取指定成员的分数  
+
+查询成员个数：  
+zcard key:  
+
+范围查询：  
+zrange key start end [withscores]: 获取集合中start - end索引位置的成员 默认按照分数从小到大排序 如果给定withscores 则同时查询各个成员的分数  
+
+删除成员：  
+zrem key member1 member2  
+
+按分数高低查询：  
+zrevrange key start stop [withscores] 按元素分数从高到低返回指定索引区间的元素 包括两端的   
+
+
+按分数排名删除元素：  
+zremrangebyrank key start stop 按照排名范围 从小到大排序后的顺序 删除元素     
+
+按分数范围删除元素：  
+zremrangebyscore key min max: 按照分数范围删除元素 包括两端    
+
+分页查询：  
+zrangebyscore key min max [withscores] [limit offset count] 按分数范围 分页查询   
+
+修改成员的分数：  
+zincby key increment member 设置指定成员增加的分数 返回值是修改后的分数  
+
+计算分数范围内的成员个数：  
+zcount key min max 闭区间  
+
+返回成员在集合中的排名：  
+zrank key member 返回成员在集合中的排名 从小到大的顺序   
+zrevrank key member 从大到小的顺序返回成员的排名   
+
+
+##### keys 通用操作
+keys pattern: 获取匹配正则表达式的key  * 表示所有 ? 表示任意一个字符   
+del key1 key2 删除key  
+exists key 存在返回1 不存在返回0  
+rename key newkey 重命名key   
+expire key time 设置过期时间 单位为秒    
+ttl key 查询key所剩超时时间 没有设置超时返回-1 返回-2 表示已经超时 key 此时已不存在   
+type key 获取数据类型 返回string list set hash zset key不存在返回none   
+
+特性：  
+一个redis最多16个数据库 从0开始  
+默认使用0数据库 也可以select 指定   
+
+移动数据到另一个数据库：  
+move key 1  移动数据key到1号数据库  
+
+查询库中key的数量：dbsize  
+
+flushdb 删除当前数据库中的所有key   
+flushall 删除所有数据库中的所有key   
+
+
+消息订阅与发布：
+=====
+subscribe channel 订阅频道   
+publish channel content 在channel 频道发布内容   
+
+
+##### redis 事务
+multi 标记开始事务 后面所有命令存入队列 知道执行exec   
+
+exec 类型关系型数据库的commit   
+
+discard 回滚事务 类似关系型数据库的rollback  
+
+redis 持久化：  
+=====
+RDB方式：   
+数据快照  
+
+
+AOF方式：   
+以日志形式记录服务器处理的每一个写操作 redis服务器启动时会读取该文件来重新构建数据库  
+
+
+##### jedis
+导入jar包 commons-pool2-2.3.jar jedis-2.7.0.jar   
+
+单实例连接：
+---
+```
+Jedis jedis = new Jedis("192.168.137.128",6379);
+
+jedis.set("name","itcast");
+
+String name = jedis.get("name");
+
+jedis.close();  
+
+```
+
+连接池：
+---
+```
+JedisPoolConfig config = new JedisPoolConfig();
+
+//最大连接数
+config.setMaxTotal(30);
+
+JedisPool jedisPool = new JedisPool(config, "192.168.137.128",6379);
+
+Jedis jedis = null;
+try{
+    jedis = jedisPool.getResource();
+
+    jedis.set("name","itcast");
+    String name = jedis.get("name");
+    //sout
+} catch(Exception e){
+    e.printStackTrace();
+} finally{
+    if(jedis != null){
+        jedis.close();
+    }
+    
+}
+```
+
+
 
 
 
