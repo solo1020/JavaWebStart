@@ -1,0 +1,7 @@
+127.0.0.1 - - [09/Nov/2021:21:36:10 +0800] "GET / HTTP/1.1" 200 89 http-bio-80-exec-1 94
+127.0.0.1 - - [09/Nov/2021:21:36:10 +0800] "GET /springmvc.jsp HTTP/1.1" 200 144 http-bio-80-exec-2 21
+127.0.0.1 - - [09/Nov/2021:21:36:12 +0800] "GET /favicon.ico HTTP/1.1" 404 949 http-bio-80-exec-3 20
+127.0.0.1 - - [09/Nov/2021:21:36:12 +0800] "GET /img/wangzuxian.PNG HTTP/1.1" 404 949 http-bio-80-exec-4 22
+127.0.0.1 - - [09/Nov/2021:21:36:16 +0800] "GET /userServlet HTTP/1.1" 404 949 http-bio-80-exec-7 1
+127.0.0.1 - - [09/Nov/2021:21:36:58 +0800] "GET /save HTTP/1.1" 200 141 http-bio-80-exec-8 34
+127.0.0.1 - - [09/Nov/2021:21:39:11 +0800] "GET /success.jsp HTTP/1.1" 200 141 http-bio-80-exec-1 60

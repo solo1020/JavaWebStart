@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <!--加载外部properties配置-->
+    <!--<properties resource="jdbc.properties"></properties>-->
+    <properties resource="jdbc.properties">
+
+        <!--如果外部存在配置文件 则此处定义的属性被配置文件中覆盖-->
+        <property name="jdbc.username" value="root" />
+        <property name="jdbc.password" value="admin1" />
+    </properties>
+    <!--设置java类型别名 别名需要在properties之后-->
+    <typeAliases>
+        <!--设置一个Java类型的别名-->
+        <!--<typeAlias type="com.itcast.mybatis.pojo.Category" alias="Category"/>-->
+
+        <!--将整个包下所有类名设置别名 使用时首字母大小写均能识别-->
+        <package name="com.itcast.mybatis.pojo" />
+    </typeAliases>
+
+    <!--数据库环境配置-->
+    <environments default="development">
+        <!--使用mysql环境-->
+        <environment id="development">
+            <!--事务管理器 JDBC类型-->
+            <transactionManager type="JDBC"></transactionManager>
+            <!--连接池 内置POOLED-->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <!--<property name="url" value="jdbc:mysql://192.168.2.110:3306/itcastshop?characterEncoding=utf-8" />-->
+
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--加载映射文件 mapper.xml 存放sql语句的位置-->
+    <mappers>
+        <!--注册包下面所有mapper接口 要求mapper接口名与mapper映射文件名相同 且在同一目录下-->
+        <!--<package name="com.itcast.mybatis.mapper" />-->
+        
+        <mapper resource="CategoryMapper.xml" />
+        <mapper resource="OrderMapper.xml" />
+        <mapper resource="ProductMapper.xml" />
+        <mapper resource="MybatisOrderMapper.xml" />
+
+        <!--此种方法的class 接口文件中并没有关联mapper.xml
+        所以要求mapper接口名称与mapper映射文件名称相同 且放在同一目录下-->
+        <!--<mapper class="com.itcast.mybatis.mapper.CategoryMapper" />-->
+
+        <!--需指定mapper.xml的绝对路径-->
+        <!--<mapper url="" />-->
+    </mappers>
+
+
+
+
+</configuration>

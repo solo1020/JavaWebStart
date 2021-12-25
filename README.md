@@ -2,8 +2,294 @@
 JavaEE helloworld
 
 
+
+### 常用配置
+
+maven阿里云仓库：
+```
+<mirror>
+  <id>alimaven</id>
+  <mirrorOf>central</mirrorOf>
+  <name>aliyun maven</name>
+  <url>http://maven.aliyun.com/nexus/content/repositories/central/</url>
+</mirror>
+```
+
+idea run configuration中添加maven name:tomcat7 , command line 设置为tomat7:run  
+
+maven tomcat:
+```
+<plugin>
+  <groupId>org.apache.tomcat.maven</groupId>
+  <artifactId>tomcat7-maven-plugin</artifactId>
+  <version>2.2</version>
+  <configuration>
+    <port>8080</port>
+    <path>/</path>
+    <uriEncoding>UTF-8</uriEncoding>
+    <server>tomcat7</server>
+  </configuration>
+</plugin>
+
+```
+
+
+idea 代码模板：
+---
+文件头：Settings-Editor-File and Code Templates-includes-File Header:    
+```
+/**
+ * @ClassName ${NAME}
+ * @description: 
+ * @author: ${USER}
+ * @time: ${DATE} ${TIME}
+ * 
+ */
+```
+
+注释模板：  
+1. Settings-Editor-Live Templates + Template Group 名称自定义如Javafunc  
+2. 选择JavaFunc 后 + 添加Live Template  
+Abbreviation: *  
+Expand with 选择enter  
+Template text:  
+```
+*
+ * @description: 
+$params$
+ * @return: $returns$
+ * @author: $user$
+ * @date: $date$ $time$
+ */  
+```
+下方选择全部Java 类型  
+Edit Variables:  
+params:
+```
+groovyScript("def result=''; def params=\"${_1}\".replaceAll('[\\\\[|\\\\]|\\\\s]', '').split(',').toList(); for(i = 0; i < params.size(); i++) {result+=' * @param: ' + params[i] + ((i < params.size() - 1) ? '\\n' : '')}; return result", methodParameters())
+```
+其他变量看名字选择自带的内置函数即可  
+
+
+**********************************
+
+maven web项目及其他问题解决:
+====
+* maven 普通项目转web项目：  
+maven pom.xml 中 project标签中添加：  
+```
+<modelVersion>4.0.0</modelVersion>
+```
+
+以及build插件 添加tomcat7插件 ：  
+```
+<!--构建-->
+    <build>
+        <!--插件 tomcat7 -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <port>80</port>
+                    <path>/</path>
+                    <url>http://127.0.0.1:80/</url>
+                    <uriEncoding>UTF-8</uriEncoding>
+                    <charset>utf-8</charset>
+                    <server>tomcat7</server>
+                    <update>true</update>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+```
+
+完整的spring maven web pom ：  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>springmvcdemo</groupId>
+    <artifactId>springmvcdemo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>war</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.comiler.target>1.8</maven.comiler.target>
+    </properties>
+
+    <dependencies>
+        <!--servlet 3.1 规范-->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--jsp坐标-->
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+            <version>2.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--spring 坐标-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.1.9.RELEASE</version>
+        </dependency>
+
+    </dependencies>
+
+
+    <!--构建-->
+    <build>
+        <!--插件 tomcat7 -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <port>80</port>
+                    <path>/</path>
+                    <url>http://127.0.0.1:80/</url>
+                    <uriEncoding>UTF-8</uriEncoding>
+                    <charset>utf-8</charset>
+                    <server>tomcat7</server>
+                    <update>true</update>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
+```
+
+File-Project structure-modules   
+首先点击项目名称-选择右边-Sources-Paths-Dependencies 的Dependencies 右边添加library 选择maven pom.xml中配置的tomcat7 插件 点击Add Selected  
+
+选中中间栏的web modules   
+右边Deployment Descriptors 设置web.xml位置    
+一般设置在src/main/webapp/WEB-INF/web.xml 即可   
+下面 Web Resource Directories 设置为 src/main/webapp
+然后 Apply   
+
+然后设置run configuration  
+点击添加smart tomcat 或tomcat server 均可   
+这里使用的是Tomcat7 插件 所以使用smart Tomcat    
+设置Deployment Directory 设置为src/main/webapp/WEB-INF
+contextPath 端口等自定义即可
+
+
+其他问题：
+---
+运行时提示internal java compiler error    
+首先确保project structure中设置的是1.8版本  
+再去settings-build-Compiler-java Compiler 设置module的 Target bytecode vesrion为1.8 即可   
+
+或者直接在maven 的build 标签中添加编译插件版本：  
+```
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.5.1</version>
+    <configuration>
+        <source>1.8</source>
+        <target>1.8</target>
+    </configuration>
+</plugin>
+```
+
+
+普通web项目 非maven web项目配置WEB-INF/classes 和libs:   
+需要事先将project structure-module-项目名-path-user module compiler output path 配置到WEB-INF/classes目录    
+以及 project structure-module-项目名-Dependencies 添加WEB-INF/lib目录     
+
+tomcat7-maven-plugin 踩坑：  
+针对maven 使用tomcat插件运行tomcat web项目的：  
+run - Edit Configuration 中左上角添加maven configuration   
+command line 设置为：tomcat7:run -f pom.xml  
+前提是maven 的pom.xml中配置正确： 
+
+
+tomcat 启动后首页404：   
+见到404说明tomcat已经启动成功  可能是web.xml中配置的welcome页面不对 活在webapp下面的index.jsp 这些文件的路径放置的不正确  
+
+
+
+最完整配置：  
+```
+<!--构建-->
+    <build>
+        <!--插件 tomcat7 -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <port>80</port>
+                    <path>/</path>
+                    <url>http://127.0.0.1:80/</url>
+                    <uriEncoding>UTF-8</uriEncoding>
+                    <charset>utf-8</charset>
+                    <server>tomcat7</server>
+                    <update>true</update>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+```
+
+
 html
 ==================================
+
+**********************************
+
+
 水平线
  <hr />
 
@@ -53,6 +339,12 @@ target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 
 表单：
 ---- 
+
+禁止表单自动填充下拉框：
+----
+autocomplete="off"  
+
+
 ```
 <form action="#处理请求的servlet路径" method="get">
 <input type="text" name="提交到服务器的参数名" 
@@ -118,8 +410,13 @@ target="_self" _blank  self 在当前标签页打开 blank 打开新标签页
 <input type="reset" value="">
 ```
 
+**********************************
+
 css
 =====
+
+**********************************
+
 
 语法：
 ----
@@ -162,8 +459,14 @@ padding: 内边距
 border: 边框厚度  
 
 
+**********************************
+
 Javascript
 ==========
+
+**********************************
+
+
 
 组成部分：
 -----
@@ -549,8 +852,15 @@ select.options 获取下面的选项
 Js全局函数:
 ---
 
+
+**********************************
+
 jQuery:
 =====
+
+**********************************
+
+
 ```
 <script type="text/javascript" src="../js/jquery-1.8.3.js"></script>
         <script>
@@ -1090,8 +1400,31 @@ $(#id).validate({
 equalTo用法：equalTo:"[name='password']"  
 
 
+**********************************
+
 MYSQL
 ====
+
+**********************************
+
+
+中文乱码：ubuntu系统(5.5以后系统)  
+#vim /etc/mysql/my.cnf 。如下修改：  
+  
+[client]  
+default-character-set=utf8  
+  
+[mysqld]  
+default-storage-engine=INNODB  
+character-set-server=utf8  
+collation-server=utf8_general_ci  
+
+update报错：    
+[Err] 1055 - Expression #1 of ORDER BY clause is not in GROUP BY clause and contains nonaggregated column 'information_schema.PROFILING.SEQ' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by  
+
+
+ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION   
+
 数据库操作： 
 ----
 net stop mysql  net start mysql  
@@ -1105,6 +1438,7 @@ roll back;
 创建数据库：create database 库名;  
 create database 库名 character set 编码;  
 show create database 库名;  
+create database if not exists name default charset utf8 collate utf8_general_ci;  
 
 show databases;  
 drop database 库名;  
@@ -1124,7 +1458,20 @@ create table 表名(
 )
 ```
 单表约束：  
-主键约束 primary key 要求被修饰的字段 唯一 且 非空  
+主键约束 primary key 要求被修饰的字段 唯一 且 非空非null   
+
+主键可以包含一个或多个列  
+```
+CREATE TABLE Customer 
+(SID integer, 
+Last_Name varchar(30), 
+First_Name varchar(30), 
+PRIMARY KEY (SID));
+
+设定某列为主键： 
+ALTER TABLE Customer ADD PRIMARY KEY (SID);
+```
+
 唯一约束 unique 要求被修饰的字段 唯一  
 非空约束  not null 非空  
 auto_increment 自增  
@@ -1237,10 +1584,15 @@ insert into tbl_user(uid,uname,upassword) values(null, 'zhangsan', '123');
 更新 update 表名 set 字段=value where 字段=value2     
 删除 delete from 表名 where 字段=value;     
 
-*********
+
+
+**********************************
 
 面试题
 ===
+
+**********************************
+
 delete 和 truncat 区别：  
 delete 是一条一条删除 配合事务，可以找回删除的数据  
 truncat 删除 是将整个表删除，再创建一个一模一样的空表 删除后无法找回  且自增主键会重置  
@@ -1293,7 +1645,7 @@ select * from tbl limit 6,3;
 ******
 
 
-#### mysql 操作与面试：
+##### mysql 操作与面试：
 distinct 返回不重复的字段   
 distinct 必须放在所有查询字段的开头  
 select distinct name,id from user 正确  
@@ -1309,7 +1661,120 @@ select a,b from table_name group by a,b,c;
 select a,max(a) from table_name group by a,b,c;
 ```
 
-操作：
+约束：  
+---
+限制表中数据的条件,分为：  
+非空约束 not null  
+唯一性约束 unique 可以为null    
+主键约束 primary key PK  
+外键约束 foreign key FK  
+
+唯一性约束使用： 
+多个字段联合约束： 插入数据的两个字段均相同才会报错  
+
+```
+create table t_user(
+id int(10),
+name varchar(32) not null,
+email varchar(128），
+unique(name,email)
+);
+
+mysql> insert into t_user(id,name,email) values(1,'xxx','qq.com');
+Query OK, 1 row affected (0.05 sec)
+
+mysql> insert into t_user(id,name,email) values(2,'mmm','qq.com');
+Query OK, 1 row affected (0.05 sec)
+
+mysql> insert into t_user(id,name,email) values(3,'mmm','qq.com');
+ERROR 1062 (23000): Duplicate entry 'mmm-qq.com' for key 'name'
+```
+
+给约束命名：  
+constraint t_user_email_unique unique(email) 方便以后删除该约束  
+
+主键：
+---
+主键是当前行数据的唯一标识  主键约束除了可以做到 not null unique之外 还会默认添加索引  
+
+主键一般用与业务无关的字段  
+一般使用自增整数类型 或 GUID类型 由GUID算法通过网卡时间戳和随机数保证任意时间生成的字符串都是不同的类似 8f55d96b-8acc-4636-8cb8-76bf8abc2f57    
+
+和unique一样主键也可以包含多个字段 primary key(id,name)  
+
+
+
+自增数字：
+---
+auto_increment 从1开始递增  
+
+表级定义和列级定义：即定义的时候是否在定义列名等信息的时候指定  
+
+
+外键：
+---
+一个表可以有多个外键字段  
+外键可以为null  
+外键去引用子表的某个字段时, 子表该字段必须具有unique约束   
+分为父表和子表  
+子表中的字段去引用父表中的字段  
+创建时需要先创建父表 即被外键引用的表
+删除时 先删除子表  
+插入时 先插入父表数据 因为若父表没有数据,子表外键引用不到  
+
+创建外键约束:    
+FOREIGN KEY (当前子表的外键)) REFERENCES 父表 (外键对应父表的字段)
+
+```
+sno(pk)		sname		classno(fk)
+1			jack		100
+2			lucy		100
+3			king		200
+
+cno(pk)		cname
+100			浙江省第一中学高三1班
+200			浙江省第一中学高三2班
+
+
+CREATE TABLE ORDERS 
+(Order_ID integer, 
+Order_Date date, 
+Customer_SID integer, 
+Amount double, 
+PRIMARY KEY (Order_ID), 
+FOREIGN KEY (Customer_SID) REFERENCES CUSTOMER (SID));
+
+```
+
+索引：
+---
+分为普通索引和唯一索引  
+普通索引  
+由key 或index 定义的列：唯一任务是加快对数据的访问速度   
+因此，应该只为那些最经常出现在查询条件（WHEREcolumn=）或排序条件（ORDERBYcolumn）中的数据列创建索引。只要有可能，就应该选择一个数据最整齐、最紧凑的数据列（如一个整数类型的数据列）来创建索引   
+
+唯一索引：  
+普通索引允许包含重复的值，唯一索引不允许重复  
+主键也是一种特殊的 唯一索引  
+
+区别：  
+主键可以作为外键 唯一索引不可  
+主键不可为空 唯一索引可以  
+主键每个表只能有一个(虽然可能包含多个字段共同组成一个主键) 唯一索引可以多个  
+
+其他包括  
+全文索引FULLTEXT  空间索引SPATIAL 
+
+多列索引 单列索引    
+
+
+constraint 关键字：
+---
+对约束命名 方便后期删除或修改约束  
+
+ 
+
+练习操作：
 ---
 表格数据：  
 ```
@@ -1397,26 +1862,55 @@ select a.math_score, b.english_score from math_table a left join english_table b
 select a.SID c.Sname from (select SID,score from SC where CID='01') a, (select SID,score from SC where CID='02') b where a.SID=b.SID and a.score > b.score left join Student c on c.SID=a.SID
 
 
+问题：  
+group by 组内排序：  
+----
+因为group by 之前没法用order by 所以 需要以下两种方式解决：  
+
+要求按照科目分组查询最高点击次数的课程 取前四项  
 
 
+```
++------+------------------+--------+---------+
+|  id  |       name       |  label |  click |
++------+------------------+--------+---------+
+|   1  |   语文-阅读理解   |   语文  |   100  |
++------+------------------+--------+---------+
+|   2  |     语文-作文     |   语文  |   80  |
++------+------------------+--------+---------+
+|   3  |   英语-听力理解   |   英语  |   70  |
++------+------------------+--------+---------+
+|   3  |   英语-完型填空   |   英语  |   70  |
++------+------------------+--------+---------+
+|   4  |     数学-不等式   |   数学  |   80  |
++------+------------------+--------+---------+
+|   5  |  生物-细胞生物学  |   生物  |   80  |
++------+------------------+--------+---------+
+|   6  |  生物-遗传生物学  |   生物  |   60  |
++------+------------------+--------+---------+
+|   4  |     数学-方程     |   数学  |   50  |
++------+------------------+--------+---------+
+|   4  |      无机化学     |   化学  |   70  |
++------+------------------+--------+---------+
+|   4  |      有机化学     |   化学  |   30  |
++------+------------------+--------+---------+
+
+select a.* from course a inner join (select label,max(click) as click from course group by label)b on a.label = b.label and a.click = b.click;
+
+或：  
+select id,name,label,click from course as a group by id,name,label,click having click=(select max(click) from course where label = a.label); 
 
 
+```
 
 
-
-
-
-
-
-
-
-
-
-
-
+**********************************
 
 JDBC
 ====
+
+**********************************
+
 一般不使用硬编码创建驱动  一般使用Class.forName() 加载指定类,在类的静态代码块中 注册驱动  
 
 获取连接：  
@@ -2113,11 +2607,15 @@ public class JDBCUtils_V3 {
 }
 
 ```
+
+**********************************
+
 连接池：C3P0 DBCP
-=====
+====
+
+**********************************
 
 注意配置文件要放在src目录下   
-----
 
 ```
 public class DBCPUtils {
@@ -2151,8 +2649,8 @@ public class DBCPUtils {
 }
 ```
 DBUtils 连接池和 JavaBean
-====
-JavaBean的类放在 domain下面 
+---
+JavaBean的类放在 domain下面   
     
 特点：
 ---
@@ -2246,7 +2744,8 @@ lisi
 * DbUtils类 定义关闭资源和事务处理的方法  
 
 XML:
-======
+----
+
 区分大小写：  
 xml属性值必须加 引号  
 特殊字符：  
@@ -2357,12 +2856,14 @@ welcome-file-list 子标签最多出现一次 或0 次
 </web-app>
 ```
 Schema约束：
-====
+---
 
 xml解析：
-====
+---
+
 dom4j:  
 ---
+
 常用API：  
 ---
 SaxReader:  read()方法加载执行xml文档  
@@ -2426,8 +2927,15 @@ public class TestDom4j {
 }
 
 ```
+
+
+**********************************
+
 反射：
 ===
+
+**********************************
+
 可以在运行时对类class 构造方法Constructor 普通方法method 字段Field(域)进行操作  
 获取Class对象的方式：
 ---
@@ -2530,9 +3038,14 @@ public class MyServlet1 implements MyServlet {
 
 ```
 
-## Http  &&  Tomcat
-http协议：
----
+
+**********************************
+
+Http  &&  Tomcat
+====
+
+**********************************
+
 分为请求和响应两部分：  
 请求：
 ---
@@ -2588,9 +3101,10 @@ Date: Wed, 03 Aug 2016 01:11:07 GMT
 
 ```
 Tomcat
-===
+----
+
 常见问题：
----
+
 端口被占用：  
 目录结构：  
 ---
@@ -2608,6 +3122,10 @@ Tomcat
         |---web.xml 文件 web应用配置文件  
 
 ```
+
+需要事先将project structure-module-项目名-path-user module compiler output path 配置到WEB-INF/classes目录    
+以及 project structure-module-项目名-Dependencies 添加WEB-INF/lib目录  
+
 注意事项：
 ---
 WEB-INF目录受保护，外界不能直接访问  
@@ -2616,10 +3134,16 @@ WEB-INF目录受保护，外界不能直接访问
 IDEA中Run --> Edit configurations -->选中tomcat --> Deloyment(发布)  -->  
 设置发布配置 --> 下方Application context 即是 默认的浏览器url路径  
 
-#### tomcat 生成的url路径末尾带 / 问题没找到解决方法：
+##### tomcat 生成的url路径末尾带 / 问题没找到解决方法：
+
+
+**********************************
 
 Servlet
 ====
+
+**********************************
+
 servlet filter listener  
 
 servlet 重写方法：  
@@ -2652,7 +3176,7 @@ url-pattern配置方式：
 如果不配置自己的 默认servlet， 那么tomcat在项目的web.xml中查找完毕还没找到匹配的资源，则会去 conf中对tomcat的 web.xml进行查找，一般其中有配置一个默认的servlet,该servlet会查找项目目录中的静态资源，如果有则显示，没有则 报404  
 如果配置了自己默认的servlet 但是又没有找到资源，就会报404  
 
-### 案例demo 登录：
+##### 案例demo 登录：
 页面：
 ---
 ```
@@ -2741,7 +3265,8 @@ url-pattern配置方式：
 我开始只是为了查看打印信息来debug一下，结果后面页面死活不显示，但是f12看返回的是200,请求的参数也都传递过去了，只可能是响应 部分出问题了，所以看 servlet
 
 ServletConfig 对象：
-===
+---
+
 作用：  
 1. getInitParameter(鍵名):获取servlet初始化的时候附带的参数(在web.xml中)   
 2. getServletName(): 获取当前servlet的servlet-name   
@@ -2792,7 +3317,8 @@ getServletContext().getInitParameter("driver"));
 ```
 
 ServletContext对象：
-===
+---
+
 代表web应用对象，封装了该web应用的信息  
 获取方式：
 ---
@@ -2842,7 +3368,7 @@ ServletContext.getAttribute(name)
 ServletContext.removeAttribute(name)  
 
 
-###  案例demo 统计访问次数：
+#####  案例demo 统计访问次数：
 使用 ServletContext.setAttribute(name,valueObject)  
 和 setAttribute 方法  
 先在init()方法中 初始化count变量并存储到ServletContext域  
@@ -2965,9 +3491,15 @@ web.xml示例:
 </web-app>
 ```
 
-###  HttpServletResponse  
+
+**********************************
+
+HttpServletResponse  
+====
+
+**********************************
+
 默认放在doGet()方法里：
-===
 设置response 响应行：
 ---
 设置状态码：response.setStatus(302);   
@@ -3003,19 +3535,32 @@ Content-Length: 0
 Date: Wed, 12 Aug 2020 01:08:11 GMT
 ```
 
+
+
+
+
+**********************************
+
 重定向：
 ===
+
+**********************************
+
 特点：  
 1. 访问服务器两次
 2. 地址栏的地址发生变化
 状态码302   
 响应头：location 重定向的地址   
+
+
 ```
 response.setStatus(302);
         response.setHeader("Location", "/directDst");
 ```
+
 使用定时跳转：
-===
+---
+
 ```
 // 5s 后进行跳转
         response.setHeader("refresh","5;url=localhost:8080/directDst");
@@ -3023,9 +3568,13 @@ response.setStatus(302);
 response的write方法：
 ---
 顺序也很关键：  
+
 ##### 设置编码和解码表需要在获取 PrintWrite之前
+
 实际只需要setHeader()/setContentType即可，setCharacterEncoding()方法没必要   
 response.setContentType("text/html;charset=UTF-8");   
+
+
 ```
 // 中文会显示？，需设置response查询的编码表
         response.setCharacterEncoding("UTF-8");
@@ -3050,7 +3599,9 @@ git reset --hard
 git push --force   
 
 response write 图片字节流：
-====
+----
+
+
 ```
 //        response.setContentType("image/jpg");
         // 使用response获取字节输出流
@@ -3072,18 +3623,21 @@ response write 图片字节流：
         in.close();
         stream.close();
 ```
+
 图片路径放在web-content根目录或其他非WEB-INF目录都可以  
 但是要确保每次run tomcat之后 out目录下有同步更新图片资源   
 #### WEB-INF里面的资源没有更新时，查看-Project Structure-Artifacts右边的Include in project build 是不是没勾上 下面的show content of elements也勾上  
 
 
-### 案例Demo 文件下载
+##### 案例Demo 文件下载
+
 浏览器默认不能解析的文件默认就需要下载(除图片文本等)
 ---
 所以, 浏览器可以解析的文件需要编写下载代码，不能解析的浏览器默认会下载，不需要编写   
 
 页面编写：
-===
+---
+
 在页面中写访问后台servlet的链接：  
 对应的地址是web.xml中的servlet name 不是 servlet-class   
 
@@ -3094,11 +3648,13 @@ response write 图片字节流：
     <a href="/downloadServlet?filename=a.jpg">a.jpg</a><br/>
     <a href="/downloadServlet?filename=a.mp3">a.mp3</a><br/>
 ```
+
 下载代码：
-===
+---
+
 通过页面href中写的url链接传递的参数 filename 获取服务器本地目录的资源，并进行文件读写操作    
 
-#### 设置文件以附件形式下载：
+##### 设置文件以附件形式下载：
 response.setHeader("Content-Disposition", "attachment;filename="+fileName);    
 
 #### 获取文件的MIME类型
@@ -3133,13 +3689,16 @@ response.setContentType(this.getServletContext().getMimeType(fileName));
         in.close();
         out.close();
 ```
+
 中文文件名下载：
-====
+---
+
 // 中文的文件名需要进行编码转换  
 fileName = new String(fileName.getBytes("ISO8859-1"), "UTF-8");    
 
 此时文件可以下载但是文件名是空白：  
 ---
+
 解决办法： 通过设置不同的浏览器解码方式对应的编码：  
 其中 BASE64Encoder 可能无法自动导入 手动import sun.misc.BASE64Encoder;   
 ```
@@ -3162,6 +3721,7 @@ fileName = new String(fileName.getBytes("ISO8859-1"), "UTF-8");
 
 完整代码：
 ---
+
 ```
 package servlet;
 
@@ -3247,7 +3807,8 @@ public class DownloadServlet extends HttpServlet {
 ### 设置gitignore global
 git config --global core.excludesfile ~/.gitignore_global   
 
-### 案例demo 实现验证码
+#####  案例demo 实现验证码
+
 登录页面代码：
 ---
 ```
@@ -3282,6 +3843,8 @@ git config --global core.excludesfile ~/.gitignore_global
 
 验证码图片点击更新：
 ----
+
+
 ```
 <div class="input-group-addon" style="width: 100px;">
                 <img  src="/checkImg" onclick="refreshImg(this)" style="height: 100%;">
@@ -3295,10 +3858,17 @@ git config --global core.excludesfile ~/.gitignore_global
     </script>
 ```
 
-### HttpServletRequest
+
+**********************************
+
+HttpServletRequest
+=====
+
+**********************************
 
 根据request获取请求行：
-===
+----
+
 getRemoteAddr() 获得客户端的ip    
 
 
@@ -3345,7 +3915,8 @@ request params: null
 3. 查看out的目录下是否文件更新，如已经更新，清空浏览器缓存，且在f12中disable cache  
 
 根据request获取请求头：
-====
+-----
+
 long getDateHeader(String name)    
 String getHeader(String name)   
 Enumeration getHeaderNames()   
@@ -3386,7 +3957,9 @@ cookie : Idea-6a75e9c1=61b4759b-ca18-4f3d-bd88-53997540f963; JSESSIONID=A0768F66
 ```
 
 防盗链示例：
-===
+----
+
+
 正常访问的页面：
 ```
 <!DOCTYPE html>
@@ -3450,7 +4023,9 @@ referer 中运行从该页面获取展示的内容
 则此时 页面的 header里 referer的值是盗链页面news_referer.html 而不是 正常的页面form.html   可以通过判断不让其进行访问    
 
 request 获取请求体
-===
+----
+
+
 请求体的内容是 post提交的请求参数：   
 username=zhangsan&password=123&hobby=football&hobbybasketball    
 
@@ -3493,8 +4068,11 @@ getParameterMap() 获取所有的参数存储到map里
         }
 
 ```
+
+
 输出：  
 ---
+
 ```
 username: 545
 password: ghgryty
@@ -3549,9 +4127,7 @@ request域对象的作用范围仅限一次完整请求中：
 ---
 
 为什么重定向获取不到name属性：
-===
-
-
+---
 
 
 代码：    
@@ -3601,8 +4177,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response) t
         <url-pattern>/forwarddst</url-pattern>
     </servlet-mapping>
 ```
+
+
 总结：
-===
+---
+
 get方法的表单参数通过 getQueryString() 方法获取请求行  
 post方法的表单参数通过     
 getParameter("username")   
@@ -3610,7 +4189,8 @@ getParameterValues("hobby")
 getParameterNames()    
 getParameterMap()   等方法获取请求体中的参数
 
-### 案例demo 实现注册功能
+##### 案例demo 实现注册功能
+
 1. 表单中文乱码问题
 2. 参数过多： 使用BeanUtils 将map中的数据与实体类Javabean进行映射  
 > 创建表：BeanUtils.populate()    
@@ -3718,12 +4298,14 @@ get方式的乱码原理：
 
 登录后跳转首页
 ---
+
 注册成功跳转登录页面,不推荐用请求转发，需要让用户看到跳转的地址变化，使用重定向    
 response.sendRedirect(request.getContextPath() + "/login.jsp");    
 不直接写路径，防止后期web项目名称修改后找不到资源   
 
 登录失败信息回显：
 ----
+
 借助servlet转发请求时设置的attribute 动态改变jsp内容   
 
 
@@ -3743,8 +4325,11 @@ response.sendRedirect(request.getContextPath() + "/login.jsp");
 > String request.getParameter(name)
 > Map<String, String[]> request.getParameterMap()
 > String[] request.getParameterValues(name)    
-> Notes: 客户端发送的参数到服务器端都是字符串
+> Notes: 客户端发送的参数到服务器端都是字符串   
+
 ********
+
+
 中文乱码解决：  
 > post请求： request.setCharacterEncoding("UTF-8);   
 > get 请求： parameter = new String(parameter.getBytes("iso8859-1"), "UTF-8")    
@@ -3753,7 +4338,15 @@ response.sendRedirect(request.getContextPath() + "/login.jsp");
 > request.getRequestDispatcher(转发的地址).forward(request,response)   
 > request.setAttribute(String name,Object value);
 
-#### 会话技术 Cookie & session
+
+**********************************
+
+会话技术 Cookie & session
+=====
+
+**********************************
+
+
 会话技术是帮助服务端区分客户端   
 会话技术从打开浏览器开始到关闭浏览器结束，为一次会话   
 
@@ -3784,8 +4377,13 @@ session还有一个特性：具有独立性，拥有自己的id。这个id可以
 ```
 
 
+**********************************
+
 cookie
 ===
+
+**********************************
+
 1. 服务器如何将cookie写给客户端
 2. 服务器如何获取客户端携带的cookie  
 
@@ -3798,8 +4396,10 @@ Set-cookie:"name=zhangsan"
 向客户端发送cookie: 
 ----
 response.addCookie(Cookie cookie);   
+
 #### cookie不能存储中文
-默认cookie是会话级别,即浏览器关闭后cookie信息不存在       
+默认cookie是会话级别,即浏览器关闭后cookie信息不存在    
+
 常用API：
 ---
 1. 设置cookie在客户端的持久化时间
@@ -3833,7 +4433,8 @@ response.addCookie(Cookie cookie);
         }
 ```
 
-### 案例demo 记录用户上次访问时间
+##### 案例demo 记录用户上次访问时间
+
 ```
 Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -3862,7 +4463,15 @@ Date date = new Date();
         }
 ```
 
-#### session 技术
+
+**********************************
+
+session 技术
+===
+
+**********************************
+
+
 session基于cookie， 需要客户端存储JSESSIONID       
 
 1. 如何创建专属每个客户端的session存储区域
@@ -3879,7 +4488,12 @@ session基于cookie， 需要客户端存储JSESSIONID
 > session不建议存储一次性信息    
 
 
-#### 关于session和cookie失效：
+**********************************
+
+关于session和cookie失效：
+===
+
+**********************************
 
 + Cookie保存在客户端浏览器，Session保存在服务器。  
 + Cookie可以设置过期时间。    
@@ -3900,7 +4514,8 @@ session基于cookie， 需要客户端存储JSESSIONID
         response.addCookie(cookie);
 ```
 
-### 案例Demo 验证码校验功能
+##### 案例Demo 验证码校验功能
+
 成语验证码中文乱码：
 ---
 String word = new String(words.get(index).getBytes(),"UTF-8");    
@@ -3913,7 +4528,7 @@ String word = new String(words.get(index).getBytes(),"UTF-8");
 因为 重定向后 客户端会重新发送请求给重定向后的地址，此时的request对象已经不是原来设置属性时的request对象    
 
 
-### cookie & session 总结:
+##### cookie & session 总结:
 + cookie
 1. 发送cookie
 > Cookie cookie = new Cookie(name,value)
@@ -3951,7 +4566,12 @@ cookie2.setMaxAge(3600);//1小时候生效
 > 作用范围：默认一次会话中
 
 
-### web 应用全局错误页面配置
+**********************************
+
+web 应用全局错误页面配置
+===
+
+**********************************
 ```
 <!--  web应用 全局错误页面 配置 -->
     <error-page>
@@ -3962,12 +4582,18 @@ cookie2.setMaxAge(3600);//1小时候生效
 
 
 
+**********************************
 
-#### JSP 
+JSP 
+===
+
+**********************************
+
 用servlet生成动态html代码太繁琐   
 
 jsp脚本及注释：
-===
+---
+
 1. <%Java代码%>  被转换成service方法内部
 2. <%=Java变量或表达式%> 会被转换成service方法内out.print()
 3. <%!Java代码%> 代码会被转换到生成的file_jsp.java的成员变量的位置  
@@ -3988,8 +4614,10 @@ jsp运行原理：
 ---
 jsp首次访问或更新的时候会被翻译为servlet放到tomcat的work目录下   
 
+
 jsp指令：
-===
+---
+
 1. page指令---属性最多
 > language: jsp脚本可以嵌入的语言  
 > contentType: response.setContentType("text/html; charset=UTF-8")
@@ -4038,8 +4666,14 @@ errorPage 只能作为 服务端错误500开头的错误导致而显示的页面
     </error-page>
 ```
 
+**********************************
+
 jsp内置/隐式对象
 ===
+
+**********************************
+
+
 1. javax.servlet.jsp.JspWriter out : 用于页面输出
 2. javax.servlet.http.HttpServletRequest request: ��到用户请求  
 3. javax.servlet.http.HttpServletResponse response: 服务器向客户端响应信息   
@@ -4064,6 +4698,7 @@ out缓冲区默认就是jsp页面page中配置的buffer="8kb" 默认8kb
 
 pageContext对象
 ---
+
 pageContext是域对象  
 作用：   
 1. 向request域存数据
@@ -4105,6 +4740,7 @@ pageContext.getSession()
 
 jsp标签(动作)
 ---
+
 1. 页面包含(动态包含): 
 <jsp:include page="被包含的页面"/>   
 2. 请求转发：  
@@ -4112,12 +4748,13 @@ jsp标签(动作)
 
 动态包含和静态包含区别：  
 ---
+
 1. 静态包含
 静态包含是将两个页面合并在一起，再转成servlet   
 2. 动态包含
 动态包含是分别将两个页面都转成servlet   
 
-### 案例demo 商品列表展示
+##### 案例demo 商品列表展示
 获取数据库中商品数据：ProductServlet   
 获取到商品的数据List<Product>  
 servlet将该数据集合存到request域中  就可以通过jsp页面进行访问      
@@ -4155,6 +4792,7 @@ QueryRunner qr = new QueryRunner(DataSourceUtils.getDataSource());
 
 jsp页面:
 ---
+
 1. getAttribute获取所有的商品数据  
 2. 遍历商品列表，将每个商品都按照页面的格式，使用out.write()输出
 3. 访问对应的servlet 就能获取到转发后的页面数据
@@ -4198,13 +4836,24 @@ jsp页面:
 <%--		</div>--%>
 ```
 
-#### EL表达式
+**********************************
+
+EL表达式
+===
+
+**********************************
+
+
 Express Language表达式：
 ---
+
 可以嵌入jsp页面内部，减少jsp脚本的编写  
 可以放在jsp的字符串内部"${request....}"
-从域中取出数据： ${EL表达式}
-===
+
+
+从域中取出数据： ${EL表达式}  
+---
+
 jsp脚本：request.getAttribute(name);   
 el表达式:   
 * ${key}: 按域从小到大查找pageContext --> request session application 和pageContext.findAttribute("name") 一样       
@@ -4251,7 +4900,7 @@ ${1==1?true:false}
 ${empty user} empty关键字 判断对象是否为null,为null返回true   
 
 JSTL jsp标准标签库：
-===
+---
 
 * 导入jar包：  
 * 使用jsp的taglib指令导入(<%@ page/include/taglib %> ):
@@ -4354,7 +5003,7 @@ test关键字代表检查引号内部的boolean表达式的真假，为真则进
 </c:if>
 ```
 
-#### javaEE开发模式
+##### javaEE开发模式
 MVC:  web开发设计模式   
 M:Model--javaBean   
 V:View --视图   
@@ -4366,7 +5015,13 @@ JavaEE三层架构：
 * dao 层： 与数据库交互   
 
 
-### 数据库JDBC事务
+**********************************
+
+数据库JDBC事务
+===
+
+**********************************
+
 事务：  
 一件事有n个组成单元，这n个组成单元要么同时成功，要么同时失败  
 
@@ -4385,7 +5040,7 @@ rollback;
 回滚后之前的事务不会提交  
 
 JDBC事务：
-===
+---
 
 开启事务：  
 connection.setAutoCommit(false);  
@@ -4428,7 +5083,7 @@ try{
 ```
 
 DBUtils事务操作：
-====
+---
 
 ```
 Connection conn = null;
@@ -4451,8 +5106,10 @@ try{
 }
 ```
 
+
 ThreadLocal:
-===
+---
+
 使用ThreadLocal存储connection   
 
 ```
@@ -4532,7 +5189,8 @@ set session transaction isolation level read uncommitted
 使用repeatable read 级别时，后修改的commit是否会覆盖前面的事务修改????  
 
 
-### 后台页面增删改查：
+##### 后台页面增删改查：
+
 ```
 d = new dTree('d');
 
@@ -4577,6 +5235,8 @@ enctype="multipart/form-data"
 5. 点击确定提交按钮的绑定事件，form表单的action路径到servlet
 6. servlet中获取表单提交的新增商品数据，在servlet中调用service，service中调用dao更新数据库插入
 7. 插入完成后再跳转至商品列表，需要进行一次查询操作并显示
+
+
 ```
 // 步骤1，2，3
 
@@ -4801,7 +5461,13 @@ method="post">
 将request参数封装到实体：   
 BeanUtils.populate(condition,parameterMap);   
 
-### Ajax
+**********************************
+
+Ajax
+===
+
+**********************************
+
 同步异步：  
 同步：客户端发送请求到服务端，当服务器返回响应之前，客户端都处于等待卡死状态  
 异步：客户端发送请求，无论服务器是否返回响应，客户端都可以随意进行其他事件不会被卡死   
@@ -5130,7 +5796,12 @@ response.getWriter().write("{\"isExist\":"+isExist+"}");
 ##### 站内搜索下拉框
 
 
-### 监听器Listener
+**********************************
+
+监听器Listener
+===
+
+**********************************
 
 ### 前置操作：
 先配置tomcat/conf/context.xml 或项目META-INF下面的context.xml:  
@@ -5214,7 +5885,8 @@ getAttribute(name,value)
 removeAttribute(name, value)  
 
 与session中绑定对象相关的监听器--对象感知监听器：  
-===
+---
+
 即将被绑定到session中的对象有几种状态：
 
 * 绑定状态：一个对象被放大session域中了
@@ -5224,6 +5896,7 @@ removeAttribute(name, value)
 
 HttpSessionBindingListener: 对应绑定和解绑的状态 
 ---
+
 注册给对象 而不是session域  
 ```
 package listener.domian;
@@ -5273,6 +5946,7 @@ public class Person implements HttpSessionBindingListener {
 HttpSessionActivationListener 对应对象的钝化和活化监听器：
 注意事项：需要钝化的对象需要同时实现序列化接口Serializable  
 ---  
+
 ```
 package listener.domian;
 
@@ -5319,7 +5993,7 @@ public class Customer implements HttpSessionActivationListener, Serializable {
 
 ```
 
-#### 面试题：当用户很多时 如何对服务器进行优化  
+##### 面试题：当用户很多时 如何对服务器进行优化  
 可以考虑将session及其中的数据持久化暂时存储在硬盘上  
 
 ##### 邮箱服务器：
@@ -5398,7 +6072,14 @@ public class MailUtils {
 
 ```
 
-### Filter
+**********************************
+
+Filter
+===
+
+**********************************
+
+
 对客户端访问资源的过滤，符合条件放行，不符合拦截  
 1. 编写一个过滤器的类实现Filter接口  
 2. 实现方法 主要是 doFilter  
@@ -5413,11 +6094,13 @@ doFilter:  核心功能
 FilterChain对象维护了多个Filter的调用顺序
 
 url-pattern匹配模式：
-===
+---
+
 后缀名匹配不能用/abc/*.jsp 只能用 *.jsp  
 
 Filter作用：
-===
+---
+
 公共代码提取 如统一设置请求中文乱码格式  
 对request response的方法进行增强(装饰者模式/动态代理)  
 进行权限控制  
@@ -5658,7 +6341,10 @@ public class AutoLoginFilter implements Filter {
 // 在过滤器中读取cookie 并且拿到用户名和密码 自动进行登录 最后放行  
 
 
-##### 解决全局中文乱码
+过滤器解决全局中文乱码
+===
+
+
 对中文进行编码    
 乱码过滤器  
 全局乱码解决   原始方案    
@@ -5771,10 +6457,17 @@ class EnhanceRequest extends HttpServletRequestWrapper {
 
 ```
 
-#### 基础增强
+
+**********************************
+
+基础增强
+===
+
+**********************************
 
 类加载器
-====
+---
+
 类加载器类型：  
 1. BootStrap 引导类加载器：加载最基础文件JRE/lib/rt.jar    
 2. ExtClassLoader 扩展类加载器：加载基础文件JRE/lib/ext/*.jar      
@@ -5784,7 +6477,8 @@ class EnhanceRequest extends HttpServletRequestWrapper {
 
 
 获取类加载器：
-====
+---
+
 字节码对象.getClassLoader();  
 classLoader.getResource(name);  获取classes(src) 下的任何资源  
 
@@ -5797,7 +6491,8 @@ System.out.println("load properties path: " + path);
 ```
 
 注解
-====
+---
+
 注解优点：开发效率高 成本低   
 缺点：耦合性大 不利于维护 使用配置文件降低耦合性  
 
@@ -5874,8 +6569,13 @@ public class MyTestParser {
 
 ```
 
+**********************************
+
 动态代理
-====
+===
+
+**********************************
+
 代理:  
 目标对象 ----房主:真正租房的方法    
 代理对象 ---- 中介 调用房主的租房方法     
@@ -6036,8 +6736,13 @@ class EnhanceRequest extends HttpServletRequestWrapper {
 
 ```
 
+**********************************
 
-### NoSql & Redis
+NoSql & Redis
+===
+
+**********************************
+
 nosql: 主要 MongoDB Redis Hbase  
 非关系型数据库：redis为内存中存储的键值对数据  
 
@@ -6049,6 +6754,30 @@ redis支持的键值存储数据类型：
 有序集合类型  
 
 ##### 远程访问redis需要开启端口6379防火墙 
+/sbin/iptables -I INPUT -p tcp --dport 6379 -j ACCEPT   
+
+开机自动启动redis和防火墙脚本：
+---
+脚本内容：
+```
+#!/bin/sh
+redispath=/workspace/env/redis
+${redispath}/bin/redis-server ${redispath}/redis.conf
+enableredisfirewall="/sbin/iptables -I INPUT -p tcp --dport 6379 -j ACCEPT"
+echo `$enableredisfirewall`
+
+```
+然后将脚本拷贝到/etc/init.d/目录下  
+执行：sudo update-rc.d redisstart.sh defaults   
+
+
+
+Ubuntu 设置redis防火墙开机自启：  
+---
+/sbin/iptables-save >/etc/iptables_redis.rule
+在/etc/network/interfaces 中添加一行：  
+pre-up iptabels-restore </etc/iptables_redis.rule  
+
 
 后台模式启动redis:  
 修改redis.conf中 daemonize为yes  
@@ -6256,7 +6985,8 @@ flushall 删除所有数据库中的所有key
 
 
 消息订阅与发布：
-=====
+---
+
 subscribe channel 订阅频道   
 publish channel content 在channel 频道发布内容   
 
@@ -6269,7 +6999,8 @@ exec 类型关系型数据库的commit
 discard 回滚事务 类似关系型数据库的rollback  
 
 redis 持久化：  
-=====
+---
+
 RDB方式：   
 数据快照  
 
@@ -6320,6 +7051,2697 @@ try{
     
 }
 ```
+
+
+
+**********************************
+
+web项目实战：
+===
+
+**********************************
+
+mail发送工具：
+---
+
+
+```
+package utils;
+
+import java.util.Properties;
+
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
+
+public class MailUtils {
+
+	public static void sendMail(String email, String emailMsg)
+			throws AddressException, MessagingException {
+		// 1.创建一个程序与邮件服务器会话对象 Session
+
+		Properties props = new Properties();
+		props.setProperty("mail.transport.protocol", "SMTP");
+		props.setProperty("mail.host", "smtp.126.com");
+		props.setProperty("mail.smtp.auth", "true");// 指定验证为true
+
+		// 创建验证器
+		Authenticator auth = new Authenticator() {
+			public PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication("zhqo2021test", "GQDANGUWXAURQGBE");
+			}
+		};
+
+		Session session = Session.getInstance(props, auth);
+
+		// 2.创建一个Message，它相当于是邮件内容
+		Message message = new MimeMessage(session);
+
+		message.setFrom(new InternetAddress("zhqo2021test@126.com")); // 设置发送者
+
+		message.setRecipient(RecipientType.TO, new InternetAddress(email)); // 设置发送方式与接收者
+
+		message.setSubject("用户激活");
+		// message.setText("这是一封激活邮件，请<a href='#'>点击</a>");
+
+		message.setContent(emailMsg, "text/html;charset=utf-8");
+
+		// 3.创建 Transport用于将邮件发送
+
+		Transport.send(message);
+	}
+}
+```
+
+
+表单校验：
+---
+使用jquery validate插件  
+
+```
+<%--表单校验--%>
+<script type="text/javascript">
+
+	// 自定义校验规则
+	$.validator.addMethod(
+			// 规则名称
+			"isExist",
+			// 校验规则
+			function (value, element, params) {
+
+			    var flag = false;
+
+				// value 输入的内容
+
+				// element 被校验的元素document
+
+				// params 规则对应的参数值
+
+				$.ajax({
+                    // 异步ajax导致返回结果之前已经获取到了初始的flag值
+                    // "async":true,
+
+                    "async":false,
+					"url":"${pageContext.request.contextPath}/checkUsername",
+					"data":{
+						"username":value
+					},
+					"type":"POST",
+					"dataType":"json",
+					"success":function (data) {
+                        flag = data.isExist;
+					}
+				});
+
+				// check return isExist
+                return !flag;
+			}
+	);
+
+	$(function () {
+		$("#myform").validate({
+			rules:{
+				"username":{
+					"required":true,
+					"isExist":true
+				},
+				"password":{
+					"required":true,
+					"rangelength":[6,12]
+				},
+				"repassword":{
+					"required":true,
+					"rangelength":[6,12],
+					"equalTo":"#password"
+				},
+				"email":{
+					"required":true,
+					"email":true
+				},
+				"sex":{
+					"required":true
+				}
+			},
+			messages:{
+				"username":{
+					"required":"用户名不能为空",
+					"isExist":"用户名已存在"
+				},
+				"password":{
+					"required":"密码不能为空",
+					"rangelength":"密码长度6-12位"
+				},
+				"repassword":{
+					"required":"密码不能为空",
+					"rangelength":"密码长度6-12位",
+					"equalTo":"两次输入密码不一致"
+				},
+				"email":{
+					"required":"邮箱不能为空",
+					"email":"邮箱格式不正确"
+				}
+			}
+		})
+	});
+
+</script>
+```
+
+
+如何在不同的页面都显示header里面的categories内容 查询数据库  
+----
+方法1： 在header.jsp中 添加<% %> 脚本实现查询数据库   
+
+方法2：过滤器filter 将数据存储在过滤器中  
+
+方法3： 
+
+浏览历史记录实现分析：
+---
+客户端向服务端请求商品信息时，  
+服务端先获取客户端cookie存储的pid   
+再将当前商品pid与cookie中的pid拼接    
+一起写给客户端的cookie  
+
+
+报错记录：
+---
+
+java.lang.IllegalStateException: Cannot forward after response has been committed  
+出现在重写抽取的父类BaseServlet中调用了super.service()方法  
+因为service方法中会自动去调用doGet和doPost等方法  
+所以 如果在BaseServlet中去调用了super  
+后面的根据反射调用不同的子类ProductServlet中的对应方法中存在forward转发  
+所以报错  
+
+注意此处的反射调用方法不能是protected 修饰符：  
+
+```
+package web.servlet;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+/**
+ * @ClassName ${NAME}
+ * @description:
+ * @author: isquz
+ * @time: 2021/6/21 23:35
+ */
+@WebServlet(name = "BaseServlet")
+public class BaseServlet extends HttpServlet {
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        super.service(req, resp);
+
+        req.setCharacterEncoding("UTF-8");
+
+        try {
+            // 获取请求的method的名称
+            String methodName =req.getParameter("method");
+            // 获得当前被访问的对象的字节码对象
+            Class cls = this.getClass();
+            // 获得当前字节码对象中的方法
+            Method method = cls.getMethod(methodName, HttpServletRequest.class, HttpServletResponse.class);
+            // 执行对应的方法
+            method.invoke(this,req,resp);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+}
+
+```
+
+购物车里面需要构造一个购物项的bean  
+
+js提交表单请求：
+---
+$("#orderForm").submit();  通过表单的id调用submit方法   
+
+文件上传：
+---
+* 必须是post提交表单
+* enctype必须包含multipart/form-data
+* input type 必须是file类型
+```
+<form action="/fileuploadServlet" method="post"  enctype="multipart/form-data">
+	<input type="file" name="filename">
+	<input type="submit" value="上传文件">
+</form>
+```
+
+服务端接收文件上传请求：
+```
+// FileUploadServlet.java
+DiskFileItemFactory factory = new DiskFileItemFactory();  
+// 创建磁盘文件项工厂
+ServletFileUpload upload = new ServletFileUpload(factory);  
+// 创建文件上传核心类
+List<FileItem> parseRequest = upload.parseRequest(request);
+// 解析request 获得文件项集合
+
+// 遍历文件项集合
+for(FileItem item: parseRequest){
+    // 判断是普通表单项或文件上传项
+    // isFormField 返回true代表是普通表单项
+    boolean formField = item.isFormField();
+    if(formField){
+        String fieldName = item.getFieldName();
+        String fieldValue = item.getString();
+    }else{
+        String fileName = item.getName();
+        // 获取上传文件的输入流
+        InputStream is = item.getInputStream();
+
+        String path = this.getServletContext().getRealPath("webcontent_upload_folder");
+        OutputStream out = new FileOutputStream(path + "/" +fileName);
+        int len = 0;
+        byte[] buffer = new byte[1024];
+        while( (  len=in.read(buffer) ) > 0 ){
+            out.write(buffer,0,len);
+            out.flush();
+        }
+        in.close();
+        out.close();
+        
+
+    }
+}
+
+```
+
+
+Spring
+=========
+spring所需基础：反射 动态代理 控制反转(IOC) 面向接口编程 面向切面编程  
+
+maven web spring项目创建：
+---
+pom.xml:  
+```
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <!--Spring核心基础依赖-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>5.0.2.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.0.2.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>5.0.2.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+            <version>5.0.2.RELEASE</version>
+        </dependency>
+        <!--日志相关-->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>LATEST</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+```
+
+src下面添加applicationContext.xml：  
+前提是spring的依赖正确导入 maven项目可以在pom.xml中引入：  
+```
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-context</artifactId>
+  <version>4.2.4.RELEASE</version>
+</dependency>
+```
+
+
+spring容器中获取对象：  
+```
+// 创建容器对象
+        ApplicationContext ac = new ClassPathXmlApplicationContext("applicationContext.xml");
+
+        // 从容器中获取user对象
+        User user = (User) ac.getBean("user");
+        System.out.println(user);
+```
+
+new ClassPathXmlApplicationContext 创建spring容器时会创建配置文件中所有的bean对象 不论是否有调用  
+
+IOC && DI
+---
+IOC: inverse of control  
+将创建对象的方式反转  
+
+spring创建对象方式：
+---
+1.空参构造器方法创建  
+2.静态工厂创建 bean中配置工厂类class 和工厂方法factory-method即可  
+```
+<bean name="userfactory"
+          class="com.itcast.objectcreate.UserFactory"
+          factory-method="createUser"></bean>
+```
+3.实例工厂 需先创建实例再调用实例工厂方法  
+```
+<!--实例工厂创建user-->
+    <bean name="userfactoryclass" class="com.itcast.objectcreate.UserFactory"></bean>
+    <bean name="userInstanceFactory"
+          factory-bean="userfactoryclass"
+          factory-method="creatUser2"></bean>
+```
+
+bean对象scope范围：
+---
+* singleton 默认 单例对象 spring容器启动时就会创建 且只存在一个对象实例  
+* prototype 多例 在获取对象时才会创建 且每次获取时创建新的对象  
+* request web环境下 对象与request请求的生命周期一致  
+* session web环境下 对象与session生命周期一致  
+
+bean对象生命周期：
+---
+可以配置init-method方法 类似setUp 在对象创建之后立即调用    
+也可以配置销毁方法destroy-method 类似teardown 在spring容器关闭并销毁所有容器中对象之前调用  
+
+spring分模块配置：  
+可以在applicationContext中引入其他的配置文件  
+<import resource="applicationContext.xml"/>  
+
+bean的属性注入：
+---
+* set方法注入  
+* 构造函数注入
+* p名称空间注入
+* spel注入
+
+```
+<!--set方法属性注入-->
+    <bean id="user" name="用户" class="com.itcast.bean.User" scope="singleton" init-method="init" destroy-method="destroy">
+        <!--为name属性赋值tom-->
+        <property name="name" value="tom"></property>
+        <!--为age属性赋值tom-->
+        <property name="age" value="18"></property>
+
+        <!--注入对象属性：-->
+        <property name="car" ref="car"></property>
+    </bean>
+
+    <!--构造函数注入-->
+    <bean name="userConstructor" class="com.itcast.bean.User">
+        <!--name属性 构造函数参数名-->
+        <!--index属性：构造函数的参数索引-->
+        <!--type属性：构造函数的参数类型-->
+        <constructor-arg name="name" value="jerry" index="0" type="java.lang.String"></constructor-arg>
+        <constructor-arg name="car" ref="car" index="1"></constructor-arg>
+    </bean>
+```
+
+复杂类型注入：
+---
+```
+<!--复杂类型注入-->
+    <bean name="objectBean" class="com.itcast.bean.CollectionBean">
+        <property name="arr">
+            <array >
+                <value>tom</value>
+                <value>jack</value>
+            </array>
+        </property>
+
+        <property name="list">
+            <list>
+                <value>list1</value>
+                <value>list2</value>
+            </list>
+        </property>
+
+        <property name="map">
+            <map>
+                <entry key="url" value="jdbc:mysql:///crm"></entry>
+                <entry key="car" value-ref="car"></entry>
+                <entry key-ref="userSpel" value-ref="userConstructor"></entry>
+            </map>
+        </property>
+
+        <property name="prop">
+            <props>
+                <prop key="driverClass" >com.jdbc.mysql.Driver</prop>
+                <prop key="userName" >root</prop>
+                <prop key="password" >1234</prop>
+            </props>
+        </property>
+    </bean>
+```
+
+spring 数据库驱动bean：
+---
+```
+// applicationContext.xml
+<!--数据库-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" >
+        <property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+        <property name="jdbcUrl" value="jdbc:mysql://192.168.2.110:3306/itcastshop"></property>
+        <property name="user" value="root"></property>
+        <property name="password" value="admin"></property>
+    </bean>
+
+//pom.xml
+<dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.32</version>
+    </dependency>
+
+    <dependency>
+      <groupId>c3p0</groupId>
+      <artifactId>c3p0</artifactId>
+      <version>0.9.1.2</version>
+    </dependency>
+```
+
+spring applicationContext.xml中加载properties配置文件(需引入context命名空间)：
+---
+```
+<context:property-placeholder location="classpath:jdbc.properties"/>
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="xxx" value="${key}"></property>
+    
+    </bean>
+```
+
+spring使用注解代替xml配置
+---
+@Component 在类上实例化bean  
+@Controller 在web层类上实例化bean  
+@Service 在service层类上实例化bean  
+@Repository 在dao层类上实例化bean 替代property   
+@Autowired 使用在字段上用于根据类型依赖注入 替代property  
+@Qualifier 结合@Autowired一起使用根据名称进行注入  替代property  
+@Resource 相当于@Autowired 和@Qualified 结合  
+@Value 注入普通属性  
+@Scope 标注bean的作用范围  
+@PostConstruct 标注该方法是bean的初始化方法 init-method 
+@PreDestroy 标注方法是bean的销毁方法 destroy-method
+
+scope定义为prototype的类创建完毕后spring容器就不管理他了 所以这种类型的类的preDestroy方法不会被spring容器调用  
+----
+
+spring新注解：
+---
+第三方类的bean配置   
+加载properties配置文件    
+组件扫描<context:component-scan>   
+引入其他文件    
+
+@Configuration 指定当前类是一个spring配置类 当创建容器时会从该类上加载注解    
+@ComponentScan 指定初始化容器时要扫描的包    
+@Bean 使用在方法上 标注将该方法的返回值存储到spring容器中    
+@PropertySource 加载properties文件中的配置    
+@Import 导入其他配置类  
+
+
+spring AOP：
+=====
+
+
+面向切面编程 通过预编译方式和运行时动态代理实现程序功能统一维护的一种技术   
+在不修改源码的清空下对方法进行功能增强  
+
+底层实现：动态代理    
+JDK代理 基于接口的动态代理技术：   
+通过创建一个目标对象所实现的接口的代理对象 来动态的调用目标对象的方法  
+cglib代理 基于父类的动态代理：   
+自动生成一个目标对象的子类 实现调用目标对象的方法  
+
+Target目标对象：代理的目标对象
+Proxy代理：一个类被AOP织入增强后 就产生一个结果代理类  
+Joinpoint拦截点：就是指可以被拦截进行增强的方法   
+pointcut切入点：即已经被拦截进行增强的方法   
+Advice增强的内容 也叫通知：被拦截到joinpoint后增强部分的方法逻辑  
+Aspect切面：切入点和通知的结合  
+Weaving织入： 将增强结合到切点 也就是把增强部分和原目标方法结合  
+
+
+```
+TargetImpl target = new TargetImpl();
+
+        Advice advice = new Advice();
+
+        // 返回代理对象 替换target
+        TargetInterface proxy = (TargetInterface) Proxy.newProxyInstance(
+                // 目标对象类加载器
+                target.getClass().getClassLoader(),
+                // 目标对象相同的接口字节码数组
+                target.getClass().getInterfaces(),
+                new InvocationHandler() {
+                    // 调用代理对象的任何方法都是通过invoke实现
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        // 前置增强
+                        advice.before();
+                        Object invoke = method.invoke(target, args);
+
+                        // 后置增强
+                        advice.afterReturning();
+
+                        return invoke;
+                    }
+                }
+        );
+
+        // 调用代理对象方法
+        proxy.save();
+```
+
+通知(增强部分)的类型：  
+前置 后置 环绕 异常抛出 最终finally通知   
+```
+try{
+    try{
+        //@Before
+        method.invoke(..);
+    }finally{
+        //@After
+    }
+    //@AfterReturning
+}catch(){
+    //@AfterThrowing
+}
+```
+
+
+需要编写的内容：   
+目标类的目标方法  
+切面类 类中有增强方法  
+配置文件中配置织入关系  
+
+cglib实现原理：  
+```
+final Target target = new Target();
+        final TargetEnhance targetEnhance = new TargetEnhance();
+
+        // 返回值是动态生成的代理对象 基于cglib
+        // 创建增强器
+        Enhancer enhancer = new Enhancer();
+
+        // 创建目标类（父类）
+        enhancer.setSuperclass(Target.class);
+
+        // 设置回调
+        enhancer.setCallback(new MethodInterceptor() {
+            @Override
+            public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+
+                targetEnhance.before();
+
+                Object invoke = method.invoke(target, args);
+
+                targetEnhance.after();
+                return null;
+            }
+        });
+
+        // 创建代理对象
+        Target proxy = (Target) enhancer.create();
+
+        proxy.save();
+```
+
+xml配置aop：
+--------
+
+1. 导入aop坐标 
+2. 创建目标接口和目标类  
+3. 创建切面类 内部有增强方法  
+4. 将目标类和切面类的对象创建权交给spring   
+5. 在applicationContext.xml中配置织入系统  
+6. 测试  
+
+
+execution(public void com.demo.aop.Target.method())  
+execution(void com.demo.aop.Target.*(..))  
+execution(* com.demo.aop.*.*(..))  aop包下所有类的所有方法都进行增强 日志开关？  
+execution(* com.demo.aop.*.*(..)) aop包及其子包下所有类的所有方法都进行增强   
+execution(* *..*.*(..)) 任意返回值 任意包下任意类的任意方法 进行增强  
+
+注解aop开发：
+---
+1. 使用@Aspect标注切面类  
+2. 使用@通知注解(@Before @AfterReturning...)标注通知方法  
+3. 在配置文件中配置aop自动代理<aop:aspectj-autoproxy/>  
+
+spring JdbcTemplate
+---
+对原始jdbc对象的简单封装，提供了很多操作模板 如操作关系型数据库的JdbcTemplate 操作nosql数据库的RedisTemplate 操作消息队列的JmsTemplate  
+
+jdbcTemplate开发步骤：  
+导入spring-jdbc 和spring-tx  
+创建数据库表和实体  
+创建jdbcTemplate对象  
+执行数据库操作  
+
+
+如果xml配置文件中只有一个对应的@Autowired类型的bean 则自动装配    
+如果有多个相同的类的bean 则需要再通过@Qualifier("bean") 来指定  
+
+Spring-JDBC
+-----
+```
+
+
+    <!--加载jdbc.properties-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!--<property name="driverClass" value="com.mysql.jdbc.Driver"/>-->
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="jdbcTemplate2" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+
+
+package com.itcast.test;
+
+import com.itcast.domain.Category;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * @ClassName JdbcTemplateCRUDTest
+ * @description:
+ * @author: isquz
+ * @time: 2021/8/10 0:29
+ */
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")
+public class JdbcTemplateCRUDTest {
+    @Autowired
+    @Qualifier("jdbcTemplate2")
+    private JdbcTemplate jdbcTemplate1;
+
+    @Test
+    public void testUpdate(){
+        int row = jdbcTemplate1.update("update category set cname=? where cid=?","updateCategory", "12344321");
+        System.out.println("update category row: " + row);
+    }
+
+    @Test
+    public void testDelete(){
+        int row = jdbcTemplate1.update("delete from category where cid=?","12344321");
+        System.out.println("delete 12344321 category row: " + row);
+    }
+
+    @Test
+    public void testQueryAll(){
+        List<Category> categoryList = jdbcTemplate1.query("select * from category", new BeanPropertyRowMapper<Category>(Category.class));
+        System.out.println("query all category row: \n" + categoryList);
+    }
+
+    @Test
+    public void testQuery(){
+        Category category = jdbcTemplate1.queryForObject("select * from category where cid=?", new BeanPropertyRowMapper<Category>(Category.class), "567890");
+        System.out.println("query category : \n" + category);
+    }
+
+    @Test
+    // 聚合查询
+    public void testQueryCount(){
+        Long count = jdbcTemplate1.queryForObject("select count(*) from category", Long.class);
+        System.out.println("query category count: \n" + count);
+    }
+}
+
+```
+
+spring事务
+---
+PlatformTransactionManager spring事务管理器接口 不同dao层技术有不同的实现类  
+如jdbc或mybatis做dao层时 org.springframework.jdbc.datasource.DataSourceTransactionManager  
+如果是hibernate做dao层时 org.springframework.orm.hibernate5.HibernateTransactionManager   
+
+声明式事务控制  
+采用声明(注解或xml)方式处理事务  
+spring声明式事务控制底层就是AOP  
+
+
+spring集成web环境：
+---
+使用ServletContextListener监听web应用的启动  
+在web应用启动时 加载spring配置文件 创建上下文对象ApplicationContext  
+将其存储到servletContext域中 就可以从任意位置获取ApplicaionContext对象    
+
+spring提供了监听器ContextLoaderListenr 内部加载spring配置文件 创建应用上下文对象 并存储到servletContext域中 提供了WebApplicationContextUtils工具进行直接获取上下文对象  
+
+在web.xml中配置ContextLoaderListener监听器 前提导入spring-web坐标  
+
+
+maven:
+====
+mvn package 打包 web项目需要在pom.xml中<project>标签下配置<packaging> 为war  
+mvn clean  
+
+mybatis
+===
+1. SqlMapConfig.xml 作为mybatis全局配置文件 配置了mybatis的运行环境等信息  
+2. mapper.xml 文件作为sql的映射文件 配置了操作数据库的sql语句 此文件需要在SqlMapConfig.xml中加载  
+3. 通过mybatis环境等配置信息构造会话工厂SqlSessionFactory  
+4. 由SqlSessionFactory创建sqlSession会话 并操作数据库  
+5. mybatis底层自定义了Executor执行器接口操作数据库, 有两个实现 一个是基本执行器 一个是缓存执行器  
+6. Mapped Statement 也是mybatis一个底层封装对象 包装了mybatis配置信息及sql映射信息 mapper.xml中一个sql对应一个Mapped Statement对象 sql的id即是Mapped Statement的id   
+7. Mapped Statement 对sql执行输入参数进行定义 包括HashMap 基本类型 POJO, Executor 通过Mapped Statement 执行sql前 讲输入的java对象映射到sql中 输入参数映射就算jdbc中的preparedStatement设置参数 也即防止sql注入漏洞的参数  
+8. Mapped Statement也对sql的输出结果进行定义 同样包括HashMap 等各种类型 Executor通过Mapped Statement在执行sql后讲输出结果映射到Java对象中 输出结果映射过程 相当于jdbc中的结果解析 BeanListHandle等等。。  
+
+
+SqlMapConfig 模板 可以设置到idea-settings-File and code Templates里面：  
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <!--加载外部properties配置-->
+    <properties resource=""></properties>
+
+    <!--设置java类型别名-->
+    <typeAliases>
+        <!--设置一个Java类型的别名-->
+        <!--<typeAlias type="com.test.domain.user" alias="User"></typeAlias>-->
+        
+        <!--将整个包下所有类名设置别名-->
+        <package name=""/>
+    </typeAliases>
+    
+    <!--数据库环境配置-->
+    <environments default="development">
+        <!--使用mysql环境-->
+        <environment id="mysql">
+            <!--事务管理器 JDBC类型-->
+            <transactionManager type="JDBC"></transactionManager>
+            <!--连接池 内置POOLED-->
+            <dataSource type="POOLED">
+                <property name="driver" value="${database.driver}"/>
+                <property name="url" value="${database.url}"/>
+                <property name="username" value="${database.username}"/>
+                <property name="password" value="${database.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    
+    <!--加载映射文件-->
+    <mappers>
+        <mapper resource=""></mapper>
+    </mappers>
+
+</configuration>
+
+
+// mapper.xml 模板：
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="${NAMESPACE}" >
+
+</mapper>
+```
+
+
+优势：
+---
+1. 数据库连接频繁创建浪费资源 通过在SqlMapConfig.xml中配置数据连接池  
+2. sql语句与代码解耦  
+3. sql语句传参 where条件不一定 占位符需要与参数一一对应  mybatis自动将Java对象映射至sql语句 通过statement中的parameterType定义输入参数的类型  
+4. 对结果集解析麻烦 sql变化导致解析代码变化  mybatis 自动将sql执行结果映射至Java对象 并通过statement中的resultType定义输出结果的类型  
+
+mybatis dao开发：
+---
+```
+public class MybatisDaoTest {
+
+    public SqlSessionFactory sqlSessionFactory;
+
+    @Before
+    public void before() throws IOException {
+        // 加载核心配置文件
+        String resource = "sqlMapConfig.xml";
+        InputStream in = Resources.getResourceAsStream(resource);
+        sqlSessionFactory = new SqlSessionFactoryBuilder().build(in);
+    }
+
+    @Test
+    public void testDao(){
+
+        CategoryDao categoryDao = new CategoryDaoImpl(sqlSessionFactory);
+        Category category = categoryDao.selectCategory("567890");
+        System.out.println(category);
+    }
+}
+
+
+// 配置文件：sqlMapConfig.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <!--加载外部properties配置-->
+    <!--<properties resource="jdbc.properties"></properties>-->
+
+    <!--设置java类型别名-->
+    <typeAliases>
+        <!--设置一个Java类型的别名-->
+        <typeAlias type="com.itcast.mybatis.pojo.Category" alias="Category"/>
+
+        <!--将整个包下所有类名设置别名-->
+        <!--<package name=""/>-->
+    </typeAliases>
+
+    <!--数据库环境配置-->
+    <environments default="development">
+        <!--使用mysql环境-->
+        <environment id="development">
+            <!--事务管理器 JDBC类型-->
+            <transactionManager type="JDBC"></transactionManager>
+            <!--连接池 内置POOLED-->
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.2.110:3306/itcastshop"/>
+                <property name="username" value="root"/>
+                <property name="password" value="admin"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--加载映射文件-->
+    <mappers>
+        <mapper resource="CategoryMapper.xml"/>
+    </mappers>
+
+</configuration>
+
+// 配置文件：CategoryMapper.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!--写sql语句-->
+<!--namespace命名空间是为了区分不同的select id语句
+方便在sqlMapConfig中有多个不同mapper内部大sql语句id冲突-->
+<mapper namespace="test">
+
+    <!--通过id查询category-->
+    <select id="findCategoryById" parameterType="java.lang.String" resultType="com.itcast.mybatis.pojo.Category">
+        select * from category where cid = #{id}
+    </select>
+
+    <!--根据category名称模糊查询category列表-->
+    <!--  #{} select * from category where cid = ? 占位符-->
+    <!--  ${} select * from category where cname like '%${value}%'  字符串拼接-->
+    <!--      select * from category where cname like "%"#{value}"%"        -->
+    <select id="findCategoryBycname" parameterType="String" resultType="com.itcast.mybatis.pojo.Category">
+        select * from category where cname like "%"#{value}"%"
+    </select>
+
+    <!--添加category-->
+    <insert id="addCategory" parameterType="com.itcast.mybatis.pojo.Category" >
+        <!-- 可以获取自增键 -->
+        <!--<selectKey keyProperty="cid" resultType="Integer" order="AFTER">select LAST_INSERT_ID()</selectKey>-->
+        insert into category (cid,cname) values (#{cid},#{cname})
+    </insert>
+
+    <!--修改category-->
+    <update id="updateCategoryByCid" parameterType="com.itcast.mybatis.pojo.Category">
+        update category
+        set cname = #{cname}
+        where cid = #{cid}
+    </update>
+
+    <!--删除category-->
+    <update id="deleteCategory" parameterType="String">
+        delete from category
+        where cid = #{cid}
+    </update>
+
+
+</mapper>
+
+```
+
+Mapper动态代理开发：
+---
+
+四个原则:  
+* 接口方法名 与 XXXMapper.xml中的 sql语句的id
+* 返回值类型 与 XXXMapper.xml中的返回值类型一致
+* 方法入参类型 与 XXXMapper.xml中的一致
+* XXXMapper.xml中的命名空间 与 Mapper接口名一致
+
+```
+package com.itcast.mybatis.mapper;
+
+import com.itcast.mybatis.pojo.Category;
+
+/**
+ * @ClassName CategoryMapper
+ * @description:
+ * @author: isquz
+ * @time: 2021/10/1 17:48
+ */
+public interface CategoryMapper {
+
+    /*
+     * 四个原则
+     * 接口方法名 与 XXXMapper.xml中的 sql语句的id
+     * 返回值类型 与 XXXMapper.xml中的返回值类型一致
+     * 方法入参类型 与 XXXMapper.xml中的一致
+     * XXXMapper.xml中的命名空间 与 Mapper接口名一致
+     */
+
+    public Category findCategoryByCid(String id);
+}
+
+
+package com.itcast.mybatis.mapper;
+
+import com.itcast.mybatis.pojo.Category;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * @ClassName MybatisMapperTest
+ * @description:
+ * @author: isquz
+ * @time: 2021/10/2 22:34
+ */
+public class MybatisMapperTest {
+
+    @Test
+    public void testMapper() throws IOException {
+        // 加载核心配置文件
+        String resource = "sqlMapConfig.xml";
+        InputStream in = Resources.getResourceAsStream(resource);
+        // 创建sqlSessionFactory
+        SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder().build(in);
+        // 创建sqlsession
+        SqlSession session = sessionFactory.openSession();
+
+        // SqlSession 自动生成实现类
+        CategoryMapper categoryMapper = session.getMapper(CategoryMapper.class);
+        Category category = categoryMapper.findCategoryByCid("567890");
+        System.out.println(category);
+
+    }
+}
+
+```
+
+SqlMapConfig.xml 中的properties
+---
+properties 属性  
+settings 全局配置参数  
+typeAliases 类型别名  
+typeHandles 类型处理器  
+objectFactory 对象工厂  
+plugins 插件  
+environments 环境集合属性  
+    environment 环境子属性  
+        transactionManager 事务管理  
+            dataSource 数据源   
+
+mapper 映射器  
+
+输入映射和输出映射：   
+parameterType输入类型：   、
+传递简单类型String,Integer等   
+传递pojo对象 使用#{} 或${}中添加pojo对象的属性名称 解析对象     
+传递pojo包装对象        
+在包装类中组合pojo对象 并在sql语句中使用包装类中的pojo对象.对象属性进行模糊查询   
+
+输出包装类对象：  
+
+resultMap映射：  
+用于数据库字段与pojo对象属性名不一致的情况   
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!--写sql语句-->
+<!--namespace命名空间是为了区分不同的select id语句
+方便在sqlMapConfig中有多个不同mapper内部大sql语句id冲突-->
+<mapper namespace="com.itcast.mybatis.mapper.OrderMapper">
+
+    <!--查询订单所有数据-->
+    <!--对象属性字段与数据库不一致时 无法进行自动转换 需要使用resultMap-->
+    <!--<select id="selectOrdersList" resultType="com.itcast.mybatis.pojo.Orders" >-->
+    <resultMap id="OrderWrapper" type="com.itcast.mybatis.pojo.Orders" >
+        <!--对象标识属性 id 一般为主键-->
+        <!--jdbcType类型需要大写 org.apache.ibatis.type.JdbcType枚举类中列出的类型-->
+        <id column="oid" property="oid" javaType="String" jdbcType="VARCHAR" />
+        <!--普通属性 可以只设置不一致的属性映射 -->
+        <result column="ordertime" property="otime" />
+        <!--<result column="total" property="total" />-->
+        <!--<result column="state" property="state" />-->
+        <!--<result column="address" property="address" />-->
+        <!--<result column="name" property="name" />-->
+        <result column="telephone" property="tel" />
+        <!--<result column="uid" property="uid" />-->
+    </resultMap>
+    <select id="selectOrdersList" resultMap="OrderWrapper" >
+        select oid, ordertime, total, state, address, name, telephone, uid from orders
+    </select>
+
+
+</mapper>
+```
+
+
+动态sql:   
+---
+if where语句  
+```
+<!--根据商品日期和市场价格查询-->
+    <!--where标签自动添加where 关键字 并且处理sql语句的第一个and关键字-->
+    <select id="selectProductByDateAndMarketprice" parameterType="com.itcast.mybatis.pojo.Product" resultType="com.itcast.mybatis.pojo.Product">
+        select * from product
+        <where>
+            <if test="pdate != null and pdate != ''">
+                and pdate = #{pdate}
+            </if>
+            <if test="market_price != 0 and market_price != ''">
+                and market_price = #{market_price}
+            </if>
+        </where>
+
+
+    </select>
+```
+
+sql片段：  
+
+一对一 一对多联查：  
+```
+<mapper namespace="com.itcast.mybatis.mapper.MybatisOrderMapper">
+
+    <!--一对一关联 因为pojo对象嵌套有其他关联表的pojo对象 不能使用resultType 需使用resultMap-->
+    <!--且 result 标签必须手动设置一一对应-->
+    <resultMap id="mybatisOrderResultMap" type="com.itcast.mybatis.pojo.MybatisOrder" >
+        <result column="user_id" property="user_id" />
+        <result column="id" property="id" />
+        <result column="number" property="number" />
+        <result column="createtime" property="createtime" />
+        <!-- 1 对 1 -->
+        <association property="user" javaType="com.itcast.mybatis.pojo.MybatisUser" >
+            <id column="user_id" property="id" />
+            <result column="username" property="username" />
+
+            <result column="sex" property="sex" />
+            <result column="birthday" property="birthday" />
+            <result column="address" property="address" />
+
+        </association>
+    </resultMap>
+    <select id="selectMybatisOrders" resultMap="mybatisOrderResultMap">
+        select
+        o.id,
+        o.user_id,
+        o.number,
+        o.createtime,
+        u.username,
+        u.birthday,
+        u.sex,
+        u.address
+        FROM mybatis_order o
+        LEFT JOIN
+        mybatis_user u
+        on o.user_id = u.id
+    </select>
+    
+</mapper>
+```
+
+一对多:  
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!--写sql语句-->
+<!--namespace命名空间是为了区分不同的select id语句
+方便在sqlMapConfig中有多个不同mapper内部大sql语句id冲突-->
+<mapper namespace="com.itcast.mybatis.mapper.MybatisOrderMapper">
+
+    <!--一对多关联 因为pojo对象嵌套有其他关联表的pojo对象 不能使用resultType 需使用resultMap-->
+    <!--且 result 标签必须手动设置一一对应-->
+    <resultMap id="mybatisOrderResultMap" type="com.itcast.mybatis.pojo.MybatisOrder" >
+        <result column="user_id" property="user_id" />
+        <result column="id" property="id" />
+        <result column="number" property="number" />
+        <result column="createtime" property="createtime" />
+        <!-- 1 对 1 -->
+        <association property="user" javaType="com.itcast.mybatis.pojo.MybatisUser" >
+            <id column="user_id" property="id" />
+            <result column="username" property="username" />
+
+            <result column="sex" property="sex" />
+            <result column="birthday" property="birthday" />
+            <result column="address" property="address" />
+
+        </association>
+    </resultMap>
+    <select id="selectMybatisOrders" resultMap="mybatisOrderResultMap">
+        select
+        o.id,
+        o.user_id,
+        o.number,
+        o.createtime,
+        u.username,
+        u.birthday,
+        u.sex,
+        u.address
+        FROM mybatis_order o
+        LEFT JOIN
+        mybatis_user u
+        on o.user_id = u.id
+    </select>
+
+    <resultMap id="mybatisUserResultMap" type="com.itcast.mybatis.pojo.MybatisUser" >
+        <id column="user_id" property="id" />
+        <result column="username" property="username" />
+        <!--  一对多 -->
+        <collection property="orders" javaType="List" ofType="com.itcast.mybatis.pojo.MybatisOrder">
+            <id column="id" property="id" />
+            <result column="number" property="number" />
+            <result column="user_id" property="user_id" />
+            <result column="createtime" property="createtime" />
+
+        </collection>
+    </resultMap>
+    <select id="selectMybatisUser" resultMap="mybatisUserResultMap">
+        select
+        o.id,
+        o.user_id,
+        o.number,
+        o.createtime,
+        u.username,
+        u.birthday,
+        u.address,
+        u.sex
+        FROM mybatis_user u
+        LEFT JOIN
+        mybatis_order o
+        on o.user_id = u.id
+    </select>
+
+
+
+</mapper>
+```
+
+mybatis整合spring
+---
+1. SqlSessionFactory 对象放到spring容器中作为单例存在  
+2. 传统dao开发方式 应该从spring容器中获取sqlsession对象  
+3. Mapper代理形式中 从spring容器中直接获取mapper代理对象  
+4. 数据库连接以及数据库连接池事务管理都交给spring容器完成  
+
+原生dao开发  
+mapper代理接口  
+mapper代理扫描  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd
+       "
+>
+
+    <!--加载jdbc.properties-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!--数据库连接池-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
+        <!--<property name="driverClass" value="com.mysql.jdbc.Driver"/>-->
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxActive" value="10" />
+        <property name="maxIdle" value="5" />
+    </bean>
+
+    <!--mybatis工厂-->
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean" >
+        <property name="dataSource" ref="dataSource" />
+        <!--核心配置文件位置-->
+        <property name="configLocation" value="classpath:sqlMapConfig.xml" />
+    </bean>
+
+    <!--Dao-->
+    <bean id="userDao" class="com.itcast.mybatis.dao.UserDaoImpl" >
+        <!--注入到UserDaoImpl 所继承的父类 SqlSessionDaoSupport 中-->
+        <property name="sqlSessionFactory" ref="sqlSessionFactoryBean" />
+    </bean>
+
+    <!--Mapper动态代理开发-->
+    <!--<bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" >-->
+        <!--&lt;!&ndash;对应于 通过 sqlSessionFactory获取sqlSession&ndash;&gt;-->
+        <!--&lt;!&ndash;SqlSession session = sqlSessionFactory.openSession();&ndash;&gt;-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactoryBean" ></property>-->
+
+        <!--&lt;!&ndash; 对应 创建mapper实现类 并将mapper接口作为参数传递 &ndash;&gt;-->
+        <!--&lt;!&ndash;UserMapper mapper = sqlSession.getMapper(UserMapper.class);&ndash;&gt;-->
+        <!--<property name="mapperInterface" value="com.itcast.mybatis.mapper.UserMapper" ></property>-->
+    <!--</bean>-->
+
+    <!-- Mapper动态代理 扫描 不需要注入工厂 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" >
+        <!--基本包-->
+        <property name="basePackage" value="com.itcast.mybatis.mapper" />
+    </bean>
+    
+</beans>
+```
+
+SpringMVC
+===
+
+web.xml中配置全局springmvc控制器：  
+通过DispatcherServlet 统一处理所有请求  
+```
+<servlet>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath*:spring-mvc.xml</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+```
+@Controller 注解类  
+使用@RequestMapping("/save")标记方法  
+在该方法返回要进行展示的页面如 index.jsp  
+在springmvc.xml中配置包扫描<context:component-scan base-package="com.itcast" />  
+当浏览器访问/save 资源时  
+被DispatcherServlet拦截后由扫描的base-package中设置了@RequestMapping对应url路径的方法进行响应并 跳转该方法返回的资源index.jsp   
+
+springMVC 项目入门步骤梳理：  
+---
+1. 添加依赖坐标  
+```
+<!--servlet 3.1 规范-->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>3.0.1</version>
+    <scope>provided</scope>
+</dependency>
+<!--jsp坐标-->
+<dependency>
+    <groupId>javax.servlet.jsp</groupId>
+    <artifactId>jsp-api</artifactId>
+    <version>2.1</version>
+    <scope>provided</scope>
+</dependency>
+<!--spring 坐标-->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.1.9.RELEASE</version>
+</dependency>
+<!--springmvc 坐标-->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.1.9.RELEASE</version>
+</dependency>
+<!--spring web 坐标-->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-web</artifactId>
+    <version>5.1.9.RELEASE</version>
+</dependency>
+```
+2. 定义业务处理器Controller 并配置成spring的bean 等同于servlet  
+该bean的处理需要使用配置文件进行package扫描：  
+<context:component-scan base-package="com.itcast" />   
+
+3. web.xml中配置springMVC核心控制器 用于将请求转发到对应的业务处理器controller  
+```
+<servlet>
+    <servlet-name>DispatcherServlet</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:spring-mvc.xml</param-value>
+    </init-param>
+</servlet>
+<servlet-mapping>
+    <servlet-name>DispatcherServlet</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
+```
+
+4. 在方法上设置具体Controller的访问路径 等同于servlet在web.xml中配置的url-pattern  
+```
+@RequestMapping("/save")
+public String sace(){
+    System.out.println("user mvc controller is running");
+    return "success.jsp";
+}
+```
+
+工作流程：  
+服务器启动时：  
+* 加载web.xml中的DispatcherServlet  
+* 读取spring-mvc.xml这的配置 加载指定包下所有标记为bean的类  
+* 读取bean中方法标注为@RequestMapping 的内容
+* DispatcherServlet 拦截所有请求 / 
+* 使用请求路径与所有加载的@RequestMapping的内容进行比对  
+* 执行对应方法  
+* 根据方法返回值在webapp中查找对应的页面并展示  
+
+springMVC核心架构：  
+DispatcherServlet: 前端控制器 整体流程控制中心 调用其他组件处理用户请求  
+HandleMapping: 处理器映射器 负责根据@RequestMapping 为用户请求找到对应的handle处理器   
+Handle: 处理器 业务处理核心类  
+HandleAdapter: 处理器适配器 通过它对Handle执行  
+View Resolver: 视图解析器 将处理结果生成view视图  
+View: 视图 最终产出结果 如jsp html   
+
+基本配置：  
+1. Controller加载控制：  
+SpringMVC处理器对应bean必须按规范开发 为了避免与spring本身的类注解混淆冲突 通过bean加载过滤器进行设定 变现层bean标注通常设定为@Controller  
+
+业务层与数据层bean加载由spring控制  表现层bean由springMVC 控制其加载  
+```
+<context:component-scan base-package="com.itcast" >
+    <context:include-filter
+            type="annotation"
+            expression="org.springframework.stereotype.Controller" />
+</context:component-scan>
+
+等同于：
+@ComponentScan(
+    value="com.package",
+    excludeFilters = 
+        @ComponentScan.Filter(
+            type=FilterType.ANNOTATION,
+            classes=Controller.class)
+        )
+)
+
+```
+
+2. 静态资源加载  
+web.xml中配置的DispatcherServlet会拦截所有请求包括静态资源 所以类似页面中加载图片的会被拦截 需要设置核心控制器DispatherServlet放行静态资源  
+```
+<mvc:resources mapping="/img/**" location="/img/" />
+<mvc:resources mapping="/js/**" location="/js/" />
+
+或使用简化格式放行所有普通资源：
+<mvc:default-servlet-handle />
+```
+
+3. 中文乱码处理  
+```
+<filter>
+    <filter-name>CharacterEncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+        <param-name>encoding</param-name>
+        <param-value>UTF-8</param-value>
+    </init-param>
+</filter>
+<filter-mapping>
+    <filter-name>CharacterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+4. 注解替代xml配置文件驱动项目
+* 基于servlet3.0规范 自定义servlet容器初始化配置类 加载SpringMVC核心配置类  
+```
+package com.itcast.config;
+
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.support.AbstractDispatcherServletInitializer;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.EnumSet;
+
+/**
+ * @ClassName ServletContainerInitConfig
+ * @description: 替换web.xml的功能
+ * @author: isquz
+ * @time: 2021/11/7 23:36
+ */
+public class ServletContainerInitConfig extends AbstractDispatcherServletInitializer {
+
+    /**
+     * @description: 注册springmvc xml配置文件的内容
+     * @param: 
+     * @return: org.springframework.web.context.WebApplicationContext
+     * @author: isquz
+     * @date: 2021/11/9 23:08
+     */  
+    @Override
+    protected WebApplicationContext createServletApplicationContext() {
+        AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
+        ctx.register(SpringMVCConfiguration.class);
+        return ctx;
+    }
+
+    /**
+     * @description:  替代web.xml中的DispatherServlet mapping映射
+     * @param:
+     * @return: java.lang.String[]
+     * @author: isquz
+     * @date: 2021/11/9 21:32
+     */
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+
+    @Override
+    protected WebApplicationContext createRootApplicationContext() {
+        return null;
+    }
+
+    /**
+     * @description:    配置中文乱码
+     * @param: servletContext
+     * @return: void
+     * @author: isquz
+     * @date: 2021/11/9 23:07
+     */
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        super.onStartup(servletContext);
+
+        // 创建字符集过滤器对象
+        CharacterEncodingFilter filter = new CharacterEncodingFilter();
+        // 设置使用的字符集
+        filter.setEncoding("UTF-8");
+        // 添加到Servlet容器
+        FilterRegistration.Dynamic registration = servletContext.addFilter("characterEncodingFilter", filter);
+        // 添加映射
+        registration.addMappingForUrlPatterns(
+                EnumSet.of(DispatcherType.REQUEST,DispatcherType.FORWARD,DispatcherType.INCLUDE),
+                false, "/*");
+
+    }
+}
+
+```
+
+* 静态资源加载
+编写一个配置类实现WebMvcConfigurer接口 覆盖addResourceHandles方法 在其中对具体的资源进行配置  
+
+注意WebMvcConfigurer的实现类需要添加注解@EnableWebMvc 否则图片等静态资源仍不能加载   
+
+除了上述方法外 在spring-mvc.xml中配置也可以实现：  
+1. 配置  <mvc:default-servlet-handler />  
+2. 或配置： <mvc:resources mapping="/js/**" location="/js/" />   
+---
+
+```
+package com.itcast.config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+/**
+ * @ClassName SpringMVCConfiguration
+ * @description:
+ *
+ * 使用当前类 替代springmvc.xml配置文件的功能
+ *
+ * @author: isquz
+ * @time: 2021/11/7 22:57
+ */
+
+@Configuration
+@EnableWebMvc
+@ComponentScan(
+        value = "com.itcast",
+        includeFilters = @ComponentScan.Filter(
+                type = FilterType.ANNOTATION,
+                classes = {Controller.class}
+        )
+)
+public class SpringMVCConfiguration implements WebMvcConfigurer {
+
+
+    // 等同于 <mvc:resources mapping="/img/**" location="/img/" />
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/img/**").addResourceLocations("/img/");
+        registry.addResourceHandler("/js/**").addResourceLocations("/js/");
+    }
+
+    // 等同于 <mvc:default-servlet-handler />
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+}
+
+/*
+*
+* <context:component-scan base-package="com.itcast" >
+<context:include-filter
+        type="annotation"
+        expression="org.springframework.stereotype.Controller" />
+</context:component-scan>
+
+<mvc:default-servlet-handler />
+<!--<mvc:resources mapping="/img/**" location="/img/" />-->
+<!--<mvc:resources mapping="/js/**" location="/js/" />-->
+<!--<mvc:resources mapping="/css/**" location="/css/" />-->
+
+* */
+
+```
+
+springMVC组件解析：  
+---
+@RequestMapping:  
+用于建立请求url与处理请求方法直接的对应关系  
+可以用于类上注解 也可以用于方法  
+用于类上 表示该类中所有请求方法的路径的父路径   
+如@RequestMapping("user") 表示其他所有方法的请求url前面应该添加user/前缀 
+
+规范建议@RequestMapping("/xxx") 应该加斜杠   
+不加斜杠的话 如果该业务方法返回的页面有进行跳转或重定向之类的 会从@RequestMapping中的地址的 相对路径进行查找页面资源   
+加斜杠就是从根路径下进行查找  
+
+```
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    // 实际请求地址为 http://localhost:8080/user/save
+    @RequestMapping("/save")
+    public String sace(){
+``` 
+属性：  
+value: 用于指定请求url  
+method: 指定请求的方法get post   
+params: 指定请求参数的限制  
+如 params={"accountName"} 表示请求参数必须有accountName  
+params={"money!100"} 表示请求参数中money不能是100  
+
+地址转发前缀：  
+@RequestMapping 默认返回视图通过forward转发方式 也即是地址栏不会改变  
+如果修改为return "redirect:success.jsp" 则会通过重定向至指定的资源  
+
+```
+@RequestMapping("/save")
+    public String sace(){
+        System.out.println("user mvc controller is running");
+        return "success.jsp";
+    }
+```
+
+视图解析器前缀后缀：  
+通过定义viewResolver视图解析器 来设置InternalResourceViewResolver 的前缀后缀  
+对@RequestMapping 返回的资源路径进行拼接前缀后缀  
+
+SpringMVC数据响应：
+---
+响应方式：页面跳转 回写数据  
+页面跳转：  
+* 直接返回字符串  
+* 通过ModelAndView对象返回  
+
+回写数据：  
+* 直接返回字符串    
+web基础阶段 客户端访问服务器 使用response.getWriter().print("helloworld") 即可  
+controller中实现： 
+可以通过springmvc框架注入response对象 并调用上述方法    
+也可以通过@ResponseBody注解告诉springmvc框架 方法返回的字符串并不是跳转到对应的资源页面 而是直接在http响应体中返回   
+
+
+* 返回对象和集合  
+通过在xml中或代码里重写extendMessageConverters配置处理器映射器  
+实现在@RequestMapping方法中直接返回对象 由处理器映射器进行对象--> 转json字符串的操作  
+
+在springmvc各个组件中 处理器映射器 处理器适配器 视图解析器 成为springmvc的三大组件 
+也可以使用<mvc:annotation-driver> 自动加载RequestMappingHandlerMapping处理器映射器 和RequestMappingHandlerAdapter 处理器适配器  
+用来替换在spring-xml中进行处理器映射器的配置  同时也会默认集成jackson进行对象或集合的字符串转换   
+
+小结：  
+
+springmvc获取请求数据：
+---
+1. 获取请求参数：  
+* 基本类型参数  
+* POJO参数   
+* 数组类型参数  
+* 集合类型参数  
+
+获取基本类型参数：   
+controller中业务方法参数名称与请求参数的name一致 就会自动映射该参数  
+```
+/**
+     * @description: 获取基本类型参数 直接把request域中参数名对应一致的放在方法参数中即可
+     * @ResponseBody 表明只进行数据回写不进行页面跳转
+     * 当前方法中返回值为void 即表示 本方法的response body为空
+     * @param:
+     * @return: void
+     * @author: isquz
+     * @date: 2021/11/28 1:06
+     */
+    @RequestMapping("requestParam")
+    @ResponseBody
+    public void getRequestParam(String username, int age){
+        System.out.println("get username: " + username);
+        System.out.println("get age: " + age);
+    }
+```
+
+获取pojo类型参数：  
+controller中业务方法的pojo参数属性名需要与请求参数的name一致 即会自动映射匹配  
+```
+@RequestMapping("requestParamToPojo")
+@ResponseBody
+public void getRequestParamToPojoObject(MybatisUser user){
+    System.out.println("user: " + user);
+}
+```
+
+获取数组类型参数：  
+Controller中业务方法数组参数名称 与请求参数name一致 即可自动映射匹配    
+请求地址：http://localhost/requestParamArray?arr=123&arr=rewre&arr=tse  
+```
+@RequestMapping("requestParamArray")
+@ResponseBody
+public void getRequestParamArray(String[] arr){
+    for(String s: arr){
+        System.out.println("get param: " + s);
+    }
+}
+```
+
+获取集合类型参数：  
+获取集合参数 需要将集合参数封装到一个pojo对象中  
+```
+/**
+ * @ClassName ValueObject
+ * @description: 用来包装
+ * @author: isquz
+ * @time: 2021/11/29 21:38
+ */
+public class ValueObject {
+    private List<MybatisUser> userList;
+
+    public List<MybatisUser> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(List<MybatisUser> userList) {
+        this.userList = userList;
+    }
+
+    @Override
+    public String toString() {
+        return "ValueObject{" +
+                "userList=" + userList +
+                '}';
+    }
+}
+
+<html>
+<head>
+    <title>提交对象集合类型的数据</title>
+</head>
+<body>
+    <form action="${pageContext.request.contextPath}/requestParamCollection" method="post">
+        <%--表明是第几个user对象的username 和age 属性--%>
+        <%--此处的集合名称必须 要与pojo包装类中的list集合变量一致--%>
+        <input type="text" name="userList[0].username"><br/>
+        <input type="text" name="userList[0].address"><br/>
+
+        <input type="text" name="userList[1].username"><br/>
+        <input type="text" name="userList[1].address"><br/>
+
+        <input type="submit" value="提交">
+    </form>
+
+</body>
+</html>
+
+// Controller
+@RequestMapping("requestParamCollection")
+@ResponseBody
+public void getRequestParamCollection(ValueObject object){
+    System.out.println(object);
+    for(MybatisUser user: object.getUserList()){
+        System.out.println("user inside ValueObject: " + user);
+    }
+}
+```
+
+之前ajax 提交请求时 可以指定contentType为json类型 在controller中业务方法的参数中使用@RequestBody 可以直接接收集合数据而无需使用pojo进行包装   
+
+```
+// Controller
+@RequestMapping("ajaxReq")
+@ResponseBody
+public void getRequestAjaxCollection(@RequestBody List<MybatisUser>userList){
+    System.out.println(userList);
+}
+
+
+```
+
+参数绑定注解@RequestParam:
+---
+当请求参数名称与Controller业务方法参数名词不一致时 需要通过@RequestParam(value="")注解进行绑定 来实现参数的匹配   
+注解内部属性：  
+value: 与实际请求参数名一致  
+required: 默认为true 即提交时没有此参数则报错   
+defaultValue: 当实际的请求中没有参数时 则使用默认值赋值   
+
+获取Restful风格的参数：  
+Restful是一种设计风格 而不是标准 用于客户端和服务端交互的软件 基于这个风格设计的软件会更简洁 更有层次 更易于实现缓存机制  
+
+rest风格请求是使用url+请求方式表示一次请求的目的   
+get 获取资源  
+post新建资源  
+put更新资源  
+delete 删除资源  
+如：  
+/user/1 GET     得到id=1 的user  
+/user/1 DELETE  删除id=1 的user   
+/user/1 PUT     更新id=1 的user   
+/user           新增user   
+
+可以理解为 通过地址url来传递参数而不是原始的问号后面加参数1&参数2...   
+
+自定义类型转换器：  
+---
+springmvc默认已经提供了一些常用类型转换器 例如客户端提交的字符串转换成int型进行参数设置  
+但是其他的比如日期就需要自定义转换器   
+
+使用自定义类型转换器的步骤：  
+1. 定义转换器Converter 实现Converter接口   
+```
+public class DateConverter implements Converter<String, Date> {
+
+
+    @Override
+    public Date convert(String s) {
+        // 将日期字符串转成日期对象
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = format.parse(s);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return date;
+    }
+}
+```
+2. 在配置文件中声明转换器 也可以在springmvc的配置类中实现 免配置文件功能    
+```
+配置文件实现：  
+<bean id="dateConverter" class="org.springframework.context.support.ConversionServiceFactoryBean">
+    <property name="converters" >
+        <list>
+            <bean class="com.itcast.converter.DateConverter" >
+        </list>
+    </property>
+</bean>
+
+<mvc:annotation-driven conversion-service="dateConverter" />
+
+
+// 纯代码 免配置文件实现：
+// class SpringMVCConfiguration implements WebMvcConfigurer
+/**
+     * @description:  添加自定义类型转换器 等价于在配置文件中添加：
+     * <!-- 声明转换器 -->
+     *     <bean id="dateConverter" class="org.springframework.context.support.ConversionServiceFactoryBean">
+     *         <property name="converters" >
+     *             <list>
+     *                 <bean class="com.itcast.converter.DateConverter" >
+     *             </list>
+     *         </property>
+     *     </bean>
+     *
+     *  <!-- <mvc:annotation-driven conversion-service="dateConverter" /> -->
+     *
+     *
+     * @param: registry
+     * @return: void
+     * @author: isquz
+     * @date: 2021/12/1 22:29
+     */
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        System.out.println("add converters to registry: ");
+        registry.addConverter(new DateConverter());
+    }
+```
+3. 在<annotation-driven> 中引用转换器   
+
+获取servlet相关api
+---
+springmvc 支持使用原始的servlet API 作为控制器方法的参数进行注入：  
+HttpServletRequest  
+HttpServletResponse  
+HttpSession   
+
+获取请求头：  
+1. @RequestHeader  
+使用此注解获取请求头信息 相当于web阶段的request.getHeader(name)  
+注解中的属性如下：  
+value 请求头名称  
+required: 是否必须携带请求头   
+
+2. @CookieValue  
+获取指定cookie的值  
+属性如下：  
+value:  
+required:  是否必须  
+
+文件上传：
+---
+文件上传客户端表单三要素：  
+表单项type="file"  
+表单提交方式POST   
+表单enctype属性说多部分表单形式  enctype="multipart/form-data"   
+
+因为form表单修改为了多部分表单 multipart/form-data  所以request.getParameter() 会失效   
+enctype默认为application/x-www-form-urlencoded 时 form表单正文内容格式为key=value&key=value...   
+enctype为multipart/form-data时 请求正文内容就变成了多部分形式  
+
+单文件上传：  
+1. 导入fileupload和io坐标    
+```
+<!--文件上传-->
+<dependency>
+    <groupId>commons-fileupload</groupId>
+    <artifactId>commons-fileupload</artifactId>
+    <version>1.3.1</version>
+</dependency>
+<dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>2.3</version>
+</dependency>
+```
+2. 配置文件上传解析器 或使用免配置文件方法  
+使用配置类的方法 注入CommonsMultipartResolver对象 必须使用@Bean 是否和配置类的加载生命周期有关? 可能是在springmvc框架启动时加载该配置类 同时对于@Bean注入的CommonsMultipartResolver 进行配置   
+
+```
+// 配置文件方法
+<!-- 配置文件上传解析器 -->
+    <!--<bean id="multipartResolver"-->
+      <!--class="org.springframework.web.multipart.commons.CommonsMultipartResolver" >-->
+    <!--&lt;!&ndash;单次上传文件总大小&ndash;&gt;-->
+    <!--<property name="maxUploadSize" value="5242800" />-->
+    <!--&lt;!&ndash;单个上传文件大小&ndash;&gt;-->
+    <!--<property name="maxUploadSizePerFile" value="5242800" />-->
+    <!--&lt;!&ndash;上传文件编码类型&ndash;&gt;-->
+    <!--<property name="defaultEncoding" value="UTF-8" />-->
+<!--</bean>-->
+
+// 使用配置类 免配置文件进行设置
+// SpringMVCConfiguration implements WebMvcConfigurer
+// 这里必须使用@Bean注解
+// 添加文件上传解析器
+    @Bean
+    public CommonsMultipartResolver multipartResolver(){
+        CommonsMultipartResolver resolver = new CommonsMultipartResolver();
+        resolver.setMaxUploadSizePerFile(5242800);
+        resolver.setMaxUploadSize(5242800);
+        resolver.setDefaultEncoding("UTF-8");
+        return resolver;
+    }
+
+
+```
+3. 编写文件上传代码  
+
+多文件上传：  
+可以设置file 类型的input 的name不一致 然后对应controller中多个MultipartFile入参即可  
+也可以 将controller业务方法参数直接改为MultipartFile[] 数组类型 获取多个上传的文件  
+
+```
+<form action="${pageContext.request.contextPath}/uploadFiles"
+      method="post" enctype="multipart/form-data">
+    名称<input type="text" name="filename"><br/>
+    文件1-1<input type="file" name="upload"><br/>
+    文件1-2<input type="file" name="upload"><br/>
+    文件1-3<input type="file" name="upload"><br/>
+    <input type="submit" value="上传"><br/>
+</form>
+
+//Controller
+@RequestMapping(value = "/uploadFiles")
+@ResponseBody
+public void uploadFiles (String filename, MultipartFile[] upload) throwsIOException {
+    System.out.println("start to upload file : " + filename);
+    System.out.println("get multipartFile: " + upload);
+    for(MultipartFile file : upload){
+        String originalFilename = file.getOriginalFilename();
+        file.transferTo(new File( "D:\\J2EE\\JavaWeb\\testupload\\" + originalFilename));
+    }
+}
+
+```
+
+spring JdbcTemplate使用
+---
+spring框架提供的一个原始JdbcAPI 对象的封装 提供了操作关系型数据库的JdbcTemplate 和HibernateTemplate 操作nosql的RedisTemplate 操作消息队列的JmsTemplate   
+
+JdbcTemplate步骤：  
+1. 导入spring-jdbc spring-tx坐标  
+```
+<!--jdbc-->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.0.5.RELEASE</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.0.5.RELEASE</version>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.32</version>
+</dependency>
+<dependency>
+    <groupId>c3p0</groupId>
+    <artifactId>c3p0</artifactId>
+    <version>0.9.1.2</version>
+</dependency>
+```
+2. 创建数据库和表  
+3. 创建JdbcTemplate对象   
+将JdbcTemplate的创建权交给spring  
+将DataSource的创建权也交给spring   
+在spring容器内部将数据源datasource注入到JdbcTemplate模板对象中  
+```
+<!--加载jdbc.properties-->
+<context:property-placeholder location="classpath:jdbc.properties"/>
+<!--配置数据源对象 以便将其注入JdbcTemplate对象-->
+<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" >
+    <property name="driverClass" value="${jdbc.driver}"/>
+    <property name="jdbcUrl" value="${jdbc.url}"/>
+    <property name="user" value="${jdbc.username}"/>
+    <property name="password" value="${jdbc.password}"/>
+</bean>
+<!--JdbcTemplate对象-->
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >
+    <property name="dataSource" ref="dataSource"></property>
+</bean>
+```
+
+4. 执行数据库操作  
+其中可以使用SpringJunit进行测试  
+
+```
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")
+public class JdbcTemplateCRUDTest {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    /**
+     * @description: 聚合查询
+     * @param:
+     * @return: void
+     * @author: isquz
+     * @date: 2021/12/2 23:38
+     */
+    @Test
+    public void testQueryCount(){
+        Long count = jdbcTemplate.queryForObject("select count(*) from account", Long.class);
+        System.out.println("get all account num: " + count);
+    }
+
+    @Test
+    public void testQueryOne(){
+        Account lucy = jdbcTemplate.queryForObject("select * from account where name=?", new BeanPropertyRowMapper<Account>(Account.class), "lucy");
+        System.out.println(lucy);
+    }
+
+    @Test
+    public void testQuery(){
+        List<Account> accountList = jdbcTemplate.query("select * from account ", new BeanPropertyRowMapper<Account>(Account.class));
+        System.out.println(accountList);
+    }
+
+    @Test
+    public void testUpdate(){
+        int row = jdbcTemplate.update("update account set money=? where name=?",
+                10000, "tom");
+        System.out.println("update tom money row: " + row);
+    }
+
+    @Test
+    public void testDelete(){
+        int row = jdbcTemplate.update("delete from account where name=?", "tom-springmvc");
+        System.out.println("delete tom-springmvc row: " + row);
+    }
+}
+```
+
+springmvc demo环境搭建：
+---
+步骤：  
+1. 创建工程  
+2. 导入静态页面  
+3. 导入坐标   
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>demoexer</groupId>
+    <artifactId>demoexer</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.32</version>
+        </dependency>
+        <dependency>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+            <version>2.2.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+    </dependencies>
+
+    <!--构建-->
+    <build>
+        <!--插件 tomcat7 -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <port>80</port>
+                    <path>/</path>
+                    <url>http://127.0.0.1:80/</url>
+                    <uriEncoding>UTF-8</uriEncoding>
+                    <charset>utf-8</charset>
+                    <server>tomcat7</server>
+                    <update>true</update>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
+```
+
+4. 创建包结构controller service dao domain utils    
+5. 导入数据库脚本  
+```
+/*
+SQLyog Ultimate v12.09 (64 bit)
+MySQL - 5.7.24-log : Database - test
+*********************************************************************
+*/
+
+
+/*!40101 SET NAMES utf8 */;
+
+/*!40101 SET SQL_MODE=''*/;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`itcastshop` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+USE `itcastshop`;
+
+/*Table structure for table `sys_role` */
+
+DROP TABLE IF EXISTS `sys_role`;
+
+CREATE TABLE `sys_role` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `roleName` varchar(50) DEFAULT NULL,
+  `roleDesc` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
+/*Data for the table `sys_role` */
+
+insert  into `sys_role`(`id`,`roleName`,`roleDesc`) values (1,'院长','负责全面工作'),(2,'研究员','课程研发工作'),(3,'讲师','授课工作'),(4,'助教','协助解决学生的问题');
+
+/*Table structure for table `sys_user` */
+
+DROP TABLE IF EXISTS `sys_user`;
+
+CREATE TABLE `sys_user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `password` varchar(80) DEFAULT NULL,
+  `phoneNum` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+/*Data for the table `sys_user` */
+
+insert  into `sys_user`(`id`,`username`,`email`,`password`,`phoneNum`) values (1,'zhangsan','zhangsan@itcast.cn','123','13888888888'),(2,'lisi','lisi@itcast.cn','123','13999999999'),(3,'wangwu','wangwu@itcast.cn','123','18599999999');
+
+/*Table structure for table `sys_user_role` */
+
+DROP TABLE IF EXISTS `sys_user_role`;
+
+CREATE TABLE `sys_user_role` (
+  `userId` bigint(20) NOT NULL,
+  `roleId` bigint(20) NOT NULL,
+  PRIMARY KEY (`userId`,`roleId`),
+  KEY `roleId` (`roleId`),
+  CONSTRAINT `sys_user_role_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `sys_user` (`id`),
+  CONSTRAINT `sys_user_role_ibfk_2` FOREIGN KEY (`roleId`) REFERENCES `sys_role` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `sys_user_role` */
+
+insert  into `sys_user_role`(`userId`,`roleId`) values (1,1),(1,2),(2,2),(2,3);
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+```
+6. 创建pojo类 User.java Role.java  
+7. 创建配置文件applicationContext.xml spring-mvc.xml jdbc.properties log4j.properties    
+
+
+表分析：  
+用户和角色表 是多对多关系 需要通过中间表来关联   
+
+角色列表的展示步骤分析：  
+点击角色管理菜单发送请求到服务器端   
+创建RoleController 和showList() 方法  
+创建ROleService和showList方法  
+创建RoleDao 和findAll方法  
+使用JdbcTemplate完成查询操作  
+将查询数据存储到Model中  
+转发到role-list.jsp页面进行展示  
+
+springmvc页面中访问静态资源时出现404 可以在引用静态资源的地址前加/static/  
+
+查询角色列表、添加角色：  
+
+查询用户列表、添加用户：  
+查询用户时需要关联查询用户角色对应表 一个用户多个角色  
+添加用户时 需要先查询当前最新的角色类型表  
+且插入用户数据时 需要获取该新用户的自增id  
+
+删除用户：  
+需要先删除用户角色对应关系表 再删除用户表  
+
+
+
+
+##### spring访问页面时出现404排查：
+web.xml 中 spring容器监听器 ContextLoaderListener加载是否成功   
+spring 和springmvc的配置文件是否加载 contextConfigLocation   
+前端控制器拦截是否配置成功  
+
+spring-mvc.xml中注解驱动 包扫描路径   
+
+
+springmvc 拦截器 interceptor
+----
+类似于servlet中的filter 用来对处理器进行预处理和后处理  
+
+和filter的区别：  
+拦截范围：  
+filter在url-pattern 中配置了/* 后 对所有的访问的资源进行拦截  
+拦截器interceptor 在<mvc:mapping path="" /> 中配置了/** 后也可以对所有资源进行拦截 但是可以通过mvc:exclude-mapping path="" 进行排除不需要拦截的资源  
+
+###### 这个资源是否只包括servlet 的requestmapping 路径 不包括直接访问的页面资源如localhost/target.jsp   
+
+
+实现拦截器：  
+1. 创建拦截器类实现HandleInterceptor接口 重写preHandle postHandle afterCompletion  
+
+preHandle 返回true表示放行 false不放行  
+
+```
+package com.itcast.interceptor;
+
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @ClassName MyInterceptor
+ * @description: 拦截器demo
+ * @author: isquz
+ * @time: 2021/12/18 11:34
+ */
+
+public class MyInterceptor implements HandlerInterceptor {
+
+    // 目标方法执行之前调用
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println("before interceptor: ");
+
+        String param = request.getParameter("param");
+        if("yes".equals(param)){
+            return true;
+        }else {
+            System.out.println("error forward: ");
+            request.getRequestDispatcher("/error.jsp").forward(request,response);
+            System.out.println("finish forward: ");
+            return false;
+        }
+
+        // true放行
+//        return true;
+    }
+
+    // 目标方法执行之后 视图返回之前
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println("post interceptor: ");
+        modelAndView.addObject("name","postHandle update Object");
+    }
+
+    // 在视图返回之后
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println("after interceptor: ");
+    }
+}
+
+
+```
+2. 配置拦截器  
+```
+<!--配置拦截器-->
+    <mvc:interceptors>
+        <!--多个拦截器按照此处的配置顺序 以先进后出的方式执行-->
+        <mvc:interceptor>
+            <!--对哪些资源进行拦截操作-->
+            <mvc:mapping path="/**"/>
+            <bean id="MyInterceptor" class="com.itcast.interceptor.MyInterceptor" ></bean>
+        </mvc:interceptor>
+
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean id="MyInterceptor2" class="com.itcast.interceptor.MyInterceptor2"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+```
+
+登录权限控制
+---
+用户未登录状态 点击菜单跳转到登录界面  
+```
+package com.itcast.interceptor;
+
+import com.itcast.domain.User;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+/**
+ * @ClassName PrivilegeInterceptor
+ * @description: 登录拦截器
+ * @author: isquz
+ * @time: 2021/12/18 17:31
+ */
+
+public class PrivilegeInterceptor implements HandlerInterceptor {
+
+
+    /**
+     * @description: 判断用户是否登录 实质是判断session中是否存在user对象
+     * @param: request
+     * @param: response
+     * @param: handler
+     * @return: boolean
+     * @author: isquz
+     * @date: 2021/12/18 17:37
+     */
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if(user==null){
+            // 没有登录 进行跳转到登录页面
+            System.out.println("用户未登录");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return false;
+        }
+        System.out.println("用户已登录");
+        return true;
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+
+    }
+}
+
+```
+
+```
+<mvc:interceptors>
+        <!--多个拦截器按照此处的配置顺序 以先进后出的方式执行-->
+    
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <!--排除login本身这个请求 防止死循环-->
+            <mvc:exclude-mapping path="/user/login" />
+            <!--<mvc:exclude-mapping path="/pages/*" />-->
+
+            <bean class="com.itcast.interceptor.PrivilegeInterceptor" id="PrivilegeInterceptor" />
+        </mvc:interceptor>
+    </mvc:interceptors>
+```
+
+springmvc异常处理
+---
+系统中dao service controller 出现异常都通过throw 最后由springmvc前端控制器交给异常处理器进行处理   
+
+
+异常处理两种方式：  
+1. 使用spingmvc简单异常处理器SimpleMappingExceptionResolver   
+用此方法进行异常和视图的映射配置  
+
+```
+<!--配置简单异常映射处理器-->
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <!--<property name="defaultErrorView" value="errorview" />-->
+        <property name="exceptionMappings">
+            <map>
+                <entry key="java.lang.ClassCastException" value="errorClassCastException" />
+                <entry key="com.itcast.exception.MyException" value="myException" />
+            </map>
+        </property>
+    </bean>
+```
+
+2. 使用spring 异常处理接口HandleExceptionResolver自定义异常处理器  
+创建异常接口实现类  
+```
+package com.itcast.resolver;
+
+import com.itcast.exception.MyException;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @ClassName MyExceptionResolver
+ * @description: 自定义异常处理器
+ * @author: isquz
+ * @time: 2021/12/19 23:33
+ */
+public class MyExceptionResolver implements HandlerExceptionResolver {
+
+    /**
+     * @description:
+     * @param: httpServletRequest
+     * @param: httpServletResponse
+     * @param: o
+     * @param: Exception e 异常对象
+     * @return: ModelAndView 返回值为进行跳转的错误视图信息页面
+     * @author: isquz
+     * @date: 2021/12/19 23:59
+     */
+    @Override
+    public ModelAndView resolveException(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) {
+        ModelAndView modelAndView = new ModelAndView();
+
+        if(e instanceof MyException){
+            modelAndView.addObject("info","自定义异常");
+        }else if(e instanceof ClassCastException){
+            modelAndView.addObject("info","类型转换异常");
+        }else {
+            System.out.println("其他错误");
+            modelAndView.addObject("info","其他错误");
+        }
+        modelAndView.setViewName("errorview");
+
+        return modelAndView;
+    }
+}
+
+```
+配置异常处理器  
+```
+<!--配置自定义 异常处理器-->
+    <bean class="com.itcast.resolver.MyExceptionResolver" />
+```
+编写异常页面  
+
 
 
 

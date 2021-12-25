@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop  http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx.xsd
+       "
+>
+
+    <!--配置dao-->
+    <bean id="userDao" class="com.itcast.dao.impl.UserDaoImpl"></bean>
+
+    <!--配置service-->
+    <bean id="userService" class="com.itcast.service.impl.UserServiceImpl">
+        <property name="userDao" ref="userDao"/>
+    </bean>
+
+
+
+
+
+
+    <!--组件扫描-->
+    <context:component-scan base-package="com.itcast" />
+
+    <!--加载jdbc.properties-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!--第三方类一般使用xml配置 自己的类使用注解-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!--<property name="driverClass" value="com.mysql.jdbc.Driver"/>-->
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="jdbcTemplate2" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--&lt;!&ndash;<bean id="accountDao" class="com.itcast.dao.impl.AccountDaoImpl">&ndash;&gt;-->
+        <!--&lt;!&ndash;<property name="jdbcTemplate" ref="jdbcTemplate2"/>&ndash;&gt;-->
+    <!--&lt;!&ndash;</bean>&ndash;&gt;-->
+    <!--&lt;!&ndash;&lt;!&ndash; xml事务控制 切面目标对象&ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;<bean id="accountService" class="com.itcast.service.impl.AccountServiceImpl">&ndash;&gt;-->
+        <!--&lt;!&ndash;<property name="accountDao" ref="accountDao"/>&ndash;&gt;-->
+    <!--&lt;!&ndash;</bean>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;配置平台事务管理器&ndash;&gt;-->
+    <!--<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">-->
+        <!--<property name="dataSource" ref="dataSource"/>-->
+    <!--</bean>-->
+
+
+    <!--&lt;!&ndash;使用注解设置事务 需要添加事务注解驱动-->
+    <!--类似 注入bean时候需要设置component-scan 上下文扫描包路径 &ndash;&gt;-->
+    <!--<tx:annotation-driven transaction-manager="transactionManager" />-->
+
+
+    <!--&lt;!&ndash;通知 事务增强&ndash;&gt;-->
+    <!--&lt;!&ndash;设置切点方法的事务参数配置-->
+        <!--name 切点方法名称-->
+        <!--isolation 事务隔离级别-->
+        <!--propogation 事务传播行为-->
+        <!--timeout 超时时间-->
+        <!--read-only 是否只读-->
+        <!--&ndash;&gt;-->
+
+    <!--<tx:advice id="txAdvice" transaction-manager="transactionManager">-->
+        <!--<tx:attributes>-->
+            <!--<tx:method name="transfer" isolation="REPEATABLE_READ"-->
+                       <!--propagation="REQUIRED" read-only="false"  />-->
+            <!--<tx:method name="*" />-->
+        <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+
+    <!--&lt;!&ndash;配置aop织入&ndash;&gt;-->
+
+    <!--&lt;!&ndash;<aop:config>&ndash;&gt;-->
+        <!--&lt;!&ndash;<aop:pointcut id="txPointcut" expression="execution(* com.itcast.service.impl.*.*(..))" />&ndash;&gt;-->
+        <!--&lt;!&ndash;<aop:advisor advice-ref="txAdvice"&ndash;&gt;-->
+                     <!--&lt;!&ndash;pointcut-ref="txPointcut"/>&ndash;&gt;-->
+    <!--&lt;!&ndash;</aop:config>&ndash;&gt;-->
+
+</beans>

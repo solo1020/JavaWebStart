@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!--写sql语句-->
+<!--namespace命名空间是为了区分不同的select id语句
+方便在sqlMapConfig中有多个不同mapper内部大sql语句id冲突-->
+<mapper namespace="com.itcast.mybatis.mapper.UserMapper">
+
+    <select id="findUserById" parameterType="Integer" resultType="com.itcast.mybatis.pojo.MybatisUser" >
+        select * from mybatis_user where id = #{v}
+    </select>
+
+
+</mapper>

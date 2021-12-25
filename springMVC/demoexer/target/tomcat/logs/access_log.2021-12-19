@@ -1,0 +1,13 @@
+127.0.0.1 - - [19/Dec/2021:23:04:00 +0800] "GET / HTTP/1.1" 302 - http-bio-80-exec-1 96
+127.0.0.1 - - [19/Dec/2021:23:04:02 +0800] "GET /pages/main.jsp HTTP/1.1" 200 9682 http-bio-80-exec-2 90
+127.0.0.1 - - [19/Dec/2021:23:04:02 +0800] "GET /plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js HTTP/1.1" 200 796 http-bio-80-exec-6 33
+127.0.0.1 - - [19/Dec/2021:23:04:02 +0800] "GET /plugins/bootstrap-markdown/locale/bootstrap-markdown.zh.js HTTP/1.1" 200 927 http-bio-80-exec-7 24
+127.0.0.1 - - [19/Dec/2021:23:04:03 +0800] "GET /favicon.ico HTTP/1.1" 404 973 http-bio-80-exec-1 3
+127.0.0.1 - - [19/Dec/2021:23:04:03 +0800] "GET /plugins/datatables/dataTables.bootstrap.css HTTP/1.1" 200 8829 http-bio-80-exec-5 985
+127.0.0.1 - - [19/Dec/2021:23:04:07 +0800] "GET /show HTTP/1.1" 400 1062 http-bio-80-exec-6 20
+127.0.0.1 - - [19/Dec/2021:23:08:44 +0800] "GET / HTTP/1.1" 302 - http-bio-80-exec-1 111
+127.0.0.1 - - [19/Dec/2021:23:08:44 +0800] "GET /pages/main.jsp HTTP/1.1" 200 9682 http-bio-80-exec-2 96
+127.0.0.1 - - [19/Dec/2021:23:08:50 +0800] "GET /show HTTP/1.1" 200 116 http-bio-80-exec-3 55
+127.0.0.1 - - [19/Dec/2021:23:30:10 +0800] "GET / HTTP/1.1" 302 - http-bio-80-exec-1 76
+127.0.0.1 - - [19/Dec/2021:23:30:10 +0800] "GET /pages/main.jsp HTTP/1.1" 200 9682 http-bio-80-exec-2 64
+127.0.0.1 - - [19/Dec/2021:23:30:15 +0800] "GET /show HTTP/1.1" 200 116 http-bio-80-exec-3 469
