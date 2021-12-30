@@ -51,7 +51,34 @@
 
     <bean id="exceptionDemoService" class="com.itcast.service.impl.ExceptionDemoServiceImpl" />
 
+    <!--注册aop目标对象-->
+    <bean id="target" class="com.itcast.aop.TargetImpl"></bean>
 
+    <!--注册切面-->
+    <bean id="myAspect" class="com.itcast.aop.MyAspect" ></bean>
+
+    <!--配置织入 理解为将增强方法像一块布进行串接织入 -->
+    <!--哪些方法（切点）需要进行增强-->
+    <aop:config>
+        <!--声明切面-->
+        <aop:aspect ref="myAspect">
+            <!--配置切面的组成： 切点 + 通知-->
+            <!--<aop:before method="before" pointcut="execution(public void com.itcast.aop.TargetImpl.save() )" />-->
+
+            <!--统一配置切点表达式-->
+            <aop:pointcut id="myPointCut" expression="execution(* com.itcast.aop.*.*(..) )" />
+
+            <aop:before
+                    method="before"
+                    pointcut="execution(* com.itcast.aop.*.*(..) )" />
+
+            <aop:after-returning method="afterReturning" pointcut-ref="myPointCut" />
+            <aop:around method="around" pointcut-ref="myPointCut" />
+            <aop:after-throwing method="afterThrowing" pointcut-ref="myPointCut" />
+            <aop:after method="after" pointcut-ref="myPointCut" />
+
+        </aop:aspect>
+    </aop:config>
 
 
 

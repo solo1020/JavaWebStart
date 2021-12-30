@@ -31,6 +31,7 @@ maven tomcat:
   </configuration>
 </plugin>
 
+<test>
 ```
 
 
@@ -7688,6 +7689,7 @@ try{
 配置文件中配置织入关系  
 
 cglib实现原理：  
+
 ```
 final Target target = new Target();
         final TargetEnhance targetEnhance = new TargetEnhance();
@@ -7717,30 +7719,214 @@ final Target target = new Target();
         Target proxy = (Target) enhancer.create();
 
         proxy.save();
+
+<test>
 ```
 
 xml配置aop：
 --------
 
-1. 导入aop坐标 
+1. 导入aop坐标
+
+```
+<!--aop配置-->
+<dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.4</version>
+        </dependency>
+
+<s>
+```
+
 2. 创建目标接口和目标类  
 3. 创建切面类 内部有增强方法  
 4. 将目标类和切面类的对象创建权交给spring   
 5. 在applicationContext.xml中配置织入系统  
+
+```
+<!--注册aop目标对象-->
+    <bean id="target" class="com.itcast.aop.TargetImpl"></bean>
+
+    <!--注册切面-->
+    <bean id="myAspect" class="com.itcast.aop.MyAspect" ></bean>
+
+    <!--配置织入 理解为将增强方法像一块布进行串接织入 -->
+    <!--哪些方法（切点）需要进行增强-->
+    <aop:config>
+        <!--声明切面-->
+        <aop:aspect ref="myAspect">
+            <!--配置切面的组成： 切点 + 通知-->
+            <aop:before method="before" pointcut="execution(public void com.itcast.aop.TargetImpl.save() )" />
+        </aop:aspect>
+    </aop:config>
+```
+
+通知advice类型与配置：  
+前置通知 <aop:before>   
+后置通知 <aop:after-returning>   
+环绕通知 <aop:around>     
+异常抛出通知 <aop:throwing>    
+最终通知 <aop:after> 无论是否有异常都会执行      
+
+不同通知类型的执行顺序：  
+网上说的一堆跟我调试的都不一样 可能是和配置文件配置的先后顺序有关   
+
+```
+<aop:通知类型 method="切面类中方法名" pointcut="切点表达式"></aop:通知类型>
+```
+
 6. 测试  
 
+切点表达式：  
+execution( [修饰符/可选] 返回值类型 全路径方法名(参数) )   
 
 execution(public void com.demo.aop.Target.method())  
 execution(void com.demo.aop.Target.*(..))  
 execution(* com.demo.aop.*.*(..))  aop包下所有类的所有方法都进行增强 日志开关？  
-execution(* com.demo.aop.*.*(..)) aop包及其子包下所有类的所有方法都进行增强   
+execution(* com.demo.aop..*.*(..)) aop包及其子包下所有类的所有方法都进行增强   
 execution(* *..*.*(..)) 任意返回值 任意包下任意类的任意方法 进行增强  
+
+
 
 注解aop开发：
 ---
-1. 使用@Aspect标注切面类  
-2. 使用@通知注解(@Before @AfterReturning...)标注通知方法  
-3. 在配置文件中配置aop自动代理<aop:aspectj-autoproxy/>  
+
+1. 创建目标接口和目标类 内部有切点  
+2. 创建切面类aspect 内部有增强方法  
+3. 将目标类和切面类的创建 交给spring容器管理  
+4. 在切面类中使用注解配置织入关系 使用@Aspect标注切面类 使用@通知注解(@Before @AfterReturning...)标注通知方法    
+
+```
+package com.itcast.aopAnnotation;
+
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName TargetImpl
+ * @description:
+ * @author: isquz
+ * @time: 2021/12/23 21:04
+ */
+
+// 使用spring容器管理该类的对象创建
+@Component("target")
+public class TargetImpl implements TargetInterface {
+    @Override
+    public void save() {
+        System.out.println("save running...");
+    }
+}
+
+
+
+
+package com.itcast.aopAnnotation;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName MyAspect
+ * @description: 切面类
+ * @author: isquz
+ * @time: 2021/12/25 23:18
+ */
+
+// 使用spring容器管理该类的对象创建
+@Component("myAspect")
+@Aspect // 标注是切面
+public class MyAspect {
+
+    // 配置前置增强
+    @Before(value = "execution(* com.itcast.aopAnnotation.*.*(..) )")
+    public void before(){
+        System.out.println("before advice...");
+    }
+
+    public void afterReturning(){
+        System.out.println("afterReturning advice...");
+    }
+
+    // ProceedingJoinPoint 即连接点
+    // 是否可以用来追踪项目执行路径 或添加日志 或 统计方法耗时
+    public Object around(ProceedingJoinPoint point) throws Throwable {
+        System.out.println("around advice [before-around]...");
+        // 切点方法
+        Object proceed = point.proceed();
+//        System.out.println(point.getThis());
+        System.out.println(point.getSignature());
+        System.out.println("around advice [after-around]...");
+        return proceed;
+    }
+
+    public void afterThrowing(){
+        System.out.println("afterThrowing advice...");
+    }
+
+    public void after(){
+        System.out.println("after advice...");
+    }
+
+}
+
+
+
+
+package com.itcast.test;
+
+import com.itcast.aopAnnotation.TargetInterface;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+/**
+ * @ClassName AopTest
+ * @description: AOP测试
+ * @author: isquz
+ * @time: 2021/12/25 23:39
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext-anno.xml")
+public class AopAnnotationTest {
+
+    @Autowired
+    private TargetInterface target;
+
+    @Test
+    public void test(){
+        target.save();
+    }
+
+}
+
+
+```
+
+5. 在配置文件中开启组件扫描和aop自动代理  
+```
+<!--开启组件扫描-->
+    <context:component-scan base-package="com.itcast.aopAnnotation" />
+
+    <!--aop自动代理-->
+    <aop:aspectj-autoproxy />
+```
+
+切点表达式抽取  
+定义方法并添加@Pointcut(value = "execution(* com.itcast.aopAnnotation.*.*(..) )")注解  
+在增强方法的注解上使用@AfterReturning(value = "pointCutDef()")  
+
+
+
 
 spring JdbcTemplate
 ---
@@ -7758,6 +7944,7 @@ jdbcTemplate开发步骤：
 
 Spring-JDBC
 -----
+
 ```
 
 
@@ -9741,6 +9928,13 @@ public class MyExceptionResolver implements HandlerExceptionResolver {
     <bean class="com.itcast.resolver.MyExceptionResolver" />
 ```
 编写异常页面  
+
+
+
+ssm整合
+====
+
+
 
 
 
