@@ -14,6 +14,44 @@ maven阿里云仓库：
   <url>http://maven.aliyun.com/nexus/content/repositories/central/</url>
 </mirror>
 ```
+maven settings.xml:  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <localRepository>/Users/qz/workspace/env/maven/repository</localRepository>
+
+   <pluginGroups>
+    <!-- pluginGroup
+     | Specifies a further group identifier to use for plugin lookup.
+    <pluginGroup>com.your.plugins</pluginGroup>
+    -->
+  </pluginGroups>
+
+  <mirrors>
+
+    <mirror>  
+      <id>alimaven</id>  
+      <mirrorOf>central</mirrorOf>  
+      <name>aliyun maven</name>  
+      <url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
+    </mirror>  
+  
+    <mirror>  
+      <id>ui</id>  
+      <mirrorOf>central</mirrorOf>  
+      <name>Human Readable Name for this Mirror.</name>  
+      <url>http://uk.maven.org/maven2/</url>  
+    </mirror>
+  </mirrors>
+
+</settings>
+
+
+
+```
 
 idea run configuration中添加maven name:tomcat7 , command line 设置为tomat7:run  
 
@@ -32,6 +70,23 @@ maven tomcat:
 </plugin>
 
 <test>
+```
+
+git忽略文件：  
+```
+*.iml
+.idea/*
+.idea
+target/*
+/target/
+**/target/
+.DS_Store
+out/
+/out/
+.gitignore
+# android
+.gradle
+build/
 ```
 
 
