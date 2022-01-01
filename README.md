@@ -251,6 +251,32 @@ tomcat 启动后首页404：
 
 最完整配置：  
 ```
+
+<dependencies>
+        <!--servlet 3.1 规范-->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--jsp坐标-->
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+            <version>2.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--spring 坐标-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.1.9.RELEASE</version>
+        </dependency>
+
+    </dependencies>
+
+    
 <!--构建-->
     <build>
         <!--插件 tomcat7 -->

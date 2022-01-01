@@ -1,8 +1,0 @@
-/.idea
-WebProject/HttpResponse/out
-WebProject/JavaEE_JDBC/out
-WebProject/StartWebApp/out
-# /out
-*.DS_Store
-build/
-.idea/
