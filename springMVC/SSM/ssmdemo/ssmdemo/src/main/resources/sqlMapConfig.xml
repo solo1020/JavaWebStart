@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!--加载jdbc.properties配置文件-->
+    <properties resource="jdbc.properties" />
+
+
+    <!--定义别名-->
+    <typeAliases>
+        <!--可以手动定义别名-->
+        <typeAlias type="com.itcast.domain.Account"
+                   alias="account" ></typeAlias>
+        <!--也可以指定包下所有的实体类都定义别名 别名为类名或类名首字母小写-->
+        <!--<package name="com.itcast.domain"></package>-->
+    </typeAliases>
+    
+    <!--环境-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}" ></property>
+                <property name="url" value="${jdbc.url}" ></property>
+                <property name="username" value="${jdbc.username}" ></property>
+                <property name="password" value="${jdbc.password}" ></property>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--加载映射-->
+    <mappers>
+        <!--<mapper resource="com/itcast/mapper/AccountMapper.xml" ></mapper>-->
+
+        <package name="com.itcast.mapper" ></package>
+
+    </mappers>
+    
+    
+    
+</configuration>
