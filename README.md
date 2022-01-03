@@ -53,7 +53,7 @@ maven settings.xml:
 
 ```
 
-idea run configuration中添加maven name:tomcat7 , command line 设置为tomat7:run  
+idea run configuration中添加maven name:tomcat7 , command line 设置为tomcat7:run -f pom.xml  
 
 maven tomcat:
 ```
@@ -10016,10 +10016,7 @@ ssm整合
 ====
 
 
-docker mysql :
----
 
-sudo docker run -itd -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:5.7 /bin/bash
 
 
 
