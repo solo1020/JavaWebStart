@@ -10015,7 +10015,14 @@ public class MyExceptionResolver implements HandlerExceptionResolver {
 ssm整合
 ====
 
-
+创建ssm数据库和account表：  
+```
+create table account(
+    id int primary key auto_increment,
+    name varchar(100),
+    money double(7,2)
+);
+```
 
 
 

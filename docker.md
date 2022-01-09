@@ -51,3 +51,39 @@ use mysql;
 grant all privileges on *.* to root@'%' identified by '密码' with grant option;  
 flush privileges;   
 
+grant all privileges on *.* to root@'%' identified by 'admin' with grant option;
+
+
+create table account(
+    id int primary key auto_increment,
+    name varchar(100),
+    money double(7,2)
+);
+
+win10 使用WSL2 docker 更改存储目录：  
+------
+1. 首先查看当前wsl:  
+```
+wsl --list -v
+带* 号标记的表示wsl默认使用的是哪个vm  
+docker-desktop 一般是docker本身程序的存储 不占用太多空间  
+docker-desktop-data 是镜像等占用较大存储的内容 所以改到非C盘  
+
+```
+2. 关闭docker  
+3. 导出原有docker的data数据
+```
+wsl --export docker-desktop-data "D:\Docker\wsl\data\docker-desktop-data.tar"
+```
+4. 取消注册dockers数据
+```
+wsl --unregister docker-desktop-data
+```
+5. 重新将第3步导出的data数据导入
+第一个路径是存储的文件夹  第二个是原来导出的data包文件  
+```
+wsl --import docker-desktop-data "D:\Docker\wsl\data" "D:\Docker\wsl\data\docker-desktop-data.tar" --version 2
+```
+
+
+默认存储路径是C:\Users\用户\AppData\Local\Docker\wsl\data下面存储的ex4.vhdx文件  
