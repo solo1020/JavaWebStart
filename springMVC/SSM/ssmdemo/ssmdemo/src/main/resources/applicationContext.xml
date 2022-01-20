@@ -23,4 +23,51 @@ http://www.springframework.org/schema/context/spring-context.xsd">
     <!--<bean id="accountService" class="com.itcast.service.impl.AccountServiceImpl">-->
     <!--</bean>-->
 
+    <!--加载properties配置文件-->
+    <context:property-placeholder location="classpath:jdbc.properties" ></context:property-placeholder>
+
+    <!--配置数据源-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" >
+        <property name="driverClass" value="${jdbc.driver}" />
+        <property name="jdbcUrl" value="${jdbc.url}" ></property>
+        <property name="user" value="${jdbc.username}" ></property>
+        <property name="password" value="${jdbc.password}" ></property>
+    </bean>
+
+    <!--配置mybatis session factory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" >
+        <property name="dataSource" ref="dataSource" />
+        <!--加载mybatis核心文件-->
+        <property name="configLocation" value="classpath:sqlMapConfig-spring.xml" />
+
+    </bean>
+
+    <!--扫描mapper所在包-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" >
+        <property name="basePackage" value="com.itcast.mapper" />
+    </bean>
+
+    <!--声明式事务控制-->
+    <!--平台事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+
+    </bean>
+
+    <!--配置事务增强-->
+    <tx:advice id="transactionInterceptor" >
+        <tx:attributes>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--配置事务aop织入增强-->
+    <aop:config>
+        <aop:advisor advice-ref="transactionInterceptor"
+                     pointcut="execution(* com.itcast.service.impl.*.*(..))" ></aop:advisor>
+    </aop:config>
+
+
+
+
 </beans>
