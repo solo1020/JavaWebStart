@@ -10479,10 +10479,868 @@ IOC控制反转：
 用于减少代码耦合  
 耦合有如下分类：  
 
+IOC 常用注解分析：  
+---
+@Configuraion：   
+作用于类上 替代applicationContext.xml 本质就是@Component注解 此注解修饰的 将类的对象存入IOC 容器   
+如果创建IOC容器时传入的是包扫描路径 则配置类必须有@Configuration注解 如果传入的是字节码 则可以不需要通过@Configuration注解  
+
+
+@ComponentScan：  
+默认使用类名首字母小写进行beanName 获取  
+不指定路径或类class 则以当前类的路径进行扫描
+也可以指定扫描包或特定类所在的包 @ComponentScan(basePackages = {"com.itcast.service.impl", "com.itcast.utils"})  
+@ComponentScan(basePackageClasses = {UserService.class})  
+还可以自定义BeanName生成器nameGenerator    
+指定包扫描规则resourcePattern 默认为
+```
+*/*.class 表示查找当前的子包里面的任意类 不包括当前包里面的类
+
+**/*.class 表示递归查找当前包及子包下所有类
+```
+自定义Filter扫描  
+```
+// DistrictTypeFilter
+
+package com.typefilter;
+
+import com.itcast.annotation.District;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.PathMatcher;
+import java.io.IOException;
+import java.util.Properties;
+
+
+/**
+ * @ClassName DistrictTypeFilter
+ * @description: 自定义扫描规则过滤器 配合自定义的注解@District进行使用
+ * @author: isquz
+ * @time: 2022/2/21 20:45
+ */
+public class DistrictTypeFilter extends AbstractTypeHierarchyTraversingFilter {
+
+    // 定义路径校验的对象
+    private PathMatcher pathMatcher;
+
+    // 定义区域district名称 此处应该通过读取配置文件获取
+    // 不能使用@Value 注解读取properties配置文件的内容
+    // 因为负责填充属性值的InstantiationAwareBeanPostProcessor 与TypeFilter实例创建没有任何关系
+    private String districtName;
+
+
+
+    /**
+     * @description:
+     * @param: considerInherited    不考虑基类的信息
+     * @param: considerInterfaces   不考虑接口的信息
+     * @return:
+     * @author: isquz
+     * @date: 2022/2/21 20:57
+     */
+    protected DistrictTypeFilter() {
+//        super(considerInherited, considerInterfaces);
+        super(false,false);
+
+        // 借助spring默认Resource通配符路径方式
+        pathMatcher = new AntPathMatcher();
+
+        // 读取配置文件
+        try {
+            Properties properties = PropertiesLoaderUtils.loadAllProperties("district.properties");
+            districtName = properties.getProperty("common.district.name");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * @description: 本类将注册为Exclude 返回true表示拒绝注册
+     * @param: className
+     * @return: boolean
+     * @author: isquz
+     * @date: 2022/2/21 20:56
+     */
+    @Override
+    protected boolean matchClassName(String className) {
+//        return super.matchClassName(className);
+
+        try {
+            // 判断是否在指定包下的类 只处理与区域district相关的业务类
+            if(!isPotentialPackageClass(className)){
+                // 不符合路径规则
+                System.out.println("not mathch specific package: " + className);
+                return false;
+            }
+            // 判断当前区域和配置文件中的区域是否一致
+            Class clazz = ClassUtils.forName(className, DistrictTypeFilter.class.getClassLoader());
+
+            // 获取District注解
+            District district = (District) clazz.getAnnotation(District.class);
+
+            if(district == null){
+                System.out.println("@District not defined");
+                return false;
+            }
+            String districtValue = district.value();
+            System.out.println("class: + " + className + " now @District value = " + districtValue);
+
+            return (!districtName.equalsIgnoreCase(districtValue));
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    // 定义 指定的package下的类 需要进行处理
+    private static final String PATTERN_STANDARD =
+            ClassUtils.convertClassNameToResourcePath("com.itcast.service.**");
+
+
+
+    /**
+     * @description: 本类逻辑中可以处理的类
+     * @param: className
+     * @return: boolean
+     * @author: isquz
+     * @date: 2022/2/21 22:09
+     */  
+    private boolean isPotentialPackageClass(String className){
+        String path = ClassUtils.convertClassNameToResourcePath(className);
+        System.out.println("[class] " + className + " path: " + path);
+        return pathMatcher.match(PATTERN_STANDARD, path);
+    }
+
+
+
+}
+
+
+// SpringConfiguration
+
+package config;
+
+import com.typefilter.DistrictTypeFilter;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+
+/**
+ * @ClassName SpringConfiguration
+ * @description:
+ * @author: isquz
+ * @time: 2022/2/20 13:35
+ */
+
+@Configuration
+@ComponentScan(value = "com.itcast",
+        excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, classes = DistrictTypeFilter.class))
+public class SpringConfiguration {
+}
+
+```
+
+@Bean注解使用：  
+定义在方法上时 是 将方法的返回值存入IOC容器  
+autowired属性: 允许根据类型匹配bean  
+autowireCandidate属性：默认true表示支持当前bean被其他bean使用@Autowired进行自动注入 false 表示不支持@Autowired进行使用 但是可以通过@Resource进行引用 其中的name需要与IOC容器中的bean name一致  
+```
+@Configuration
+public class SpringConfiguration {
+
+    // name 需要与 @Bean存入IOC容器的
+    @Resource(name = "dataSource")
+    private DataSource dataSource;
+
+    /**
+     * @description:  @Bean 注解 定义在方法上时 是 将方法的返回值存入IOC容器
+     * @param:
+     * @return: javax.sql.DataSource
+     * @author: isquz
+     * @date: 2022/2/22 23:36
+     */
+    @Bean(value = "dataSource", autowireCandidate = false)
+    public DataSource createDataSource(){
+        return new DriverManagerDataSource();
+    }
+
+    @Bean("jdbcTemplate")
+    public JdbcTemplate jdbcTemplate(){
+        return new JdbcTemplate(dataSource);
+    }
+}
+``` 
+initMethod() 在@Bean修饰的方法中 在返回要存入IOC容器的对象之前 可以调用该initMethod()   
+destroyMethod() 一般用于清理如jdbc连接等资源  
+
+@Import注解：  
+用于类上 通常和注解驱动的配置类一起使用 作用是引入其他的配置类  
+指定了此注解后 被引入的类可以不再使用@Configuration和@Component注解  
+spring扫描机制 必须先保证类被扫描才会继续扫描里面的方法是否被注解   
+```
+@Configuration
+@Import(JdbcConfig.class)
+public class SpringConfiguration {
+
+}
+```
+
+import注解高级使用：  
+ImportSelector和 ImportBeanDefinitionRegistrar  
+自己写的类可以通过@Component @Service @Repository @Controller修饰注入bean   
+在类很多时 如几百几千时 每个类上使用@Import或@Bean进行注入会很繁琐 
+此时可以采用自定义ImportSelector和ImportBeanDefinitionRegistrar实现  
+
+使用ImportSelector:  
+```
+package importselector;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ImportSelector;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.filter.AspectJTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Consumer;
+
+/**
+ * @ClassName CustomeImportSelector
+ * @description:
+ * @author: isquz
+ * @time: 2022/3/4
+ */
+public class CustomeImportSelector implements ImportSelector {
+
+    // aspect表达式
+    private String expression;
+
+    // 配置文件指定包名
+    private String customePackage;
+
+    // 默认构造器用于读取配置文件 给表达式赋值
+    public CustomeImportSelector(){
+        try {
+            Properties properties = PropertiesLoaderUtils.loadAllProperties("customerimport.properties");
+            expression = properties.getProperty("custome.importselector.expression");
+            customePackage = properties.getProperty("custome.importselector.package");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * @description: 实现要导入类的字节码
+     * 导入的过滤规则 TypeFilter aspect表达式
+     *
+     * @param: annotationMetadata
+     * @return: java.lang.String[]
+     * @author: isquz
+     * @date: 2022/3/4 0:42
+     */
+    public String[] selectImports(AnnotationMetadata annotationMetadata) {
+        // 定义扫描包的名称
+        List<String> basePackages = null;
+        // 判断@Import注解的类有没有@ComponentScan注解
+        if(annotationMetadata.hasAnnotation(ComponentScan.class.getName())){
+            // 取出@ComponentScan属性
+            Map<String, Object> annotationAttributes = annotationMetadata.getAnnotationAttributes(ComponentScan.class.getName());
+            // 取出basePackage
+            basePackages = new ArrayList<>(Arrays.asList((String[])annotationAttributes.get("basePackages")));
+        }
+        // 判断是否有此注解 是否指定了包扫描的信息
+        // 如果没有添加@ComponentScan注解 basepacakges为null 如果设置了@CompoentScan 但是不设置basePackages属性值 则默认的basePackages为空数组
+        if(basePackages == null || basePackages.size() == 0){
+            String basePackage = null;
+            try {
+                // 取出import注解所在的类的包名
+                basePackage = Class.forName(annotationMetadata.getClassName()).getPackage().getName();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            // 将包名填充到basePackages
+            basePackages = new ArrayList<>();
+            basePackages.add(basePackage);
+        }
+
+        // 判断是否配置文件中设置了import的包名
+        if(!StringUtils.isEmpty(customePackage)){
+            basePackages.add(customePackage);
+        }
+
+        // 创建类路径扫描器  false 不使用默认过滤规则
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+        // 创建类型过滤器 使用aspect 表达式过滤器
+        TypeFilter typeFilter = new AspectJTypeFilter(expression, CustomeImportSelector.class.getClassLoader());
+        // 将类型过滤器添加到扫描器中
+        scanner.addIncludeFilter(typeFilter);
+
+        // 定义要扫描类的全限定类名集合
+        final Set<String> classes = new HashSet<String>();
+        // 填充集合
+        for(String basePackage: basePackages){
+            scanner.findCandidateComponents(basePackage).forEach(beanDefinition -> classes.add(beanDefinition.getBeanClassName()));
+
+//            scanner.findCandidateComponents(basePackage).forEach(new Consumer<BeanDefinition>() {
+//                @Override
+//                public void accept(BeanDefinition beanDefinition) {
+//                    classes.add(beanDefinition.getBeanClassName());
+//                }
+//            });
+        }
+
+        // 按照方法返回值要求返还全限定类名的数组
+        return classes.toArray(new String[classes.size()] );
+    }
+}
+
+```
+
+使用ImportBeanDefinitionRegister:  
+```
+package register;
+
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.filter.AspectJTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * @ClassName CustomeImportBeanDefinitionRegister
+ * @description: 自定义bean定义注册器
+ * @author: isquz
+ * @time: 2022/3/8
+ */
+
+public class CustomeImportBeanDefinitionRegister implements ImportBeanDefinitionRegistrar {
+
+    // 定义表达式
+    private String expression;
+
+    // 使用者自定义配置文件中的包路径
+    private String customePackage;
+
+
+    public CustomeImportBeanDefinitionRegister(){
+        try {
+            //
+            Properties properties = PropertiesLoaderUtils.loadAllProperties("customeimport.properties");
+            expression = properties.getProperty("custome.importselector.expression");
+            customePackage = properties.getProperty("custome.importselector.package");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @description: 实现注册bean的功能 通过扫描指定包实现
+     * @param: annotationMetadata
+     * @param: beanDefinitionRegistry
+     * @return: void
+     * @author: isquz
+     * @date: 2022/3/8 22:38
+     */
+    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
+        // 定义扫描包的集合
+        List<String> basePackageList = null;
+        // 判断是否有@ComponentScan注解
+        if(annotationMetadata.hasAnnotation(ComponentScan.class.getName())){
+            // 取出注解的属性
+            Map<String, Object> annotationAttributes = annotationMetadata.getAnnotationAttributes(ComponentScan.class.getName());
+            // 获取属性为basepackage或value的值
+            basePackageList = new ArrayList<String>(Arrays.asList((String[])annotationAttributes.get("basePackages")));
+        }
+        // 判断是否有此注解 没有 则basepackage为null
+        // 有此注解 但是没有指定basePackaghe或value 那么 @ComponentScan 中的basepackages 的size为0
+        if(basePackageList == null || basePackageList.size() == 0){
+            // 用于记录@Import注解所在的类的包
+            String basepackage = null;
+            try {
+                // 取出@Import注解类所在的包
+                basepackage = Class.forName(annotationMetadata.getClassName()).getPackage().getName();
+
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            // 添加到扫描包的集合basePackageList中
+            basePackageList = new ArrayList<String>();
+            basePackageList.add(basepackage);
+        }
+
+        //判断用户是否配置了扫描包路径
+        if(!StringUtils.isEmpty(customePackage)){
+            basePackageList.add(customePackage);
+        }
+
+        // 创建类路径扫描器
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry,false);
+        // 创建类型过滤器
+        TypeFilter typeFilter = new AspectJTypeFilter(expression, CustomeImportBeanDefinitionRegister.class.getClassLoader());
+        // 类型过滤器添加到扫描器中
+        scanner.addIncludeFilter(typeFilter);
+        // 扫描指定包
+        scanner.scan(basePackageList.toArray(new String[basePackageList.size()]));
+        
+
+
+    }
+}
+
+```
+
+springConfiguration注解类使用：  
+```
+@Configuration
+@ComponentScan(basePackages = "com.itcast.service")
+@Import(CustomeImportSelector.class)
+// @Import(CustomeImportBeanDefinitionRegister.class)
+public class SpringConfiguration {
+
+}
+```
+
+###### 获取容器中所有bean的唯一标识 ac.getBeanDefinitionNames()：
+
+@PropertySource注解：  
+value属性设置为classpath:配置文件路径  
+```
+@Configuration
+@Import(JdbcConfig.class)
+@PropertySource("classpath:jdbc.properties")
+public class SpringConfiguration {
+}
+
+```
+
+yaml文件使用：  
+```
+# yet another markup language
+# 同一级的顶头写 描述从属关系 另起一行 通常空两格书写 同一级别 空格数相同即可
+# 键和值之间用 :和空格分隔
+jdbc:
+  driver: com.mysql.jdbc.Driver
+  url: jdbc:mysql://localhost:3306/ssm
+  username: root
+  passwprd: admin
+
+redis:
+  host:
+  port:
+```
+
+定义Yaml解析器：  
+```
+public class YamlPropertySourceFactory implements PropertySourceFactory {
+    public PropertySource<?> createPropertySource(String s, EncodedResource encodedResource) throws IOException {
+        // 创建yaml解析器
+        YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+        // 设置资源内容
+        factoryBean.setResources(encodedResource.getResource());
+        // 将资源解析成properties文件
+        Properties properties = factoryBean.getObject();
+
+        // 返回一个propertysource对象
+        return (s != null ? new PropertiesPropertySource(s, properties) : new PropertiesPropertySource( encodedResource.getResource().getFilename(), properties));
+    }
+}
+
+// 
+@Configuration
+@PropertySource(value = "classpath:jdbc.yml", factory = YamlPropertySourceFactory.class)
+@Import(JdbcConfig.class)
+public class SpringConfiguration {
+}
+
+public class SpringPropertySourceFactoryTest {
+
+    public static void main(String[] args) throws SQLException {
+        AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext("config");
+        DataSource dataSource = (DataSource) ac.getBean("dataSource");
+        Connection connection = dataSource.getConnection();
+        connection.close();
+    }
+}
+
+```
+
+@DependsOn 设定特定注入条件注解   
+```
+@Component
+@DependsOn("eventZListener")
+public class EventSource {
+    public EventSource(){
+        System.out.println("create EventSource.");
+    }
+}
+
+@Component
+public class EventZListener {
+
+    public EventZListener(){
+        System.out.println("create EventListener");
+    }
+}
+
+
+@Configuration
+@ComponentScan("com.itcast")
+public class SpringConfiguration {
+}
+```
+
+@Lazy使用 懒汉单例：  
+默认单例bean对象是跟随容器的生命周期 使用此注解后单例bean变成第一次使用时才创建, 且只创建一次    
+```
+@Component
+@Lazy
+public class LogUtil {
+
+    public LogUtil(){
+        System.out.println("LogUtil object created");
+    }
+
+    public void printLog(){
+        System.out.println("pring log...");
+    }
+}
+
+
+public class SpringLazySingletenTest {
+
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext("config");
+        LogUtil logUtil = ac.getBean("logUtil", LogUtil.class);
+        logUtil.printLog();
+
+        LogUtil logUtil2 = ac.getBean("logUtil", LogUtil.class);
+        System.out.println(logUtil == logUtil2);
+
+    }
+}
+```
+
+@Conditional注解使用：  
+```
+package config;
+
+import com.itcast.condition.LinuxCondition;
+import com.itcast.condition.WindowsCondition;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import javax.sql.DataSource;
+
+/**
+ * @ClassName JdbcConfig
+ * @description: 数据库连接配置
+ * @author: isquz
+ * @time: 2022/3/19
+ */
+
+public class JdbcConfig {
+
+    @Value("${jdbc.driver}")
+    private String driver;
+
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Value("${jdbc.username}")
+    private String username;
+
+    @Value("${jdbc.password}")
+    private String password;
+
+    @Bean("dataSource")
+    @Conditional(WindowsCondition.class)
+    public DataSource createWindowsDataSource(){
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(driver);
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        System.out.println("windows url: " + url);
+
+        return dataSource;
+    }
+
+    @Bean("dataSource")
+    @Conditional(LinuxCondition.class)
+    public DataSource createLinuxDataSource(
+            @Value("${linux.driver}") String linuxDriver,
+            @Value("${linux.url}") String linuxUrl,
+            @Value("${linux.username}") String linuxUsername,
+            @Value("${linux.password}") String linuxPassword){
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(linuxDriver);
+        dataSource.setUrl(linuxUrl);
+        dataSource.setUsername(linuxUsername);
+        dataSource.setPassword(linuxPassword);
+
+        System.out.println("linux url: " + linuxUrl);
+
+        return dataSource;
+    }
+
+}
 
 
 
 
+package com.itcast.condition;
+
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.MethodMetadata;
+
+import java.util.Map;
+
+/**
+ * @ClassName WindowsCondition
+ * @description:
+ * @author: isquz
+ * @time: 2022/3/20
+ */
+public class WindowsCondition implements Condition {
+
+    /**
+     * @description: 是否注册到ioc容器的核心方法
+     * @param: context
+     * @param: metadata
+     * @return: boolean true表示注册到ioc容器 否则不注册
+     * @author: isquz
+     * @date: 2022/3/20 18:32
+     */
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        // 获取ioc使用的BeanFactory对象
+        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+        // 获取类加载器
+        ClassLoader classLoader = context.getClassLoader();
+        // 获取当前环境信息 当前系统是Windows 还是Linux
+        Environment environment = context.getEnvironment();
+
+//        if(environment instanceof StandardEnvironment){
+//            StandardEnvironment standardEnvironment = (StandardEnvironment) environment;
+//            Map<String, Object> map = standardEnvironment.getSystemProperties();
+//            for(Map.Entry<String, Object> me : map.entrySet()){
+//                System.out.println(me.getKey() + " : " + me.getValue());
+//            }
+//        }
+
+        // 获取bean定义信息的注册器
+        BeanDefinitionRegistry registry = context.getRegistry();
+        // 获取当前系统名称
+        String os = environment.getProperty("os.name");
+        // 判断是否包含Windows规则
+        if(os.contains("Windows")){
+            return true;
+        }
+        return false;
+    }
+}
+
+
+
+package com.itcast.condition;
+
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.MethodMetadata;
+
+import java.util.Map;
+
+/**
+ * @ClassName LinuxCondition
+ * @description:
+ * @author: isquz
+ * @time: 2022/3/20
+ */
+public class LinuxCondition implements Condition {
+    /**
+     * Determine if the condition matches.
+     *
+     * @param context  the condition context
+     * @param metadata metadata of the {@link AnnotationMetadata class}
+     *                 or {@link MethodMetadata method} being checked
+     * @return {@code true} if the condition matches and the component can be registered,
+     * or {@code false} to veto the annotated component's registration
+     */
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+
+        // 获取当前环境信息 当前系统是Windows 还是Linux
+        Environment environment = context.getEnvironment();
+
+        // 获取当前系统名称
+        String os = environment.getProperty("os.name");
+        // 判断是否包含Windows规则
+        if(os.contains("Linux")){
+            return true;
+        }
+        return false;
+    }
+}
+
+```
+
+@Profile注解：  
+spring自动实现的@Condition
+```
+package cofig;
+
+import com.alibaba.druid.pool.DruidDataSource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
+
+import javax.sql.DataSource;
+
+/**
+ * @ClassName JdbcConfig
+ * @description:
+ * @author: isquz
+ * @time: 2022/3/20
+ */
+public class JdbcConfig {
+
+    @Value("${jdbc.driver}")
+    private String driver;
+
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Value("${jdbc.username}")
+    private String username;
+
+    @Value("${jdbc.password}")
+    private String password;
+
+    /**
+     * @description:  开发环境的数据源
+     * @param:
+     * @return: com.alibaba.druid.pool.DruidDataSource
+     * @author: isquz
+     * @date: 2022/3/20 20:31
+     */
+    @Bean("dataSource")
+    @Profile("dev")
+    public DruidDataSource createDevDataSource(){
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName(driver);
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        // 开发环境的最大连接数：5
+        dataSource.setMaxActive(5);
+
+        return dataSource;
+    }
+
+    /**
+     * @description:  测试环境的数据源
+     * @param:
+     * @return: com.alibaba.druid.pool.DruidDataSource
+     * @author: isquz
+     * @date: 2022/3/20 20:31
+     */
+    @Bean("dataSource")
+    @Profile("test")
+    public DruidDataSource createTestDataSource(){
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName(driver);
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        // 测试环境的最大连接数：5
+        dataSource.setMaxActive(50);
+
+        return dataSource;
+    }
+
+    /**
+     * @description:  生产环境的数据源
+     * @param:
+     * @return: com.alibaba.druid.pool.DruidDataSource
+     * @author: isquz
+     * @date: 2022/3/20 20:31
+     */
+    @Bean("dataSource")
+    @Profile("pro")
+    public DruidDataSource createProDataSource(){
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName(driver);
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        // 生产环境的最大连接数：5
+        dataSource.setMaxActive(150);
+
+        return dataSource;
+    }
+}
+
+
+
+@Configuration
+@Import(JdbcConfig.class)
+@PropertySource("classpath:jdbc.properties")
+public class SpringConfiguration {
+}
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = SpringConfiguration.class)
+@ActiveProfiles("pro")
+public class SpringProfileTest {
+
+    @Autowired
+    private DruidDataSource druidDataSource;
+
+    @Test
+    public void testDataSource(){
+        System.out.println(druidDataSource.getMaxActive());
+    }
+}
+```
+
+
+@Component和三个衍生注解  
 
 
 

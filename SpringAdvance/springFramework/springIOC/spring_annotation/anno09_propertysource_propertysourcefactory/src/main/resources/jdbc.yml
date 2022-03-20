@@ -1,0 +1,12 @@
+# yet another markup language
+# 同一级的顶头写 描述从属关系 另起一行 通常空两格书写 同一级别 空格数相同即可
+# 键和值之间用 :和空格分隔
+jdbc:
+  driver: com.mysql.jdbc.Driver
+  url: jdbc:mysql://localhost:3306/ssm
+  username: root
+  passwprd: admin
+
+redis:
+  host:
+  port:
