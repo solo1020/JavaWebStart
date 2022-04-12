@@ -11341,7 +11341,271 @@ public class SpringProfileTest {
 
 
 @Component和三个衍生注解  
+包括Controller Service Repository 其中Repository一般为dao数据持久层的 业务层使用Service    
 
+使用@Autowired允许自动注入 当注入了多个相同类的对象时 按照@Autowired修饰的对象名相与@Bean注入的id名进行匹配    
+
+但是在Conditional注解修饰的不同bean时  可能存在同名bean情况 此时需要使用@Qualifier注解进行区分 value属性唯一区分bean的标识    
+
+@Scope 改变bean的作用范围：  
+
+@Resource:  
+作用是找到依赖的组件注入到应用来，它利用了JNDI（Java Naming and Directory Interface Java命名目录接口 J2EE规范之一）技术查找所需的资源。
+默认情况下，即所有属性都不指定，它默认按照byType的方式装配bean对象。如果指定了name，没有指定type，则采用byName。如果没有指定name，而是指定了type，则按照byType装配bean对象。当byName和byType都指定了，两个都会校验，有任何一个不符合条件就会报错。    
+
+@Inject:  
+也是用于建立依赖关系的。和@Resource和@Autowired的作用是一样  
+但是他们之前也有区别：
+@Autowired：来源于spring框架自身。
+默认是byType自动装配，当配合了@Qualifier注解之后，由@Qualifier实现byName装配。它有一个required属性，用于指定是否必须注入成功。  
+@Resource：来源于JSR-250规范。
+在没有指定name属性时是byType自动装配，当指定了name属性之后，采用byName方式自动装配。  
+@Inject：来源于JSR-330规范。（JSR330是Jcp给出的官方标准反向依赖注入规范。）
+ 它不支持任何属性，但是可以配合@Qualifier或者@Primary注解使用。
+同时，它默认是采用byType装配，当指定了JSR-330规范中的@Named注解之后，变成byName装配。  
+
+@Primary 用于指定bean的注入优先级。被@Primary修饰的bean对象优先注入    
+
+@PostConstruct 用于指定bean对象的初始化方法   
+
+@PreDestroy 用于指定bean对象的销毁方法。    
+
+IOC核心：
+===
+
+
+Spring AOP
+=====
+
+
+SpringBoot
+====
+运行时自动配置  
+入门demo：  
+起步依赖spring-boot-starter-parent spring-boot-starter-web   
+    
+spring-boot 配置文件：  
+优先级application.properties > application.yml > application.yaml  
+
+读取配置文件方式：  
+@Value Environment  @ConfigurationProperties  
+```
+// application.yml 配置文件
+@Value("${person.name}")
+private String name2;
+
+@Value("${address[0]}")
+private String address1;
+
+
+appliation.yml:
+server:
+  port: 8082
+
+name: abc
+# 对象
+person:
+  name: zhangsan
+  age: 20
+  param: ${name}
+
+persion2: {name: zhangsan, age: 20}
+
+# 数组
+address:
+  - beijing
+  - shanghai
+
+address2: [beijing, shanghai]
+
+msg1: 'hello \n world'    # 不识别转义字符 即 不换行直接输出\n字符
+msg2: "hello \n world"    # 识别转义字符 进行换行
+
+
+//contorller使用：
+@RestController
+public class HelloController {
+
+    @Value("${name}")
+    private String name;
+
+    @Value("${person.name}")
+    private String name2;
+
+    @Value("${person.age}")
+    private int age;
+
+//    @Value("${person.address}")
+    private String address;
+
+    @Value("${address[0]}")
+    private String address1;
+
+    @Autowired
+    private Environment env;
+
+    @Autowired
+    private Person person;
+
+    @RequestMapping("/hello2")
+    public String hello2(){
+        System.out.println(name);
+        System.out.println(name2);
+        System.out.println(age);
+//        System.out.println(address);
+        System.out.println(address1);
+        System.out.println("-----------------------");
+
+        System.out.println("env: " + env);
+        System.out.println(env.getProperty("person.age"));
+        System.out.println(env.getProperty("address[0]"));
+
+        System.out.println("-----------------------");
+        System.out.println(person);
+
+        String[] addressList = person.getAddress();
+        for(String s: addressList){
+            System.out.println(s);
+        }
+        return "hello SpringBoot 222";
+    }
+
+
+// component对象关联配置文件
+@Component
+//前缀与yml文件中对象属性的key的名称一致
+@ConfigurationProperties(prefix = "person")
+public class Person {
+
+    private String name;
+    private int age;
+    private String[] address;
+
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+
+    public String[] getAddress() {
+        return address;
+    }
+
+    public void setAddress(String[] address) {
+        this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+
+
+profile配置：  
+用来动态切换不同的环境  
+配置方式：
+* 直接通过不同的applicaion-dev.properties/yml.. 和application-test.properties文件区分不同环境的配置
+* 通过在同一个yml文件中不同的代码块区分：  
+```
+
+
+---
+server:
+  port: 8081
+spring:
+  profiles: dev
+---
+
+server:
+  port: 8082
+
+spring:
+  profiles: test
+---
+
+server:
+  port: 8083
+
+spring:
+  profiles: pro
+
+---
+spring:
+  profiles:
+    active: pro
+```
+
+激活方式：  
+* 配置文件 spring.profiles.active 指定环境dev/test/pro  
+* 虚拟机参数：-Dspring.profiles.active=test
+* 命令行参数 --spring.profiles.active=test
+
+内部配置文件加载顺序：  
+1. 当前项目/config目录下  
+2. 当前项目根目录  
+3. classpath下的config目录  
+4. classpath 根目录  
+按照以上前后顺序优先级加载  
+
+外部配置文件加载顺序：  
+可以通过命令行参数指定 也可以在命令行直接设置配置文件的路径：--spring.config.location=e://config//application.properties   
+或者application.properties配置文件如果和jar包在同一目录 也可以自动被识别  
+或者jar包目录下的config文件夹里面添加appliation.properties/yml配置文件 也可以自动识别  
+
+springboot整合junit
+----
+引入starter-test依赖  
+添加测试注解@RunWith(SpringRunner.class) @SpringBootTest(classes=启动类.class)   
+
+springboot整合redis
+----
+引入redis起步依赖 
+配置redis相关属性  
+注入RedisTemplate模板  
+
+```
+@Autowired
+    private RedisTemplate redisTemplate;
+
+    @Test
+    public void testSet(){
+        // 存入数据
+        redisTemplate.boundValueOps("name").set("zhangsan");
+    }
+
+    @Test
+    public void testGet(){
+        Object name = redisTemplate.boundValueOps("name").get();
+        System.out.println("get: " + name);
+    }
+
+配置文件：  
+spring:
+  redis:
+    host: localhost
+    password: Admin_test
+    port: 6379
+    timeout: 100
+```
+
+springboot整合mybatis:
+----
 
 
 

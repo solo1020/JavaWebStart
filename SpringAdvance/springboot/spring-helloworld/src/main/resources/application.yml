@@ -1,0 +1,61 @@
+#server:
+#  port: 8082
+
+#spring:
+#  profiles:
+#    active: dev
+
+name: abc
+# 对象
+person:
+  name: zhangsan
+  age: 20
+  param: ${name}
+  address:
+    - beijing
+    - shanghai
+
+
+
+person2: {name: lisi, age: 203}
+
+# 数组
+address:
+  - beijing
+  - shanghai
+
+address2: [beijing, shanghai]
+
+msg1: 'hello \n world'    # 不识别转义字符 即 不换行直接输出\n字符
+msg2: "hello \n world"    # 识别转义字符 进行换行
+
+---
+server:
+  port: 8081
+spring:
+  profiles: dev
+---
+
+server:
+  port: 8082
+
+spring:
+  profiles: test
+---
+
+server:
+  port: 8083
+
+spring:
+  profiles: pro
+
+---
+spring:
+  profiles:
+    active: dev
+
+  redis:
+    host: localhost
+    password: Admin_test
+    port: 6379
+    timeout: 100

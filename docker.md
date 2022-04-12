@@ -87,3 +87,48 @@ wsl --import docker-desktop-data "D:\Docker\wsl\data" "D:\Docker\wsl\data\docker
 
 
 默认存储路径是C:\Users\用户\AppData\Local\Docker\wsl\data下面存储的ex4.vhdx文件  
+
+docker redis
+---
+docker search redis  
+
+拉取redis ： docker pull redis:3.2.1  
+
+第一次运行：
+docker run -p 6379:6379 --name redis -v D:\Docker\redis\conf\redis.conf:/etc/redis/redis.conf -v D:\Docker\redis\data:/data -itd redis:3.2.1 redis-server /etc/redis/redis.conf --appendonly yes --requirepass "Admin_test"
+
+如果启动后容器立马退出  一般启动出错  可以通过docker logs -f -t --tail 100 容器名(redis) 查看错误日志  
+
+配置文件中要注释掉bind 127.0.0.1 即使只在本地连接也要注释掉才能成功  
+
+docker start 容器id 或在docker desktop 里面操作  
+
+docker exec -it redis /bin/bash  进入容器后  
+
+redis-cli -a 密码  
+
+
+
+配置文件：  
+```
+# bind 127.0.0.1
+protected-mode yes
+port 6379
+tcp-backlog 511
+timeout 0
+tcp-keepalive 300
+daemonize no
+supervised no
+requirepass Admin_test
+
+appendonly yes
+
+appendfilename "appendonly.aof"
+
+appendfsync everysec
+
+pidfile /var/run/redis_6379.pid
+loglevel notice
+logfile ""
+databases 16
+```
