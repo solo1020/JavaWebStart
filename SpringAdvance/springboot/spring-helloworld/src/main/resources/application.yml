@@ -59,3 +59,12 @@ spring:
     password: Admin_test
     port: 6379
     timeout: 100
+
+
+  datasource:
+    url: jdbc:mysql:///ssm
+    username: root
+    password: admin
+    driver-class-name: com.mysql.jdbc.Driver
+
+# datasource

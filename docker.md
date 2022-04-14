@@ -47,18 +47,15 @@ docker start a71d75d859bf 后面是ps -a列出来的containerID
 docker exec -it a71d75d859bf /bin/bash   
 
 设置root用户远程登陆：  
+```
 use mysql;  
 grant all privileges on *.* to root@'%' identified by '密码' with grant option;  
 flush privileges;   
 
 grant all privileges on *.* to root@'%' identified by 'admin' with grant option;
+```
 
 
-create table account(
-    id int primary key auto_increment,
-    name varchar(100),
-    money double(7,2)
-);
 
 win10 使用WSL2 docker 更改存储目录：  
 ------
