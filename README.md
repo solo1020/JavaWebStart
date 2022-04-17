@@ -11611,7 +11611,7 @@ USE `ssm`;
 
 /*Table structure for table `springboot_user` */
 
-DROP TABLE IF EXISTS `springboospringboot_user`;
+DROP TABLE IF EXISTS `springboot_user`;
 
 CREATE TABLE `springboot_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -11625,5 +11625,847 @@ CREATE TABLE `springboot_user` (
 insert  into `springboot_user`(`id`,`username`,`password`) values (1,'zhangsan','123'),(2,'lisi','234');
 
 ```
+使用注解方式mybatis查询：    
+
+```
+// dao 类
+package com.itcast.domain;
+
+/**
+ * @ClassName User
+ * @description:
+ * @author: isquz
+ * @time: 2022/4/12
+ */
+public class User {
+    private int id;
+    private String username;
+    private String password;
+
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+
+
+// 注解mapper
+package com.itcast.mapper;
+
+import com.itcast.domain.User;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * @ClassName UserMapper
+ * @description:
+ * @author: isquz
+ * @time: 2022/4/12
+ */
+
+@Mapper
+@Repository
+public interface UserMapper {
+
+    @Select("select * from springboot_user")
+    public List<User> findAllUser();
+
+}
+
+
+// 使用配置文件的mapper
+package com.itcast.mapper;
+
+import com.itcast.domain.User;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * @ClassName UserXmlMapper
+ * @description:
+ * @author: isquz
+ * @time: 2022/4/14
+ */
+
+@Mapper
+@Repository
+public interface UserXmlMapper {
+    public List<User> findAllUser();
+}
+
+
+// mapper配置文件：
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itcast.mapper.UserXmlMapper">
+    <select id="findAllUser" resultType="user" >
+        select * from springboot_user
+    </select>
+</mapper>
+
+
+// yml配置myabtis部分：
+spring:
+  profiles:
+    active: dev
+
+  redis:
+    host: localhost
+    password: ******
+    port: 6379
+    timeout: 100
+
+
+  datasource:
+    url: jdbc:mysql:///ssm?serverTimezone=UTC
+    username: root
+    password: ********
+    driver-class-name: com.mysql.jdbc.Driver
+
+# datasource
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml # mapper.xml 映射路径
+  type-aliases-package: com.itcast.domain
+
+#  config-location: 指定mybatis核心配置文件
+
+
+// 测试类：
+package com.itcast.test;
+
+import com.itcast.domain.User;
+import com.itcast.mapper.UserMapper;
+import com.itcast.mapper.UserXmlMapper;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+
+/**
+ * @ClassName HelloApplicationTests
+ * @description:
+ * @author: isquz
+ * @time: 2022/4/9
+ */
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class HelloApplicationTests {
+
+    @Autowired
+    private UserXmlMapper userXmlMapper;
+
+    // mybatis 通过xml配置映射查询
+    @Test
+    public void findAllFromMapperXml(){
+        List<User> allUser = userXmlMapper.findAllUser();
+        System.out.println(allUser);
+    }
+
+    @Autowired
+    private UserMapper userMapper;
+
+    // 注解方式mybatis查询
+    @Test
+    public void findAll(){
+        List<User> allUser = userMapper.findAllUser();
+        System.out.println(allUser);
+    }
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    // redis测试
+    @Test
+    public void testSet(){
+        // 存入数据
+        redisTemplate.boundValueOps("name").set("zhangsan");
+    }
+
+    @Test
+    public void testGet(){
+        Object name = redisTemplate.boundValueOps("name").get();
+        System.out.println("get: " + name);
+    }
+
+}
+
+```
+
+
+springboot自动配置原理
+-----
+Condition:  
+spring4.0增加的条件判断功能 通过这个功能选择性的创建bean  
+
+判断是否导入jedis依赖 否 就不创建指定的bean  
+```
+@Bean
+// 注解属性返回false 不会创建该bean
+@Conditional(ClassCondition.class)
+public User user(){
+    return new User();
+}
+
+
+public class ClassCondition implements Condition {
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        // 导入jedis坐标后创建bean
+        // 判断jedis class是否存在
+        boolean flag = false;
+        try {
+            Class<?> aClass = Class.forName("redis.clients.jedis.Jedis");
+            flag = true;
+        } catch (ClassNotFoundException e) {
+            System.out.println("Jedis dependency not imported!");
+            flag = false;
+        }
+        return flag;
+    }
+}
+```
+
+通过自定义或spring提供的注解实现 通过给定任意类 作为判断 是否加载bean的依据：  
+```
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Conditional(ClassCondition.class)
+public @interface ConditionOnClass {
+    String[] value();
+}
+
+
+public class ClassCondition implements Condition {
+
+    /**
+     * @description:
+     * @param: context 上下文 用于获取环境 IOC容器 classloader等
+     * @param: metadata 注解元信息 获取注解定义的属性值
+     * @return: boolean
+     * @author: isquz
+     * @date: 2022/4/16 16:47
+     */
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        System.out.println(context.getEnvironment());
+
+        // 获取注解属性值value
+        Map<String, Object> map = metadata.getAnnotationAttributes(ConditionOnClass.class.getName());
+        // 获取注解中定义的类名数组
+        String[] cls = (String[]) map.get("value");
+        boolean flag = false;
+        try {
+            for(String s: cls){
+                Class<?> aClass = Class.forName(s);
+            }
+            flag = true;
+        } catch (ClassNotFoundException e) {
+            flag = false;
+            e.printStackTrace();
+        }
+        return flag;
+    }
+}
+
+
+@Configuration
+public class UserCofig {
+    @Bean
+    // 注解属性返回false 不会创建该bean
+//    @Conditional(ClassCondition.class)
+//    @ConditionOnClass("redis.clients.jedis.Jedis")
+    @ConditionOnClass("com.alibaba.fastjson.JSON")
+    public User user(){
+        return new User();
+    }
+    
+    @Bean@ConditionalOnProperty(name = "itcast", havingValue = "itcast")
+    public User user2(){
+        return new User();
+    }
+}
+```
+
+
+springboot 切换内置web服务器：
+----
+```
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <!--排除tomcat依赖-->
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--引入jetty依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+```
+
+springboot自动配置 Enable注解
+----
+springboot里很多@Enable开头的注解 用于动态开启某些功能 底层是使用@Import导入一些配置类 实现那bean的动态加载   
+
+@ComponentScan 扫描范围： 当前引导类所在包及其子包  
+也即是当前的com.itcast.springbootenable 包下的    
+解决方法：  
+ * 1. 使用@ComponentScan扫描 com.itcast.config 下导入的其他的module的包  
+ @ComponentScan("com.itcast.config")   
+ * 2.使用@Import注解   
+@Import(UserConfig.class)   
+ * 3.对@Import注解进行封装 后再直接引用封装的注解   
+@EnableUser2   
+
+```
+
+package com.itcast.springbootenable;
+
+import com.itcast.config.EnableUser;
+import com.itcast.config.EnableUser2;
+import com.itcast.config.UserConfig;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+
+/**
+ * @description:
+ *
+
+ *
+ *
+ * @author: isquz
+ * @date: 2022/4/16 21:39
+ */
+
+//@ComponentScan("com.itcast.config")
+//@Import(UserConfig.class)
+@EnableUser2
+@SpringBootApplication
+public class SpringbootEnableApplication {
+
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(SpringbootEnableApplication.class, args);
+
+        Object user = context.getBean("user");
+        System.out.println(user);
+    }
+}
+
+
+package com.itcast.config;
+
+import org.springframework.context.annotation.Import;
+
+import java.lang.annotation.*;
+
+/**
+ * @ClassName EnableUser2
+ * @description:
+ * @author: isquz
+ * @time: 2022/4/17
+ */
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Import(UserConfig.class)
+public @interface EnableUser2 {
+}
+```
+
+springboot配置Import注解：
+----
+四种用法：  
+* 导入Bean
+* 导入配置类
+* 导入ImportSelector类 一般用于加载配置文件中的类  
+```
+public class MyImportSelector implements ImportSelector {
+
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        return new String[]{"com.itcast.doamin.Role", "com.itcast.doamin.User"};
+    }
+}
+
+
+@Import(MyImportSelector.class)
+@SpringBootApplication
+public class SpringbootEnableApplication {
+
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(SpringbootEnableApplication.class, args);
+
+//        Object user = context.getBean("user");
+//        System.out.println(user);
+
+        User bean = context.getBean(User.class);
+        System.out.println(bean);
+//        System.out.println(context.getBeansOfType(User.class));
+
+        Role bean1 = context.getBean(Role.class);
+        System.out.println(bean1);
+    }
+}
+```
+* 导入ImportBeanDefinitionRegistrar实现类  
+在ImportBeanDefinitionRegistrar实现类中通过手动注册要导入的类  
+```
+public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(User.class).getBeanDefinition();
+        registry.registerBeanDefinition("user", beanDefinition);
+
+        AbstractBeanDefinition beanDefinitionRole = BeanDefinitionBuilder.rootBeanDefinition(Role.class).getBeanDefinition();
+        registry.registerBeanDefinition("role", beanDefinitionRole);
+
+    }
+}
+
+@Import(MyImportBeanDefinitionRegistrar.class)
+@SpringBootApplication
+public class SpringbootEnableApplication {
+
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(SpringbootEnableApplication.class, args);
+
+        Object user = context.getBean("user");
+        System.out.println(user);
+
+//        User bean = context.getBean(User.class);
+//        System.out.println(bean);
+//        System.out.println(context.getBeansOfType(User.class));
+
+        Role bean1 = context.getBean(Role.class);
+        System.out.println(bean1);
+    }
+}
+
+```
+
+@EnableAutoConfiguration注解：  
+内部使用@Import(AutoConfigurationImportSelector.class)加载配置类  
+配置文件位于 META-INF/spring.factories配置文件中定义了大量配置类 springboot应用启动时会自动加载配置类 初始化bean    
+配置类中使用的Condition来按照条件加载bean   
+
+自定义starter:   
+自定义redis-starter 当导入redis依赖后自动创建Jedis的bean  
+1. 创建redis-spring-boot-autoconfigure 模块
+2. 创建redis-spring-boot-starter 模块 依赖redis-spring-boot-autoconfigure模块  
+3. 在redis-spring-boot-autoconfigure模块中初始化jedis的bean 并定义META-INF/spring.factories文件  
+4. 测试模块引入自定义的redis-starter 测试获取jedis Bean  
+
+```
+// 配置类 用于定义redis的bean自动配置
+
+@Configuration
+@EnableConfigurationProperties(RedisProperties.class)
+@ConditionalOnClass(Jedis.class)
+public class RedisAutoConfiguration {
+
+    //提供jedis的bean
+    @Bean
+    // 当前jedis 仅在用户没有自行定义的时候作为默认 情况 进行提供
+    @ConditionalOnMissingBean(name = "jedis")
+    public Jedis jedis(RedisProperties redisProperties){
+        System.out.println("RedisAutoConfiguration...");
+        return new Jedis(redisProperties.getHost(), redisProperties.getPort());
+    }
+}
+
+// redis相关的配置文件：prefix 即为后续引用当前redis-starter的模块的配置文件application.properties/yml时需要对应的键值  
+
+@ConfigurationProperties(prefix = "myredis")
+public class RedisProperties {
+
+    private String host = "localhost";
+    private int port = 6379;
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+}
+
+
+// resource目录下的META-INF/spring.factories配置文件 设置Enable RedisAutoConfiguration  
+
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.itcast.redis.config.RedisAutoConfiguration
+
+
+// 测试：
+@Import(MyImportBeanDefinitionRegistrar.class)
+@SpringBootApplication
+public class SpringbootEnableApplication {
+
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(SpringbootEnableApplication.class, args);
+
+        Object user = context.getBean("user");
+        System.out.println(user);
+
+//        User bean = context.getBean(User.class);
+//        System.out.println(bean);
+//        System.out.println(context.getBeansOfType(User.class));
+
+        Role bean1 = context.getBean(Role.class);
+        System.out.println(bean1);
+
+        Jedis jedis = context.getBean(Jedis.class);
+        System.out.println(jedis);
+        jedis.auth("Admin_test");
+
+//        jedis.set("name", "itcast");
+        System.out.println(jedis.get("name"));
+
+    }
+
+    // 此处方法名必须为jedis  与RedisAutoConfiguration中ConditionalOnMissingBean定义的一致
+    @Bean
+    public Jedis jedis(){
+        return new Jedis("localhost",6379);
+    }
+}
+
+```
+
+springboot 事件监听
+-----
+springboot事件监听机制 是对Java事件监听机制的封装：  
+Java事件监听机制：  
+1. 事件 Event 继承java.util.EventObject类的对象
+2. 事件源 Source 任意对象Object
+3. 监听器 Listener 实现java.util.EventListener接口的对象  
+
+springboot项目启动时候会对几个监听器进行回调 通过实现这些监听器的接口 可以实现监听操作   
+ApplicationContextInitializer  SpringApplicationRunListener CommandLineRunner  ApplicationRunner  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -2,23 +2,19 @@ package com.itcast.mapper;
 
 import com.itcast.domain.User;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
- * @ClassName UserMapper
+ * @ClassName UserXmlMapper
  * @description:
  * @author: isquz
- * @time: 2022/4/12
+ * @time: 2022/4/14
  */
 
 @Mapper
 @Repository
-public interface UserMapper {
-
-    @Select("select * from springboot_user")
+public interface UserXmlMapper {
     public List<User> findAllUser();
-
 }

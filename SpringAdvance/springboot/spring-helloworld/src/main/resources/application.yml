@@ -62,9 +62,17 @@ spring:
 
 
   datasource:
-    url: jdbc:mysql:///ssm
+    url: jdbc:mysql:///ssm?serverTimezone=UTC
     username: root
     password: admin
     driver-class-name: com.mysql.jdbc.Driver
 
 # datasource
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml # mapper.xml 映射路径
+  type-aliases-package: com.itcast.domain
+
+#  config-location: 指定mybatis核心配置文件
+
+
+
