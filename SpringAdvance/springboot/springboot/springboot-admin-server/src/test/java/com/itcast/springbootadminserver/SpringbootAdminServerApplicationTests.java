@@ -1,11 +1,11 @@
-package com.itcast.springbootlistener;
+package com.itcast.springbootadminserver;
 
 
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringbootListenerApplicationTests {
+class SpringbootAdminServerApplicationTests {
 
     @Test
     void contextLoads() {

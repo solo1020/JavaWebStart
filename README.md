@@ -12201,6 +12201,31 @@ springboot项目启动时候会对几个监听器进行回调 通过实现这些
 ApplicationContextInitializer  SpringApplicationRunListener CommandLineRunner  ApplicationRunner  
 
 
+springboot 监控：
+----
+spring-boot-starter-actuator  
+启动后访问：localhost:port/actuator localhost:port/actuator/info localhost:port/actuator/health  localhost:port/actuator/mapping可以查看对应的信息   
+
+springboot Admin 图形化监控   
+server端项目添加admin-server依赖 并在要监控的bean上添加@EnableAdminServer  
+client项目添加admin-client依赖 并在配置文件中指定server的地址端口 以及是否开启详细配置信息  
+
+
+springboot 部署
+----
+默认jar包方式  
+如需要war包：  
+pom.xml修改<packaging>war</packaging>  
+springboot启动类继承SpringBootServletInitializer    
+重写configure方法  
+```
+@Override
+protected SpringApplicationBuilder configure(SpringApplicationBuilder builder){
+    return builer.sources(启动类.class);
+}
+```
+
+#### Dubbo
 
 
 

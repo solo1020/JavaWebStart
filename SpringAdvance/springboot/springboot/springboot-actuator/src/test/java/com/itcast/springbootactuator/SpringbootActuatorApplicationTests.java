@@ -1,11 +1,10 @@
-package com.itcast.springbootlistener;
-
+package com.itcast.springbootactuator;
 
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringbootListenerApplicationTests {
+class SpringbootActuatorApplicationTests {
 
     @Test
     void contextLoads() {

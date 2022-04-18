@@ -1,11 +1,10 @@
-package com.itcast.springbootlistener;
+package com.itcast.springbootdeploy;
 
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringbootListenerApplicationTests {
+class SpringbootDeployApplicationTests {
 
     @Test
     void contextLoads() {
