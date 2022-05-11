@@ -12226,10 +12226,209 @@ protected SpringApplicationBuilder configure(SpringApplicationBuilder builder){
 ```
 
 #### Dubbo
+修改zookeeper启动配置文件：  
+cd /opt/zooKeeper/apache-zooKeeper-3.5.6-bin/conf/  
+cp  zoo_sample.cfg  zoo.cfg 名字必须命名为zoo.cfg  
+修改配置文件中的存储目录：dataDir=/opt/zookeeper/zkdata  
+启动：  
+/opt/zooKeeper/apache-zooKeeper-3.5.6-bin/bin/zkServer.sh  start   
+
+maven多个模块依赖时  需要先maven clean 所有子模块 然后maven install 子模块 父模块   
+
+理解dubbo 就是将接口和接口的实现放在不同的服务器上 通过消费者的服务器去请求zookeeper获取其他服务提供的接口实现类  
+```
+// 接口：
+package com.itcast.service;
+
+/**
+ * @ClassName UserService
+ * @description:
+ * @author: isquz
+ * @time: 2022/5/1
+ */
+public interface UserService {
+    public String sayHello();
+}
+
+
+// 接口实现类 放在单独的服务器 依赖接口模块
+package com.itcast.service.impl;
+
+import com.itcast.service.UserService;
+import org.apache.dubbo.config.annotation.Service;
+
+/**
+ * @ClassName UserServiceImpl
+ * @description:
+ * @author: isquz
+ * @time: 2022/4/23
+ */
+
+//@Service // 本质就是一个Bean 放到IOC容器中
+// dubbo service 将当前类的服务(方法)对外发布
+// 将访问的地址 ip 端口 路径 注册到注册中心
+@Service
+public class UserServiceImpl implements UserService {
+    public String sayHello() {
+        return "hello dubbo----from provider ---->dubbo-service:UserServiceImpl#sayHello";
+    }
+}
+
+// application.xml 中配置dubbo的服务信息
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:dubbo="http://dubbo.apache.org/schema/dubbo" xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="com.itcast.service" />
+
+	<!--dubbo配置-->
+	<!--配置项目名称-->
+	<dubbo:application name="dubboservice" />
+	<!--配置zookeeper注册中心地址-->
+	<dubbo:registry address="zookeeper://127.0.0.1:2181" />
+	<!--配置dubbo包扫描-->
+	<dubbo:annotation package="com.itcast.service.impl" />
+
+</beans>
 
 
 
+// 消费者： 单独服务器 调用远程dubbo的服务
+package com.itcast.controller;
 
+import com.itcast.service.UserService;
+import org.apache.dubbo.config.annotation.Reference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @ClassName UserController
+ * @description:
+ *
+ * 远程注入功能：
+ * @Reference
+ *
+ * 从zookeeper注册中心获取userService的访问url
+ * 进行远程调用rpc
+ * 将结果封装为一个代理对象 给变量赋值
+ *
+ * @author: isquz
+ * @time: 2022/4/28
+ */
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+
+//    @Autowired
+    @Reference  //远程注入
+    private UserService userService;
+
+    @RequestMapping("/sayHello")
+    public String sayHello(){
+        return userService.sayHello();
+    }
+}
+
+// springmvc.xml同样需要配置dubbo信息
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+         http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <mvc:annotation-driven/>
+    
+    <context:component-scan base-package="com.itcast.controller" />
+
+
+    <!--配置项目名称-->
+    <dubbo:application name="dubboweb" >
+        <dubbo:parameter key="qos.port" value="33333" />
+    </dubbo:application>
+    <!--配置zookeeper注册中心地址-->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" />
+    <!--配置dubbo包扫描-->
+    <dubbo:annotation package="com.itcast.controller" />
+
+</beans>
+
+```
+
+
+dubbo-admin
+----
+启动前端和后端：  
+java -jar dubbo-admin-0.1.jar   
+ui目录下 npm run dev  
+
+注册中心挂了 服务是否正常访问：  
+可以 因为dubbo服务消费者在第一次使用时 会将服务提供方的地址缓存到本地 以后调用时不会访问注册中心  
+当服务提供者的地址发生变化时  注册中心会通知消费者  
+
+超时与重试：
+---
+设置超时时间 在超时时间段内 无法访问成功则断开连接  
+服务提供方生产者可以设置超时 服务消费者也可以设置超时 且消费者的超时会覆盖生产者的超时设置  一般在服务提供方设置较大的超时时间  
+```
+//@Service // 本质就是一个Bean 放到IOC容器中
+// dubbo service 将当前类的服务(方法)对外发布
+// 将访问的地址 ip 端口 路径 注册到注册中心
+// timeout 当前服务： 默认1000ms超时 重试2次 总共发送3次请求
+@Service(timeout = 3000, retries = 0, version = "v1.0")
+public class UserServiceImpl implements UserService {
+
+    int i = 1;
+
+    public String sayHello() {
+        return "hello dubbo----from provider ---->dubbo-service:UserServiceImpl#sayHello";
+    }
+
+    public User findUserById(int id) {
+        System.out.println("call old findUserById 被调用了 " + (i++));
+        // 查询user对象
+        User user = new User(1, "zhangsan","123");
+        System.out.println(user.toString());
+//        数据库查询很慢
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+}
+```
+
+负载均衡：
+---
+根据weight比例分配：  
+random:按权重随机      
+roundrobin: 按权重轮询   
+leastactive: 最少活跃调用数 相同活跃数的随机    
+consistenthash: 一致性hash 相同请求发到同一提供者   
+
+
+集群容错：  
+-----
+* Failover Cluster:失败重试 失败时默认重试其他服务器2次  
+* Failfast Cluster:快速失败 不进行重试 通常用于写操作  
+* Failsafe Cluster:安全失败 出现异常时直接忽略 返回一个空结果   
+* Failback Cluster:失败自动恢复 后台记录失败请求 定时重发  
+* Forking  Cluster:并行调用多个服务器 只要一个成功就返回   
+* Broadcast Cluster:广播调用所有提供者 任何一个报错就报错   
+
+服务降级：  
+-----
 
 
 
