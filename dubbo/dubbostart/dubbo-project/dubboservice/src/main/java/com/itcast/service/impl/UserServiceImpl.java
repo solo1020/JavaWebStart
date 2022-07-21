@@ -19,7 +19,7 @@ import org.apache.dubbo.config.annotation.Service;
 @Service(timeout = 3000, version = "v1.0", weight = 100)
 public class UserServiceImpl implements UserService {
 
-    static String HOST = "[Host-3]";
+    static String HOST = "[Host-1]";
 
     int i = 1;
 
@@ -35,11 +35,11 @@ public class UserServiceImpl implements UserService {
         User user = new User(1, "zhangsan","123");
         System.out.println(user.toString());
 //        数据库查询很慢
-//        try {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return user;
     }
 }

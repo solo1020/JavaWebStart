@@ -176,8 +176,7 @@ apt-get install -y net-tools
 开机自启ssh：  
 service systemctl enable sshd  
 设置容器启动时自动开启ssh:  
-添加/etc/init.d/ssh start 到~/.bashrc 后  
-
+添加/etc/init.d/ssh start 到~/.bashrc 后   
 zookeeper启动
 zookeeper/bin/./zkServer.sh  start  
 添加到开机启动：  

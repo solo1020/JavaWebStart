@@ -12429,266 +12429,1666 @@ consistenthash: 一致性hash 相同请求发到同一提供者
 
 服务降级：  
 -----
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+mock=force:return null 表示消费者对服务的方法调用都直接返回null 不发起远程调用  
+mock=fail:return null 表示消费者对该服务的方法调用在失败后再返回null 不抛出异常  
+
+#### zookeeper
+是apache hadoop下的子项目 树形目录服务  
+分布式 开源应用程序协调服务  
+
+提供：  
+1. 配置管理  
+2. 分布式锁
+3. 集群管理
+
+数据模型：  
+zookeeper数据类型和Unix的文件系统目录类似 拥有层次化结构
+
+每个节点称为ZNode 每个节点保存自己的数据和节点信息    
+
+根节点： /  
+子节点：/app1  /app2  
+孙节点：/app1/p1  /app2/p2  
+
+四种节点：  
+PERSISTENT 持久化节点
+EPHEMERAL 临时节点 -e  
+PERSISTENT_SEQUENTIAL 持久化顺序节点 -s  
+EPHEMERAL_SEQUENTIAL 临时顺序节点 -es   
+
+命令：  
+./zKServer.sh start/status/stop/restart  
+
+./zKCli.sh -server localhost:2181  
+通过client进入交互界面后：  
+查看根节点： ls /   
+继续查看子节点： ls /dubbo   
+ls /dubbo/config/providers
+
+创建节点：  
+create /app1 itcast  
+
+获取节点中的数据：  
+get /app1  
+设置节点数据：  
+set /app1 updateData
+
+删除空节点：  
+delete /app1   
+删除非空节点 连同子节点一起删除：  
+deleteall /app1   
+
+ls -s /dubbo  
+
+ls /dubbo/com.itcast.UserService/providers  
+
+javaAPI Curator:
+---
+常见zookeeper Java API:  
+原生Java API  
+ZKClient   
+Curator  
+
+
+Java API：  
+创建连接：  
+```
+/*
+     * @param connectString       list of servers to connect to
+     * @param sessionTimeoutMs    session timeout
+     * @param connectionTimeoutMs connection timeout
+     * @param retryPolicy         retry policy to use
+     */
+    String url = "127.0.0.1:2181";
+    RetryPolicy retryPolicy = new ExponentialBackoffRetry(3000, 10);
+    // 第一种方式
+//        CuratorFramework client = CuratorFrameworkFactory.newClient(url, 60 * 1000,
+//                15 * 1000, retryPolicy);
+//
+//        client.start();
+
+    // 第二种方式：
+    CuratorFramework build = CuratorFrameworkFactory.builder().connectString(url)
+            .sessionTimeoutMs(60 * 1000)
+            .connectionTimeoutMs(15 * 1000)
+            .retryPolicy(retryPolicy).namespace("itcast").build();
+    build.start();
+    System.out.println(build.getState());
+```
+
+创建节点：  
+```
+@Test
+public void testCreateZookeeperNode() throws Exception {
+    // 如果创建节点没有指定数据 则默认将当前客户端的ip作为数据存储
+    String path = client.create().forPath("/app1");
+    System.out.println(path);
+}
+@Test
+public void testCreateZookeeperNodeWIthData() throws Exception {
+    // 创建节点 指定数据
+    String path = client.create().forPath("/app2", "hehe".getBytes());
+    System.out.println(path);
+}
+// 设置节点类型
+@Test
+public void setNodeType() throws Exception {
+    String path = client.create().withMode(CreateMode.EPHEMERAL).forPath("/app3");
+    System.out.println(path);
+}
+// 创建多个节点 默认不允许一次性创建多级节点 所以需要调用自动创建不存在的节点的方法
+@Test
+public void createMultiNodes() throws Exception {
+    String path = client.create().creatingParentsIfNeeded().forPath("/app4/p1");
+    System.out.println(path);
+}
+```
+
+查询节点：  
+```
+@Test
+public void getNode() throws Exception {
+    byte[] data = client.getData().forPath("/app1");
+    System.out.println(new String(data));
+}
+@Test
+public void getChildNode() throws Exception {
+    List<String> list = client.getChildren().forPath("/app4");
+    System.out.println(list);
+}
+@Test
+public void getNodeStatus() throws Exception {
+    Stat status = new Stat();
+    System.out.println(status);
+    client.getData().storingStatIn(status).forPath("/app1");
+    System.out.println(status);
+}
+```
+
+修改节点：  
+```
+/**
+ * @description:
+ * 修改节点：
+ * 根据版本号修改
+ *
+ *
+ * @date: 2022/5/20 20:27
+ */
+@Test
+public void setNode() throws Exception {
+    client.setData().forPath("/app1", "updateapp1".getBytes());
+}
+// 先查询出现在的ersion 再根据该version去修改数据
+// 避免其他客户端并发修改导致版本不一致的情况
+@Test
+public void setNodeWithVersion() throws Exception {
+    Stat status = new Stat();
+    client.getData().storingStatIn(status).forPath("/app1");
+    System.out.println("status: " + status);
+    System.out.println("version: " + status.getVersion());
+    int version = status.getVersion();
+    client.setData().withVersion(100).forPath("/app1", "new update".getBytes());
+}
+```
+
+删除节点：  
+```
+/**
+ * @description:
+ * 删除节点 delete deleteall
+ * 删除带有子节点的节点
+ * 确保删除成功 防止网络抖动 一直重试
+ * 回调
+ *
+ * @author: isquz
+ * @date: 2022/5/20 20:53
+ */
+@Test
+public void deleteNode() throws Exception {
+    client.delete().forPath("/app1");
+}
+@Test
+public void deleteChildNode() throws Exception {
+    client.delete().deletingChildrenIfNeeded().forPath("/app4");
+}
+// 失败后重试 直到删除成功
+@Test
+public void superDelete() throws Exception {
+    client.delete().guaranteed().forPath("/app2");
+}
+// 失败后重试 直到删除成功
+@Test
+public void deleteCallBack() throws Exception {
+    client.delete().guaranteed().inBackground(new BackgroundCallback() {
+        @Override
+        public void processResult(CuratorFramework client, CuratorEvent event) throws Exception {
+            System.out.println("being deleted...");
+            System.out.println(event);
+        }
+    }).forPath("/app1");
+}
+```
+
+Watch事件监听：  
+允许用户在指定节点上注册一些Watcher 在一些特定事件触发时 zookeeper服务端会将事件通知到感兴趣的客户端上 该机制是zook实现分布式协调服务的重要特性     
+
+引入了Watcher机制 实现了 发布-订阅功能 能够让多个订阅者同时监听某一对象 当对象自身状态变化时 通知所有订阅者   
+
+curator使用Cache实现对zook服务端事件的监听  
+
+zookeeper提供三种不同的Watcher:   
+* NodeCache: 只监听一个特定节点  
+* PathChildrenCache: 监控一个ZNode的子节点  
+* TreeCache: 监控树上所有节点  类似以上两种组合   
+
+```
+/**
+ * @description:
+ *
+ * NodeCache:
+ * 给指定单一节点注册监听器
+ *
+ * @param:
+ * @return: void
+ * @author: isquz
+ * @date: 2022/5/21 23:23
+ */  
+@Test
+public void testNodeCache() throws Exception {
+    // 创建NodeCache对象
+    NodeCache nodeCache = new NodeCache(client, "/app1");
+    // 注册监听
+    nodeCache.getListenable().addListener(new NodeCacheListener() {
+        @Override
+        public void nodeChanged() throws Exception {
+            System.out.println("节点变化了...");
+            // 获取修改后的节点数据
+            byte[] data = nodeCache.getCurrentData().getData();
+            System.out.println("new data: " + new String(data) );
+        }
+    });
+    // 开启监听 如果设置为true 则开启监听时会加载缓存数据
+    nodeCache.start(true);
+    while (true){
+        
+    }
+}
+// 监听子节点
+@Test
+public void testChildrenCache() throws Exception {
+    // 创建NodeCache对象
+    PathChildrenCache pathChildrenCache = new PathChildrenCache(client, "/app2", true);
+    // 绑定监听器：
+    pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener() {
+        @Override
+        public void childEvent(CuratorFramework curatorFramework, PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+              System.out.println("child node update...");
+            System.out.println(pathChildrenCacheEvent);
+            // 监听子节点数据变更 并获取变更后的数据
+            PathChildrenCacheEvent.Type type = pathChildrenCacheEvent.getType();
+            if (type.equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)){
+                byte[] data = pathChildrenCacheEvent.getData().getData();
+                System.out.println("child node update...");
+                System.out.println(new String(data));
+            }
+        }
+    });
+    // 开启
+    pathChildrenCache.start();
+    while (true){
+    }
+}
+// 监听某个节点本身 及其子节点
+@Test
+public void testTreeCache() throws Exception {
+    TreeCache treeCache = new TreeCache(client, "/app2");
+    treeCache.getListenable().addListener(new TreeCacheListener() {
+        @Override
+        public void childEvent(CuratorFramework curatorFramework, TreeCacheEvent treeCacheEvent) throws Exception {
+            System.out.println("child node update");
+            System.out.println(treeCacheEvent);
+        }
+    });
+    treeCache.start();
+    while (true){
+    }
+}
+```
+
+分布式锁：
+---
+基于缓存redis Memcache实现  
+基于Zookeeper实现  
+基于数据库分布式锁 悲观锁 乐观锁   
+
+zookeeper分布式锁原理：  
+当客户端要获取锁的时候 创建节点 使用完 删除节点  
+1. 客户端获取锁时 在指定的某个节点如lock下创建 临时顺序 节点   
+2. 获取lock下所有子节点 客户端获取到所有子节点后 如果自己创建的节点序号最小 则认为该客户端获取到了锁 使用完锁后 将该节点删除  
+3. 如果发现自己创建的节点并非lock所有子节点中哦好那个最小的 此时 客户端需要找到比自己小的节点 同时对其注册事件监听器 监听删除事件  
+4. 如果发现比自己小的那个节点被删除 则客户端watcher 收到通知 此时再判断 自己创建的节点是否是lock节点中序号最小的 如果是则获取到锁 否则重复上述步骤
+
+InterProcessSemaphoreMutex 分布式排他锁 非可重入锁  
+InterProcessMutex 分布式可重入排他锁  
+InterProcessReadWriteLock 分布式读写锁 
+InterProcessMultiLock 多个锁作为单一实体管理的容器  
+InterProcessSemaphoreV2 共享信号量  
+
+```
+package com.itcast.curator;
+
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @ClassName Ticket12306
+ * @description:
+ * @author: isquz
+ * @time: 2022/5/25
+ */
+public class Ticket12306 implements Runnable{
+
+    private int tickers = 10;//数据库的票总数
+
+    private InterProcessMutex lock;
+
+    public Ticket12306(){
+        String url = "127.0.0.1:2181";
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(3000, 10);
+
+        CuratorFramework client = CuratorFrameworkFactory.builder().connectString(url)
+                .sessionTimeoutMs(60 * 1000)
+                .connectionTimeoutMs(15 * 1000)
+                .retryPolicy(retryPolicy).build();
+
+        client.start();
+        lock = new InterProcessMutex(client, "/lock");
+    }
+
+    @Override
+    public void run() {
+        while (true){
+            // 获取锁
+            try {
+                lock.acquire(3, TimeUnit.SECONDS);
+
+                if(tickers > 0){
+                    System.out.println(Thread.currentThread().getName() + ": " + tickers);
+                    tickers--;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                // 释放锁
+                try {
+                    lock.release();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+        }
+    }
+}
+
+
+package com.itcast.curator;
+
+/**
+ * @ClassName LockTest
+ * @description: 分布式锁
+ * @author: isquz
+ * @time: 2022/5/25
+ */
+public class LockTest {
+    public static void main(String[] args) {
+        Ticket12306 ticket12306 = new Ticket12306();
+
+        Thread t1 = new Thread(ticket12306, "携程");
+        Thread t2 = new Thread(ticket12306, "飞猪");
+        Thread t3 = new Thread(ticket12306, "去哪儿");
+
+        t1.start();
+        t2.start();
+        t3.start();
+
+
+
+    }
+
+}
+
+```
+
+zookeeper集群：  
+---
+leader选举：  
+
+#### springcloud:
+数据库：  
+```
+CREATE TABLE `springcloud_user` ( 
+    `id` int(11) NOT NULL AUTO_INCREMENT, 
+    `username` varchar(40) DEFAULT NULL COMMENT '用户名', 
+    `password` varchar(40) DEFAULT NULL COMMENT '密码', 
+    `age` int(3) DEFAULT NULL COMMENT '年龄', 
+    `balance` decimal(10,2) DEFAULT NULL COMMENT '余额', 
+    `address` varchar(80) DEFAULT NULL COMMENT '地址', 
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+CREATE TABLE `springcloud_product` ( 
+    `id` int(11) NOT NULL AUTO_INCREMENT, 
+    `product_name` varchar(40) DEFAULT NULL COMMENT '名称', 
+    `status` int(2) DEFAULT NULL COMMENT '状态', 
+    `price` decimal(10,2) DEFAULT NULL COMMENT '单价', 
+    `product_desc` varchar(255) DEFAULT NULL COMMENT '描述', 
+    `caption` varchar(255) DEFAULT NULL COMMENT '标题', 
+    `inventory` int(11) DEFAULT NULL COMMENT '库存', 
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8
+
+CREATE TABLE `springcloud_order` ( 
+    `id` int(11) NOT NULL AUTO_INCREMENT, 
+    `user_id` int(11) DEFAULT NULL COMMENT '用户id', 
+    `product_id` int(11) DEFAULT NULL COMMENT '商品id', 
+    `number` int(11) DEFAULT NULL COMMENT '数量', 
+    `price` decimal(10,2) DEFAULT NULL COMMENT '单价', 
+    `amount` decimal(10,2) DEFAULT NULL COMMENT '总额', 
+    `product_name` varchar(40) DEFAULT NULL COMMENT '商品名', `username` varchar(40) DEFAULT NULL COMMENT '用户名', 
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+
+```
+
+
+
+#### RabbitMQ
+生产者 消费者 中间件(消息队列)  
+
+优势劣势：  
+1. 应用解耦
+2. 异步提速
+3. 削峰填谷
+
+1. 系统可用性降低 mq宕机 对业务影响  
+2. 系统复杂度提高 消息重复消费 幂等性问题 处理消息丢失 消息传递的顺序性
+3. 一致性问题
+
+架构：  
+Broker:中继  
+Exchange:message到达broker的第一站 匹配查询表中的routing key路由 分发消息到queue中   
+queue:消息最终被送到这里等待消费者取走  
+Binding:exchange和queue直接的虚拟连接 binding可以包含routing key，binding信息被保存到exchange查询表中 用于message 分发  
+
+6种工作模式：  
+简单模式、work queues、 publish/subscribe订阅发布模式 路由模式 topics主题模式 rpc远程调用模式   
+
+
+rabbitmq安装centos:
+===
+首先 更新yum:  
+```
+sed -i "s|enabled=1|enabled=0|g" /etc/yum/pluginconf.d/fastestmirror.conf
+
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
+
+curl -o /etc/yum.repos.d/CentOS-Base.repo https://www.xmpan.com/Centos-6-Vault-Aliyun.repo
+
+
+yum -y install build-essential openssl openssl-devel unixODBC unixODBC-devel make gcc gcc-c++ kernel-devel m4 ncurses-devel tk tc xz
+
+strings /lib64/libc.so.6 | grep GLIBC
+
+yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel ine-devel tk-devel gcc make -y
+
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/glibc-utils-2.17-55.el6.x86_64.rpm &
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/glibc-static-2.17-55.el6.x86_64.rpm &
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/glibc-2.17-55.el6.x86_64.rpm &
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/glibc-common-2.17-55.el6.x86_64.rpm &
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/glibc-devel-2.17-55.el6.x86_64.rpm &
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/glibc-headers-2.17-55.el6.x86_64.rpm &
+wget http://copr-be.cloud.fedoraproject.org/results/mosquito/myrepo-el6/6-x86_64/glibc-2.17-55.fc20/nscd-2.17-55.el6.x86_64.rpm &
+
+rpm -ivh erlang-18.3-1.el7.centos.x86_64.rpm
+
+rpm -Uvh *-2.17-55.el6.x86_64.rpm --force --nodeps
+
+strings /lib64/libc.so.6 | grep GLIBC
+
+rpm -ivh erlang-18.3-1.el7.centos.x86_64.rpm
+
+rpm -ivh socat-1.7.3.2-1.1.el7.x86_64.rpm 
+
+rpm -ivh rabbitmq-server-3.6.5-1.noarch.rpm
+
+service rabbitmq-server start
+
+rabbitmq-plugins enable rabbitmq_management
+
+vim /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.5/ebin/rabbit.app
+修改env中guest用户登录
+// 如果无法访问 可以关闭服务器防火墙centos
+service iptables status
+service iptables stop
+service rabbitmq-server restart
+
+
+```
+
+
+rabbitmq工作模式：  
+* 普通模式 单个消费者  
+生产者创建连接，通道和队列并发送消息  
+消费者创建连接，通道，并消费消息  
+
+```
+
+package com.itcast.producer;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * @ClassName ProducerHelloWorld
+ * @description:发送消息
+ * @author: isquz
+ * @time: 2022/7/4
+ */
+public class ProducerHelloWorld {
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+        // 创建队列Queue
+        /**
+         * String queue, boolean durable, boolean exclusive, boolean autoDelete, Map<String, Object> arguments
+         *
+         *  queue: 队列名称
+         *  durable：是否持久化 当mq重启后 还在
+         *  exclusive：
+         *      是否独占 只能有一个消费者监听该队列
+         *      当connection关闭时 是否删除队列
+         *
+         *  autoDelete：是否自动删除 当没有consumer时自动删除
+         *  arguments：参数
+         *
+         */
+
+        // 如果没有该名称的队列 则会创建该名称的队列
+        channel.queueDeclare(
+                "hello world",
+                true,
+                false,
+                false,
+                null
+        );
+
+        /*
+         * String exchange, String routingKey, BasicProperties props, byte[] body
+         *
+         * exchange：交换机
+         * routingkey：路由名称
+         * props: 配置信息
+         * body：发送到消息数据
+         *
+         */
+        String body = "hello rabbitmq";
+
+        // 发送消息
+        channel.basicPublish("", "hello world", null, body.getBytes());
+
+        // 释放资源
+        channel.close();
+        connection.close();
+
+
+
+    }
+}
+
+
+
+package com.itcast.consumer;
+
+import com.rabbitmq.client.*;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * @ClassName ConsumerHelloWorld
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/5
+ */
+public class ConsumerHelloWorld {
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+// 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+        // 创建队列Queue
+        /**
+         * String queue, boolean durable, boolean exclusive, boolean autoDelete, Map<String, Object> arguments
+         *
+         *  queue: 队列名称
+         *  durable：是否持久化 当mq重启后 还在
+         *  exclusive：
+         *      是否独占 只能有一个消费者监听该队列
+         *      当connection关闭时 是否删除队列
+         *
+         *  autoDelete：是否自动删除 当没有consumer时自动删除
+         *  arguments：参数
+         *
+         */
+
+        // 如果没有该名称的队列 则会创建该名称的队列
+        channel.queueDeclare(
+                "hello world",
+                true,
+                false,
+                false,
+                null
+        );
+
+        /**
+         * String queue, boolean autoAck, Consumer callback
+         * queue:队列
+         * autoAck: 是否自动确认
+         * callback：回调对象
+         *
+         */
+        Consumer consumer = new DefaultConsumer(channel){
+            // 回调方法 当收到消息时 会自动执行该方法
+            /**
+             * @description:
+             * @param: consumerTag 标识
+             * @param: envelope 获取交换机信息 路由key信息等
+             * @param: properties 配置信息
+             * @param: body 消息数据体
+             * @return: void
+             *
+             * @author: isquz
+             * @date: 2022/7/5 23:25
+             */
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                System.out.println("ConsumerTag: " + consumerTag);
+                System.out.println("Exchange: " + envelope.getExchange());
+                System.out.println("RoutingKey: " + envelope.getRoutingKey());
+                System.out.println("properties: " + properties);
+                System.out.println("body: " + new String(body));
+
+            }
+        };
+
+        channel.basicConsume("hello world", true, consumer);
+
+        // 一直监听 不需要关闭资源
+        // channel.close(); connection.close();
+    }
+}
+
+
+```
+
+
+* workqueue模式 多个消费者   
+相当于普通模式的一对多， 多个消费者使用同一个队列 且顺序轮流消费消息    
+
+
+* pub/sub订阅模式：通过中间的交换机 路由至不同的消息队列消费者   
+与普通模式不同是 先创建交换机 再创建队列 然后将队列绑定到交换机上  
+```
+package com.itcast.producer;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+/**
+ * @ClassName ProducerHelloWorld
+ * @description:发送消息
+ * @author: isquz
+ * @time: 2022/7/4
+ */
+public class ProducerPubSub {
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+
+        // 创建交换机
+        /**
+         * String exchange, BuiltinExchangeType type, boolean durable, boolean autoDelete, boolean internal, Map<String, Object> arguments
+         * type：交换机类型
+         *     DIRECT("direct"), 定向
+         *     FANOUT("fanout"), 扇形 广播
+         *     TOPIC("topic"),   通配符方式
+         *     HEADERS("headers"); 参数匹配
+         *
+         * durable:是否持久化
+         * internal：内部使用 一般false
+         * argument：参数
+         */
+
+        String exchangeName = "test_fanout";
+        channel.exchangeDeclare(
+                exchangeName,
+                BuiltinExchangeType.FANOUT,
+                true,
+                false,
+                false,
+                null
+        );
+
+        // 创建队列
+        String queue1Name = "test_fanout_queue1";
+        String queue2Name = "test_fanout_queue2";
+        channel.queueDeclare(queue1Name, true, false, false,null);
+        channel.queueDeclare(queue2Name, true, false, false,null);
+
+
+        // 绑定队列和交换机
+        /**
+         * String queue, String exchange, String routingKey
+         * routingKey:路由键 绑定规则
+         *      如果交换机类型为fanout广播 routingkey 设置为空字符串
+         */
+        channel.queueBind(queue1Name, exchangeName, "");
+        channel.queueBind(queue2Name, exchangeName, "");
+
+
+        // 发送消息
+        String body = "日志信息：张三调用了findAll方法...日志级别：info...";
+        channel.basicPublish(exchangeName, "", null, body.getBytes());
+
+        // 释放资源
+        channel.close();
+        connection.close();
+    }
+}
+
+
+package com.itcast.consumer;
+import com.rabbitmq.client.*;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+/**
+ * @ClassName ConsumerHelloWorld
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/5
+ */
+public class ConsumerPubSub1 {
+
+    private static String TAG = "[consumer 1] --- ";
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+
+        String queue1Name = "test_fanout_queue1";
+        String queue2Name = "test_fanout_queue2";
+
+        /**
+         * String queue, boolean autoAck, Consumer callback
+         * queue:队列
+         * autoAck: 是否自动确认
+         * callback：回调对象
+         *
+         */
+        Consumer consumer = new DefaultConsumer(channel){
+            // 回调方法 当收到消息时 会自动执行该方法
+            /**
+             * @description:
+             * @param: consumerTag 标识
+             * @param: envelope 获取交换机信息 路由key信息等
+             * @param: properties 配置信息
+             * @param: body 消息数据体
+             * @return: void
+             *
+             * @author: isquz
+             * @date: 2022/7/5 23:25
+             */
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                System.out.println(TAG + "body: " + new String(body));
+                System.out.println("将日志信息打印到控制台...");
+
+            }
+        };
+
+        channel.basicConsume(queue1Name, true, consumer);
+
+        // 一直监听 不需要关闭资源
+        // channel.close(); connection.close();
+    }
+}
+
+
+package com.itcast.consumer;
+import com.rabbitmq.client.*;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+/**
+ * @ClassName ConsumerHelloWorld
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/5
+ */
+public class ConsumerPubSub2 {
+
+    private static String TAG = "[consumer 2] --- ";
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+
+        String queue1Name = "test_fanout_queue1";
+        String queue2Name = "test_fanout_queue2";
+
+        /**
+         * String queue, boolean autoAck, Consumer callback
+         * queue:队列
+         * autoAck: 是否自动确认
+         * callback：回调对象
+         *
+         */
+        Consumer consumer = new DefaultConsumer(channel){
+            // 回调方法 当收到消息时 会自动执行该方法
+            /**
+             * @description:
+             * @param: consumerTag 标识
+             * @param: envelope 获取交换机信息 路由key信息等
+             * @param: properties 配置信息
+             * @param: body 消息数据体
+             * @return: void
+             *
+             * @author: isquz
+             * @date: 2022/7/5 23:25
+             */
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                System.out.println(TAG + "body: " + new String(body));
+                System.out.println("将日志信息保存数据库...");
+
+            }
+        };
+
+        channel.basicConsume(queue2Name, true, consumer);
+
+        // 一直监听 不需要关闭资源
+        // channel.close(); connection.close();
+    }
+}
+
+```
+
+* 订阅模式中交换机的类型：路由模式：  
+前面的订阅模式 交换机类型选择的是BuiltinExchangeType.FANOUT 广播  
+路由模式则选择BuiltinExchangeType.DIRECT类型的交换机  
+且绑定队列的时候 需要设置RoutingKey 发送消息时也需要指定该RoutingKey  
+
+
+
+```
+package com.itcast.producer;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+/**
+ * @ClassName ProducerHelloWorld
+ * @description:发送消息
+ * @author: isquz
+ * @time: 2022/7/4
+ */
+public class ProducerRouting {
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+
+        // 创建交换机
+        /**
+         * String exchange, BuiltinExchangeType type, boolean durable, boolean autoDelete, boolean internal, Map<String, Object> arguments
+         * type：交换机类型
+         *     DIRECT("direct"), 定向
+         *     FANOUT("fanout"), 扇形 广播
+         *     TOPIC("topic"),   通配符方式
+         *     HEADERS("headers"); 参数匹配
+         *
+         * durable:是否持久化
+         * internal：内部使用 一般false
+         * argument：参数
+         */
+
+        String exchangeName = "test_direct";
+        channel.exchangeDeclare(
+                exchangeName,
+                BuiltinExchangeType.DIRECT,
+                true,
+                false,
+                false,
+                null
+        );
+
+        // 创建队列
+        String queue1Name = "test_direct_queue1";
+        String queue2Name = "test_direct_queue2";
+        channel.queueDeclare(queue1Name, true, false, false,null);
+        channel.queueDeclare(queue2Name, true, false, false,null);
+
+
+        // 绑定队列和交换机
+        /**
+         * String queue, String exchange, String routingKey
+         * routingKey:路由键 绑定规则
+         *      如果交换机类型为fanout广播 routingkey 设置为空字符串
+         */
+        // 队列1 绑定 error
+        channel.queueBind(queue1Name, exchangeName, "error");
+        // 队列2 绑定 info error warning 三种
+        channel.queueBind(queue2Name, exchangeName, "info");
+        channel.queueBind(queue2Name, exchangeName, "error");
+        channel.queueBind(queue2Name, exchangeName, "warning");
+
+
+        // 发送消息
+        String body = "日志信息：张三调用了delete方法出错...日志级别：error...";
+        channel.basicPublish(exchangeName, "warning", null, body.getBytes());
+
+        // 释放资源
+        channel.close();
+        connection.close();
+
+    }
+}
+
+
+package com.itcast.consumer;
+import com.rabbitmq.client.*;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+/**
+ * @ClassName ConsumerHelloWorld
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/5
+ */
+public class ConsumerRouting1 {
+
+    private static String TAG = "[consumer 1] --- ";
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+
+        String queue1Name = "test_direct_queue1";
+        String queue2Name = "test_direct_queue2";
+
+
+        /**
+         * String queue, boolean autoAck, Consumer callback
+         * queue:队列
+         * autoAck: 是否自动确认
+         * callback：回调对象
+         *
+         */
+        Consumer consumer = new DefaultConsumer(channel){
+            // 回调方法 当收到消息时 会自动执行该方法
+            /**
+             * @description:
+             * @param: consumerTag 标识
+             * @param: envelope 获取交换机信息 路由key信息等
+             * @param: properties 配置信息
+             * @param: body 消息数据体
+             * @return: void
+             *
+             * @author: isquz
+             * @date: 2022/7/5 23:25
+             */
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                System.out.println(TAG + "body: " + new String(body));
+                System.out.println("将日志信息打印到控制台...");
+
+            }
+        };
+
+        channel.basicConsume(queue2Name, true, consumer);
+
+        // 一直监听 不需要关闭资源
+        // channel.close(); connection.close();
+    }
+}
+
+
+package com.itcast.consumer;
+import com.rabbitmq.client.*;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+/**
+ * @ClassName ConsumerHelloWorld
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/5
+ */
+public class ConsumerRouting2 {
+
+    private static String TAG = "[consumer 1] --- ";
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+
+
+        // 创建连接工厂
+        ConnectionFactory factory = new ConnectionFactory();
+
+        // 设置参数
+        factory.setHost("192.168.33.224");
+        factory.setPort(5672);
+        factory.setVirtualHost("/itcast");   // 默认虚拟机是/
+        factory.setUsername("itcast");
+        factory.setPassword("itcast");
+
+
+        // 创建连接
+        Connection connection = factory.newConnection();
+
+        // 创建Channel
+        Channel channel = connection.createChannel();
+
+
+        String queue1Name = "test_direct_queue1";
+        String queue2Name = "test_direct_queue2";
+
+
+        /**
+         * String queue, boolean autoAck, Consumer callback
+         * queue:队列
+         * autoAck: 是否自动确认
+         * callback：回调对象
+         *
+         */
+        Consumer consumer = new DefaultConsumer(channel){
+            // 回调方法 当收到消息时 会自动执行该方法
+            /**
+             * @description:
+             * @param: consumerTag 标识
+             * @param: envelope 获取交换机信息 路由key信息等
+             * @param: properties 配置信息
+             * @param: body 消息数据体
+             * @return: void
+             *
+             * @author: isquz
+             * @date: 2022/7/5 23:25
+             */
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                System.out.println(TAG + "body: " + new String(body));
+                System.out.println("将日志信息存储到数据库...");
+
+            }
+        };
+
+        channel.basicConsume(queue1Name, true, consumer);
+
+        // 一直监听 不需要关闭资源
+        // channel.close(); connection.close();
+    }
+}
+
+
+```
+
+
+队列与交换机的绑定 不再是任意绑定 而是指定一个RoutingKey   
+消息方在发生时 也必须指定消息的 RoutingKey   
+交换机不再把消息给每一个绑定的队列 而是根据RoutingKey判断  
+
+* topic模式交换机  
+该模式下交换机和路由模式交换机的 区别是 队列绑定时的routingkey支持通配符  
+
+
+Spring rabbitmq使用
+-----
+
+配置文件：  
+```
+//rabbitmq.properties
+
+rabbitmq.host=192.168.33.224
+rabbitmq.port=5672
+rabbitmq.username=itcast
+rabbitmq.password=itcast
+rabbitmq.virtual-host=/itcast
+```
+
+生产者:  
+相关依赖:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.itcast</groupId>
+    <artifactId>spring-rabbitmq-producer</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.1.7.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+            <version>2.1.8.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.1.7.RELEASE</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+生产者的spring配置：  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/rabbit
+       http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+    <!--加载配置文件-->
+    <context:property-placeholder location="classpath:/rabbitmq.properties"/>
+
+    <!-- 定义rabbitmq connectionFactory -->
+    <rabbit:connection-factory id="connectionFactory" host="${rabbitmq.host}"
+                               port="${rabbitmq.port}"
+                               username="${rabbitmq.username}"
+                               password="${rabbitmq.password}"
+                               virtual-host="${rabbitmq.virtual-host}"/>
+    <!--定义管理交换机、队列-->
+    <rabbit:admin connection-factory="connectionFactory"/>
+
+    <!--定义持久化队列，不存在则自动创建；不绑定到交换机则绑定到默认交换机
+    默认交换机类型为direct，名字为：""，路由键为队列的名称
+    -->
+    <rabbit:queue id="spring_queue" name="spring_queue" auto-declare="true"/>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~广播；所有队列都能收到消息~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!--定义广播交换机中的持久化队列，不存在则自动创建-->
+    <rabbit:queue id="spring_fanout_queue_1" name="spring_fanout_queue_1" auto-declare="true"/>
+
+    <!--定义广播交换机中的持久化队列，不存在则自动创建-->
+    <rabbit:queue id="spring_fanout_queue_2" name="spring_fanout_queue_2" auto-declare="true"/>
+
+    <!--定义广播类型交换机；并绑定上述两个队列-->
+    <rabbit:fanout-exchange id="spring_fanout_exchange" name="spring_fanout_exchange" auto-declare="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="spring_fanout_queue_1"/>
+            <rabbit:binding queue="spring_fanout_queue_2"/>
+        </rabbit:bindings>
+    </rabbit:fanout-exchange>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~通配符；*匹配一个单词，#匹配多个单词 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!--定义广播交换机中的持久化队列，不存在则自动创建-->
+    <rabbit:queue id="spring_topic_queue_star" name="spring_topic_queue_star" auto-declare="true"/>
+    <!--定义广播交换机中的持久化队列，不存在则自动创建-->
+    <rabbit:queue id="spring_topic_queue_well" name="spring_topic_queue_well" auto-declare="true"/>
+    <!--定义广播交换机中的持久化队列，不存在则自动创建-->
+    <rabbit:queue id="spring_topic_queue_well2" name="spring_topic_queue_well2" auto-declare="true"/>
+
+    <rabbit:topic-exchange id="spring_topic_exchange" name="spring_topic_exchange" auto-declare="true">
+        <rabbit:bindings>
+            <rabbit:binding pattern="heima.*" queue="spring_topic_queue_star"/>
+            <rabbit:binding pattern="heima.#" queue="spring_topic_queue_well"/>
+            <rabbit:binding pattern="itcast.#" queue="spring_topic_queue_well2"/>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+    <!--定义rabbitTemplate对象操作可以在代码中方便发送消息-->
+    <rabbit:template id="rabbitTemplate" connection-factory="connectionFactory"/>
+</beans>
+```
+
+测试发送消息：  
+```
+package com.itcast;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+/**
+ * @ClassName ProducerTest
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/13
+ */
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath:spring-rabbitmq-producer.xml")
+public class ProducerTest {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Test
+    public void testHelloWorld(){
+        rabbitTemplate.convertAndSend("spring_queue", "hello world spring...");
+    }
+
+    @Test
+    public void testFanout(){
+        rabbitTemplate.convertAndSend("spring_fanout_exchange","", "spring fanout...");
+    }
+
+    @Test
+    public void testTopic(){
+        rabbitTemplate.convertAndSend(
+                "spring_topic_exchange",
+                "heima.hehe.haha",
+                "spring topic...to spring_topic_queue_well");
+    }
+}
+
+```
+
+消费者：  
+消费者只需实现MessageListener接口并配置好对应的配置文件即可  
+
+实现监听类：  
+```
+public class SpringQueueListener implements MessageListener {
+    @Override
+    public void onMessage(Message message) {
+        System.out.println(new String( message.getBody() ) );
+    }
+}
+
+```
+
+spring配置：  
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/rabbit
+       http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+    <!--加载配置文件-->
+    <context:property-placeholder location="classpath:/rabbitmq.properties"/>
+
+    <!-- 定义rabbitmq connectionFactory -->
+    <rabbit:connection-factory id="connectionFactory" host="${rabbitmq.host}"
+                               port="${rabbitmq.port}"
+                               username="${rabbitmq.username}"
+                               password="${rabbitmq.password}"
+                               virtual-host="${rabbitmq.virtual-host}"/>
+
+    <bean id="springQueueListener" class="com.itcast.rabbitmq.listener.SpringQueueListener"/>
+    <!--<bean id="fanoutListener1" class="com.itcast.rabbitmq.listener.FanoutListener1"/>-->
+    <!--<bean id="fanoutListener2" class="com.itcast.rabbitmq.listener.FanoutListener2"/>-->
+    <!--<bean id="topicListenerStar" class="com.itcast.rabbitmq.listener.TopicListenerStar"/>-->
+    <!--<bean id="topicListenerWell" class="com.itcast.rabbitmq.listener.TopicListenerWell"/>-->
+    <!--<bean id="topicListenerWell2" class="com.itcast.rabbitmq.listener.TopicListenerWell2"/>-->
+
+    <rabbit:listener-container connection-factory="connectionFactory" auto-declare="true">
+        <rabbit:listener ref="springQueueListener" queue-names="spring_queue"/>
+        <!--<rabbit:listener ref="fanoutListener1" queue-names="spring_fanout_queue_1"/>-->
+        <!--<rabbit:listener ref="fanoutListener2" queue-names="spring_fanout_queue_2"/>-->
+        <!--<rabbit:listener ref="topicListenerStar" queue-names="spring_topic_queue_star"/>-->
+        <!--<rabbit:listener ref="topicListenerWell" queue-names="spring_topic_queue_well"/>-->
+        <!--<rabbit:listener ref="topicListenerWell2" queue-names="spring_topic_queue_well2"/>-->
+    </rabbit:listener-container>
+</beans>
+```
+
+接收消息测试：  
+```
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath:spring-rabbitmq-consumer.xml")
+public class ConsumerTest {
+
+    @Test
+    public void test1(){
+        boolean flag = true;
+        while (true){
+
+        }
+    }
+}
+```
+
+springboot整合rabbitmq:
+----
+生产者：  
+1. 引入依赖
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.itcast</groupId>
+    <artifactId>springboot-producer</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!--父工程依赖-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.4.RELEASE</version>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+2. 编写yml配置
+```
+// application.yml
+
+# 配置rabbitmq基本信息
+spring:
+  rabbitmq:
+    host: 192.168.33.224
+    port: 5672
+    username: itcast
+    password: itcast
+    virtual-host: /itcast
+```
+3. 定义交换机 队列以及绑定关系
+```
+package com.itcast.rabbitmq.config;
+
+import com.rabbitmq.client.AMQP;
+import org.springframework.amqp.core.*;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @ClassName RabbitMQConfig
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/18
+ */
+@Configuration
+public class RabbitMQConfig {
+
+    public static final String EXCHANGE_NAME = "boot_topic_exchange";
+    public static final String QUEUE_NAME = "boot_queue";
+
+    // 交换机
+    @Bean("bootExchange")
+    public Exchange bootExchange(){
+        return ExchangeBuilder.topicExchange(EXCHANGE_NAME).durable(true).build();
+    }
+
+    // 队列
+    @Bean("bootQueue")
+    public Queue bootQuee(){
+        return QueueBuilder.durable(QUEUE_NAME).build();
+    }
+
+    // 队列 交换机绑定binding
+    /**
+     *
+     */
+    @Bean
+    public Binding bindQueueExchange(@Qualifier("bootQueue") Queue queue,
+                                     @Qualifier("bootExchange") Exchange exchange){
+        return BindingBuilder.bind(queue).to(exchange).with("boot.#").noargs();
+    }
+
+}
+
+```
+4. 注入RabbitTemplate调用方法完成消息发送
+```
+package com.itcast.test;
+
+import com.itcast.rabbitmq.config.RabbitMQConfig;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+/**
+ * @ClassName ProducerTest
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/18
+ */
+
+@SpringBootTest
+@RunWith(SpringRunner.class)
+public class ProducerTest {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Test
+    public void testSend(){
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, "boot.haha", "boot mq hello world");
+    }
+}
+
+```
+
+消费者：    
+1. 引入依赖
+2. 编写yml配置
+3. 定义监听类 使用@RabbitListener注解完成队列监听
+```
+
+package com.itcast.consumerspringboot;
+
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName RabbitMQListener
+ * @description:
+ * @author: isquz
+ * @time: 2022/7/18
+ */
+
+@Component
+public class RabbitMQListener {
+
+    // 队列queue 与 生产者中配置的一致
+    @RabbitListener(queues = "boot_queue")
+    public void listenerQueue(Message message){
+//        System.out.println(message);
+        System.out.println(new String(message.getBody()));
+    }
+}
+```
+
+rabbitmq高级特性：
+====
+* 消息可靠性传递：  
+rabbitmq提供两种方式控制消息的投递可靠性：  
+1. confirm确认模式
+2. return退回模式
+
+rabbitmq消息投递的路径：  
+producer --> rabbitmq broker --> exchange --> queue --> consumer  
+
+confirm 模式：  
+开启模式 ConnectionFactory 中开启publisher-confirms="true"  
+在rabbitTemplate定义confirmCallBack回调rabbitTemplate.setConfirmCallback  
+
+return模式：  
+开启模式 ConnectionFactory 中开启publisher-returns="true"   
+rabbitTemplate.setReturnCallback
+消息发送给exchange后 exchange路由到Queue失败后才会执行 ReturnCallBack  
+必须被exchange接收 但没有被 queue接收的 才会触发return  
+
+1. 开启回退模式 publisher-returns="true"  
+2. 设置ReturnCallBack  
+3.设置Exchange处理消息的模式：  
+    * 如果消息没有路由到Queue 则丢弃消息(默认)   
+    * 如果消息没有路由到queue 返回消息给发送方ReturnCallBack   
+
+
+Consumer ACK  
+消费端确认机制：  
+1. 自动确认 acknowledge="none"  
+2. 手动确认 acknowledge="manual" 业务处理成功后调用channel.basicAck() 如果出现异常 则调用channel.basicNack()方法 让其自动重发  
+3. 根据抛出异常情况确认
 
 
 

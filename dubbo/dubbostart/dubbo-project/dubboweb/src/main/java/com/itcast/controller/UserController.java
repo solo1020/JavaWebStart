@@ -28,7 +28,9 @@ public class UserController {
 
 //    @Autowired
 //    @Reference(timeout = 1000, version = "v1.0", loadbalance = "random")  //远程注入
-    @Reference(cluster = "failover", version = "v1.0")  //远程注入
+//    @Reference(cluster = "failover", version = "v1.0")
+    // mock force:return null 表示不去调用userService 的服务
+    @Reference(cluster = "failover", version = "v1.0", mock = "fail:return null")
     private UserService userService;
 
     @RequestMapping("/sayHello")

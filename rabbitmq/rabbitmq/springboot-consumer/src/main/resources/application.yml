@@ -1,0 +1,8 @@
+# 配置rabbitmq基本信息
+spring:
+  rabbitmq:
+    host: 192.168.33.224
+    port: 5672
+    username: itcast
+    password: itcast
+    virtual-host: /itcast
